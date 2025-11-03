@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Play } from 'lucide-react';
 
 const CognitiveTaskGame = () => {
+  const celebrationAudioRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
@@ -35,6 +36,15 @@ const CognitiveTaskGame = () => {
       setHighestLevel(parseInt(savedHighest));
     }
   }, []);
+
+  // Play celebration sound on perfect score
+  useEffect(() => {
+    if (gameState === 'perfectScore' && celebrationAudioRef.current) {
+      celebrationAudioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
+    }
+  }, [gameState]);
 
   // Save progress to localStorage
   const saveProgress = useCallback((newLevel) => {
@@ -427,6 +437,13 @@ const CognitiveTaskGame = () => {
 
   return (
     <div className={`min-h-screen ${feedback ? getFeedbackColor() : 'bg-gray-900'} text-white flex items-center justify-center p-4 transition-colors duration-200`}>
+      {/* Hidden audio element for celebration sound */}
+      <audio
+        ref={celebrationAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"
+        preload="auto"
+      />
+
       {gameState === 'menu' && (
         <div className="max-w-2xl w-full space-y-6">
           <h1 className="text-4xl font-bold text-center mb-8">Adaptive Posner</h1>
