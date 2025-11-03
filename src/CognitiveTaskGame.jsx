@@ -14,7 +14,7 @@ const CognitiveTaskGame = () => {
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
 
-  const getTimeForLevel = (lvl) => 1500 - (lvl - 1) * 150;
+  const getTimeForLevel = (lvl) => lvl === 11 ? 100 : 1500 - (lvl - 1) * 150;
 
   const relationTypes = {
     'whole-part': 'Whole-Part (fish-pike, world-France)',
@@ -343,7 +343,7 @@ const CognitiveTaskGame = () => {
               <input
                 type="range"
                 min="1"
-                max="10"
+                max="11"
                 value={level}
                 onChange={(e) => setLevel(parseInt(e.target.value))}
                 className="w-full"
