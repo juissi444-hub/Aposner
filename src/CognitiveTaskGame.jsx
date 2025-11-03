@@ -14,7 +14,7 @@ const CognitiveTaskGame = () => {
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
 
-  const getTimeForLevel = (lvl) => lvl === 11 ? 11 : 1500 - (lvl - 1) * 150;
+  const getTimeForLevel = (lvl) => lvl === 11 ? 100 : 1500 - (lvl - 1) * 150;
 
   const relationTypes = {
     'whole-part': 'Whole-Part (fish-pike, world-France)',
