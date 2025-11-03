@@ -276,7 +276,11 @@ const CognitiveTaskGame = () => {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.key === ' ' && gameState === 'showRelation') {
+      if (e.key === 'Escape' && gameState !== 'menu') {
+        e.preventDefault();
+        setGameState('menu');
+        setFeedback(null);
+      } else if (e.key === ' ' && gameState === 'showRelation') {
         e.preventDefault();
         handleSpacePress();
       } else if (gameState === 'showWords' && !userAnswered) {
@@ -392,6 +396,12 @@ const CognitiveTaskGame = () => {
           >
             Press SPACE to continue
           </button>
+          <button
+            onClick={() => setGameState('menu')}
+            className="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
+          >
+            Back to main menu
+          </button>
         </div>
       )}
 
@@ -409,6 +419,12 @@ const CognitiveTaskGame = () => {
             <div className="font-bold text-white mb-2">Answer NOW!</div>
             <div>J = Match | F = No Match</div>
           </div>
+          <button
+            onClick={() => setGameState('menu')}
+            className="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
+          >
+            Back to main menu
+          </button>
         </div>
       )}
 
@@ -434,6 +450,12 @@ const CognitiveTaskGame = () => {
           <div className="text-gray-500">
             Returning to menu in 5 seconds...
           </div>
+          <button
+            onClick={() => setGameState('menu')}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
+          >
+            Back to main menu
+          </button>
         </div>
       )}
     </div>
