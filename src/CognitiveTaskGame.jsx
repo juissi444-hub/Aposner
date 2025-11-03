@@ -5,6 +5,8 @@ const CognitiveTaskGame = () => {
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
+  const [savedAdaptiveLevel, setSavedAdaptiveLevel] = useState(1);
+  const [highestLevel, setHighestLevel] = useState(1);
   const [numTasks, setNumTasks] = useState(20);
   const [currentTask, setCurrentTask] = useState(0);
   const [currentRelation, setCurrentRelation] = useState('');
@@ -17,6 +19,43 @@ const CognitiveTaskGame = () => {
   const [taskHistory, setTaskHistory] = useState([]);
 
   const getTimeForLevel = (lvl) => lvl === 11 ? 100 : 1500 - (lvl - 1) * 150;
+
+  // Load progress from localStorage on mount
+  useEffect(() => {
+    const savedLevel = localStorage.getItem('adaptivePosnerLevel');
+    const savedHighest = localStorage.getItem('adaptivePosnerHighest');
+
+    if (savedLevel) {
+      const levelNum = parseInt(savedLevel);
+      setSavedAdaptiveLevel(levelNum);
+      setLevel(levelNum);
+    }
+
+    if (savedHighest) {
+      setHighestLevel(parseInt(savedHighest));
+    }
+  }, []);
+
+  // Save progress to localStorage
+  const saveProgress = useCallback((newLevel) => {
+    localStorage.setItem('adaptivePosnerLevel', String(newLevel));
+    setSavedAdaptiveLevel(newLevel);
+
+    // Update highest level if needed
+    if (newLevel > highestLevel) {
+      localStorage.setItem('adaptivePosnerHighest', String(newLevel));
+      setHighestLevel(newLevel);
+    }
+  }, [highestLevel]);
+
+  // Reset progress
+  const resetProgress = () => {
+    localStorage.removeItem('adaptivePosnerLevel');
+    localStorage.removeItem('adaptivePosnerHighest');
+    setSavedAdaptiveLevel(1);
+    setHighestLevel(1);
+    setLevel(1);
+  };
 
   const relationTypes = {
     'whole-part': 'Whole-Part (fish-pike, world-France)',
@@ -189,7 +228,7 @@ const CognitiveTaskGame = () => {
   const startGame = (selectedMode) => {
     setMode(selectedMode);
     if (selectedMode === 'adaptive') {
-      setLevel(1);
+      setLevel(savedAdaptiveLevel);
       setNumTasks(30);
     }
     setScore(0);
@@ -211,14 +250,18 @@ const CognitiveTaskGame = () => {
   const handleLevelDecrease = useCallback(() => {
     setGameState('levelDown');
     setTimeout(() => {
-      setLevel(prev => Math.max(1, prev - 1));
+      setLevel(prev => {
+        const newLevel = Math.max(1, prev - 1);
+        saveProgress(newLevel);
+        return newLevel;
+      });
       setScore(0);
       setWrongCount(0);
       setCurrentTask(0);
       setTaskHistory([]);
       prepareNextTask();
     }, 2000);
-  }, []);
+  }, [saveProgress]);
 
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
@@ -227,7 +270,11 @@ const CognitiveTaskGame = () => {
         // Progress to next level
         setGameState('levelUp');
         setTimeout(() => {
-          setLevel(prev => prev + 1);
+          setLevel(prev => {
+            const newLevel = prev + 1;
+            saveProgress(newLevel);
+            return newLevel;
+          });
           setScore(0);
           setWrongCount(0);
           setCurrentTask(0);
@@ -245,7 +292,7 @@ const CognitiveTaskGame = () => {
         setGameState('menu');
       }, 5000);
     }
-  }, [mode, score, numTasks]);
+  }, [mode, score, numTasks, saveProgress]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -379,6 +426,24 @@ const CognitiveTaskGame = () => {
         <div className="max-w-2xl w-full space-y-6">
           <h1 className="text-4xl font-bold text-center mb-8">Adaptive Posner</h1>
 
+          {savedAdaptiveLevel > 1 && (
+            <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-6 rounded-lg space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-yellow-400">Saved Progress</h2>
+                  <p className="text-lg text-white mt-2">Current Level: <span className="font-bold text-green-400">{savedAdaptiveLevel}</span></p>
+                  <p className="text-sm text-gray-300">Highest Level Reached: <span className="font-bold">{highestLevel}</span></p>
+                </div>
+                <button
+                  onClick={resetProgress}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                >
+                  Reset Progress
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
             <p className="text-gray-300">
@@ -423,11 +488,14 @@ const CognitiveTaskGame = () => {
                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-4 rounded-lg text-lg"
               >
                 Adaptive Mode
+                {savedAdaptiveLevel > 1 && (
+                  <div className="text-sm mt-1 text-yellow-300">Continue from Level {savedAdaptiveLevel}</div>
+                )}
               </button>
             </div>
             <div className="text-sm text-gray-400 space-y-2 mt-4">
               <p><strong>Manual Mode:</strong> Choose your own level (1-11) and number of tasks (10-60)</p>
-              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases!</p>
+              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
             </div>
           </div>
 
