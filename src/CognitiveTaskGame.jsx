@@ -267,8 +267,13 @@ const CognitiveTaskGame = () => {
     if (mode === 'adaptive') {
       const percentage = (score / numTasks) * 100;
       if (percentage >= 90) {
+        // Check if perfect score (100%)
+        if (score === numTasks) {
+          setGameState('perfectScore');
+        } else {
+          setGameState('levelUp');
+        }
         // Progress to next level
-        setGameState('levelUp');
         setTimeout(() => {
           setLevel(prev => {
             const newLevel = prev + 1;
@@ -280,7 +285,7 @@ const CognitiveTaskGame = () => {
           setCurrentTask(0);
           setTaskHistory([]);
           prepareNextTask();
-        }, 2000);
+        }, 3000);
       } else {
         // Failed to progress
         setGameState('results');
@@ -546,9 +551,9 @@ const CognitiveTaskGame = () => {
           </div>
           <button
             onClick={handleSpacePress}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg text-2xl"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg text-2xl active:bg-green-800 touch-manipulation"
           >
-            Press SPACE to continue
+            Continue
           </button>
           <button
             onClick={() => setGameState('menu')}
@@ -572,7 +577,23 @@ const CognitiveTaskGame = () => {
           </div>
           <div className="text-xl text-gray-400 mt-8">
             <div className="font-bold text-white mb-2">Answer NOW!</div>
-            <div>J = Match | F = No Match</div>
+            <div className="hidden md:block">J = Match | F = No Match</div>
+          </div>
+          <div className="flex gap-4 justify-center mt-6 px-4 w-full max-w-md mx-auto">
+            <button
+              onClick={() => handleResponse(false)}
+              className="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-8 px-6 rounded-lg text-2xl touch-manipulation"
+            >
+              No Match
+              <div className="text-sm mt-1 opacity-75">Press F</div>
+            </button>
+            <button
+              onClick={() => handleResponse(true)}
+              className="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-8 px-6 rounded-lg text-2xl touch-manipulation"
+            >
+              Match
+              <div className="text-sm mt-1 opacity-75">Press J</div>
+            </button>
           </div>
           <button
             onClick={() => setGameState('menu')}
@@ -605,6 +626,25 @@ const CognitiveTaskGame = () => {
           </div>
           <div className="text-xl text-yellow-400">
             Advancing to Level {level + 1}...
+          </div>
+        </div>
+      )}
+
+      {gameState === 'perfectScore' && (
+        <div className="text-center space-y-8">
+          <div className="text-8xl font-bold text-yellow-400">⭐</div>
+          <h2 className="text-5xl font-bold text-yellow-400">Perfect Score!</h2>
+          <div className="text-3xl text-white">
+            You got all correct!
+          </div>
+          <div className="text-2xl text-green-400 font-bold">
+            Excellent job!
+          </div>
+          <div className="text-2xl text-gray-400">
+            {score} / {numTasks} correct (100%)
+          </div>
+          <div className="text-xl text-yellow-400">
+            Progressing to Level {level + 1}...
           </div>
         </div>
       )}
