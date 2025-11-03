@@ -3,6 +3,7 @@ import { Play } from 'lucide-react';
 
 const CognitiveTaskGame = () => {
   const [gameState, setGameState] = useState('menu');
+  const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
   const [numTasks, setNumTasks] = useState(20);
   const [currentTask, setCurrentTask] = useState(0);
@@ -184,10 +185,16 @@ const CognitiveTaskGame = () => {
     return pairs[Math.floor(Math.random() * pairs.length)];
   };
 
-  const startGame = () => {
+  const startGame = (selectedMode) => {
+    setMode(selectedMode);
+    if (selectedMode === 'adaptive') {
+      setLevel(1);
+      setNumTasks(30);
+    }
     setScore(0);
     setCurrentTask(0);
     setTaskHistory([]);
+    setGameState('showRelation');
     prepareNextTask();
   };
 
@@ -198,6 +205,32 @@ const CognitiveTaskGame = () => {
     setGameState('showRelation');
     setUserAnswered(false);
   };
+
+  const handleGameEnd = useCallback(() => {
+    if (mode === 'adaptive') {
+      const percentage = (score / numTasks) * 100;
+      if (percentage >= 90) {
+        // Progress to next level
+        setGameState('levelUp');
+        setTimeout(() => {
+          setLevel(prev => prev + 1);
+          setScore(0);
+          setCurrentTask(0);
+          setTaskHistory([]);
+          prepareNextTask();
+        }, 2000);
+      } else {
+        // Failed to progress
+        setGameState('results');
+      }
+    } else {
+      // Manual mode - just show results
+      setGameState('results');
+      setTimeout(() => {
+        setGameState('menu');
+      }, 5000);
+    }
+  }, [mode, score, numTasks]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -230,16 +263,13 @@ const CognitiveTaskGame = () => {
               setCurrentTask(prev => prev + 1);
               prepareNextTask();
             } else {
-              setGameState('results');
-              setTimeout(() => {
-                setGameState('menu');
-              }, 5000);
+              handleGameEnd();
             }
           }, 700);
         }
       }, getTimeForLevel(level));
     }
-  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered]);
+  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd]);
 
   const handleResponse = useCallback((userSaysYes) => {
     if (gameState !== 'showWords' || userAnswered) return;
@@ -266,13 +296,10 @@ const CognitiveTaskGame = () => {
         setCurrentTask(prev => prev + 1);
         prepareNextTask();
       } else {
-        setGameState('results');
-        setTimeout(() => {
-          setGameState('menu');
-        }, 5000);
+        handleGameEnd();
       }
     }, 700);
-  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered]);
+  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -307,7 +334,7 @@ const CognitiveTaskGame = () => {
     <div className={`min-h-screen ${feedback ? getFeedbackColor() : 'bg-gray-900'} text-white flex items-center justify-center p-4 transition-colors duration-200`}>
       {gameState === 'menu' && (
         <div className="max-w-2xl w-full space-y-6">
-          <h1 className="text-4xl font-bold text-center mb-8">Cognitive Task Game</h1>
+          <h1 className="text-4xl font-bold text-center mb-8">Adaptive Posner</h1>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
@@ -340,6 +367,29 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Select Mode</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => startGame('manual')}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-4 rounded-lg text-lg"
+              >
+                Manual Mode
+              </button>
+              <button
+                onClick={() => startGame('adaptive')}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-4 rounded-lg text-lg"
+              >
+                Adaptive Mode
+              </button>
+            </div>
+            <div className="text-sm text-gray-400 space-y-2 mt-4">
+              <p><strong>Manual Mode:</strong> Choose your own level (1-11) and number of tasks (10-60)</p>
+              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance to the next level</p>
+            </div>
+          </div>
+
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Manual Mode Settings</h2>
             <div>
               <label className="block text-sm font-medium mb-2">
                 Level: {level} ({getTimeForLevel(level)}ms per task)
@@ -368,20 +418,13 @@ const CognitiveTaskGame = () => {
               />
             </div>
           </div>
-
-          <button
-            onClick={startGame}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg flex items-center justify-center gap-2 text-xl"
-          >
-            <Play size={24} />
-            Start Game
-          </button>
         </div>
       )}
 
       {gameState === 'showRelation' && !feedback && (
         <div className="text-center space-y-8">
           <div className="text-sm text-gray-400">
+            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}</div>}
             Task {currentTask + 1} / {numTasks}
           </div>
           <div className="text-3xl font-bold mb-8">
@@ -408,6 +451,7 @@ const CognitiveTaskGame = () => {
       {gameState === 'showWords' && !feedback && (
         <div className="text-center space-y-8">
           <div className="text-sm text-gray-400">
+            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}</div>}
             Task {currentTask + 1} / {numTasks}
           </div>
           <div className="text-6xl font-bold space-x-8">
@@ -438,24 +482,63 @@ const CognitiveTaskGame = () => {
         </div>
       )}
 
-      {gameState === 'results' && !feedback && (
+      {gameState === 'levelUp' && (
         <div className="text-center space-y-8">
-          <h2 className="text-4xl font-bold">Trial Complete!</h2>
-          <div className="text-6xl font-bold text-green-400">
-            {Math.round((score / numTasks) * 100)}%
+          <div className="text-8xl font-bold text-green-400">🎉</div>
+          <h2 className="text-5xl font-bold text-green-400">Level Up!</h2>
+          <div className="text-3xl text-white">
+            Level {level} Complete
           </div>
           <div className="text-2xl text-gray-400">
-            {score} / {numTasks} correct
+            {score} / {numTasks} correct ({Math.round((score / numTasks) * 100)}%)
           </div>
-          <div className="text-gray-500">
-            Returning to menu in 5 seconds...
+          <div className="text-xl text-yellow-400">
+            Advancing to Level {level + 1}...
           </div>
-          <button
-            onClick={() => setGameState('menu')}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
-          >
-            Back to main menu
-          </button>
+        </div>
+      )}
+
+      {gameState === 'results' && !feedback && (
+        <div className="text-center space-y-8">
+          {mode === 'adaptive' ? (
+            <>
+              <h2 className="text-4xl font-bold">Level {level} - Failed to Progress</h2>
+              <div className="text-6xl font-bold text-red-400">
+                {Math.round((score / numTasks) * 100)}%
+              </div>
+              <div className="text-2xl text-gray-400">
+                {score} / {numTasks} correct
+              </div>
+              <div className="text-xl text-gray-300">
+                You need 90% (27/30) to advance to the next level
+              </div>
+              <button
+                onClick={() => setGameState('menu')}
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
+              >
+                Back to main menu
+              </button>
+            </>
+          ) : (
+            <>
+              <h2 className="text-4xl font-bold">Trial Complete!</h2>
+              <div className="text-6xl font-bold text-green-400">
+                {Math.round((score / numTasks) * 100)}%
+              </div>
+              <div className="text-2xl text-gray-400">
+                {score} / {numTasks} correct
+              </div>
+              <div className="text-gray-500">
+                Returning to menu in 5 seconds...
+              </div>
+              <button
+                onClick={() => setGameState('menu')}
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
+              >
+                Back to main menu
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
