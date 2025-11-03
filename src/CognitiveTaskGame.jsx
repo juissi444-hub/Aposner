@@ -3,11 +3,14 @@ import { Play } from 'lucide-react';
 
 const CognitiveTaskGame = () => {
   const celebrationAudioRef = useRef(null);
+  const correctAudioRef = useRef(null);
+  const incorrectAudioRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
   const [savedAdaptiveLevel, setSavedAdaptiveLevel] = useState(1);
   const [highestLevel, setHighestLevel] = useState(1);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [numTasks, setNumTasks] = useState(20);
   const [currentTask, setCurrentTask] = useState(0);
   const [currentRelation, setCurrentRelation] = useState('');
@@ -25,6 +28,7 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     const savedLevel = localStorage.getItem('adaptivePosnerLevel');
     const savedHighest = localStorage.getItem('adaptivePosnerHighest');
+    const savedSound = localStorage.getItem('adaptivePosnerSound');
 
     if (savedLevel) {
       const levelNum = parseInt(savedLevel);
@@ -35,16 +39,27 @@ const CognitiveTaskGame = () => {
     if (savedHighest) {
       setHighestLevel(parseInt(savedHighest));
     }
+
+    if (savedSound !== null) {
+      setSoundEnabled(savedSound === 'true');
+    }
   }, []);
+
+  // Toggle sound setting
+  const toggleSound = () => {
+    const newSoundState = !soundEnabled;
+    setSoundEnabled(newSoundState);
+    localStorage.setItem('adaptivePosnerSound', String(newSoundState));
+  };
 
   // Play celebration sound on perfect score
   useEffect(() => {
-    if (gameState === 'perfectScore' && celebrationAudioRef.current) {
+    if (gameState === 'perfectScore' && soundEnabled && celebrationAudioRef.current) {
       celebrationAudioRef.current.play().catch(error => {
         console.log('Audio playback failed:', error);
       });
     }
-  }, [gameState]);
+  }, [gameState, soundEnabled]);
 
   // Save progress to localStorage
   const saveProgress = useCallback((newLevel) => {
@@ -369,6 +384,19 @@ const CognitiveTaskGame = () => {
     const correct = userSaysYes === isActualRelation;
     setFeedback(correct ? 'correct' : 'wrong');
 
+    // Play feedback sound
+    if (soundEnabled) {
+      if (correct && correctAudioRef.current) {
+        correctAudioRef.current.play().catch(error => {
+          console.log('Correct sound playback failed:', error);
+        });
+      } else if (!correct && incorrectAudioRef.current) {
+        incorrectAudioRef.current.play().catch(error => {
+          console.log('Incorrect sound playback failed:', error);
+        });
+      }
+    }
+
     if (correct) {
       setScore(prev => prev + 1);
     } else {
@@ -404,7 +432,7 @@ const CognitiveTaskGame = () => {
         handleGameEnd();
       }
     }, 700);
-  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease]);
+  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease, soundEnabled]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -437,10 +465,20 @@ const CognitiveTaskGame = () => {
 
   return (
     <div className={`min-h-screen ${feedback ? getFeedbackColor() : 'bg-gray-900'} text-white flex items-center justify-center p-4 transition-colors duration-200`}>
-      {/* Hidden audio element for celebration sound */}
+      {/* Hidden audio elements for sounds */}
       <audio
         ref={celebrationAudioRef}
         src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={correctAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={incorrectAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"
         preload="auto"
       />
 
@@ -549,6 +587,28 @@ const CognitiveTaskGame = () => {
                 onChange={(e) => setNumTasks(parseInt(e.target.value))}
                 className="w-full"
               />
+            </div>
+          </div>
+
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-medium">Sound Effects</p>
+                <p className="text-sm text-gray-400">Play feedback sounds during gameplay</p>
+              </div>
+              <button
+                onClick={toggleSound}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  soundEnabled ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    soundEnabled ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </div>
