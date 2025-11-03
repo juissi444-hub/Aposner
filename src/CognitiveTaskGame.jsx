@@ -11,6 +11,7 @@ const CognitiveTaskGame = () => {
   const [currentWords, setCurrentWords] = useState(['', '']);
   const [isActualRelation, setIsActualRelation] = useState(false);
   const [score, setScore] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0); // Track wrong answers in adaptive mode
   const [feedback, setFeedback] = useState(null);
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
@@ -192,6 +193,7 @@ const CognitiveTaskGame = () => {
       setNumTasks(30);
     }
     setScore(0);
+    setWrongCount(0);
     setCurrentTask(0);
     setTaskHistory([]);
     setGameState('showRelation');
@@ -206,6 +208,18 @@ const CognitiveTaskGame = () => {
     setUserAnswered(false);
   };
 
+  const handleLevelDecrease = useCallback(() => {
+    setGameState('levelDown');
+    setTimeout(() => {
+      setLevel(prev => Math.max(1, prev - 1));
+      setScore(0);
+      setWrongCount(0);
+      setCurrentTask(0);
+      setTaskHistory([]);
+      prepareNextTask();
+    }, 2000);
+  }, []);
+
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
       const percentage = (score / numTasks) * 100;
@@ -215,6 +229,7 @@ const CognitiveTaskGame = () => {
         setTimeout(() => {
           setLevel(prev => prev + 1);
           setScore(0);
+          setWrongCount(0);
           setCurrentTask(0);
           setTaskHistory([]);
           prepareNextTask();
@@ -257,6 +272,20 @@ const CognitiveTaskGame = () => {
             correct: false
           }]);
 
+          // Check if wrong count reaches 6 in adaptive mode
+          if (mode === 'adaptive') {
+            const newWrongCount = wrongCount + 1;
+            setWrongCount(newWrongCount);
+
+            if (newWrongCount >= 6) {
+              setTimeout(() => {
+                setFeedback(null);
+                handleLevelDecrease();
+              }, 700);
+              return;
+            }
+          }
+
           setTimeout(() => {
             setFeedback(null);
             if (currentTask + 1 < numTasks) {
@@ -269,7 +298,7 @@ const CognitiveTaskGame = () => {
         }
       }, getTimeForLevel(level));
     }
-  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd]);
+  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease]);
 
   const handleResponse = useCallback((userSaysYes) => {
     if (gameState !== 'showWords' || userAnswered) return;
@@ -280,6 +309,20 @@ const CognitiveTaskGame = () => {
 
     if (correct) {
       setScore(prev => prev + 1);
+    } else {
+      // Wrong answer - increment wrong count in adaptive mode
+      if (mode === 'adaptive') {
+        const newWrongCount = wrongCount + 1;
+        setWrongCount(newWrongCount);
+
+        if (newWrongCount >= 6) {
+          setTimeout(() => {
+            setFeedback(null);
+            handleLevelDecrease();
+          }, 700);
+          return;
+        }
+      }
     }
 
     setTaskHistory(prev => [...prev, {
@@ -299,7 +342,7 @@ const CognitiveTaskGame = () => {
         handleGameEnd();
       }
     }, 700);
-  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd]);
+  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -384,7 +427,7 @@ const CognitiveTaskGame = () => {
             </div>
             <div className="text-sm text-gray-400 space-y-2 mt-4">
               <p><strong>Manual Mode:</strong> Choose your own level (1-11) and number of tasks (10-60)</p>
-              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance to the next level</p>
+              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases!</p>
             </div>
           </div>
 
@@ -494,6 +537,22 @@ const CognitiveTaskGame = () => {
           </div>
           <div className="text-xl text-yellow-400">
             Advancing to Level {level + 1}...
+          </div>
+        </div>
+      )}
+
+      {gameState === 'levelDown' && (
+        <div className="text-center space-y-8">
+          <div className="text-8xl font-bold text-red-400">⚠️</div>
+          <h2 className="text-5xl font-bold text-red-400">Too Many Errors!</h2>
+          <div className="text-3xl text-white">
+            6 Wrong Answers
+          </div>
+          <div className="text-2xl text-gray-400">
+            Level {level} → Level {Math.max(1, level - 1)}
+          </div>
+          <div className="text-xl text-yellow-400">
+            {level > 1 ? 'Decreasing difficulty...' : 'Restarting at Level 1...'}
           </div>
         </div>
       )}
