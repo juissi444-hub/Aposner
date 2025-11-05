@@ -5,6 +5,7 @@ const CognitiveTaskGame = () => {
   const celebrationAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const incorrectAudioRef = useRef(null);
+  const levelDownAudioRef = useRef(null);
   const timeoutRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
@@ -24,7 +25,8 @@ const CognitiveTaskGame = () => {
   const [taskHistory, setTaskHistory] = useState([]);
 
   const getTimeForLevel = (lvl) => {
-    if (lvl >= 10) return Math.max(100, 350 - (lvl - 10) * 50);
+    if (lvl >= 15) return Math.max(50, 150 - (lvl - 14) * 25);
+    if (lvl >= 10) return 350 - (lvl - 10) * 50;
     if (lvl >= 8) return 500 - (lvl - 7) * 50;
     return 2000 - (lvl - 1) * 250;
   };
@@ -61,6 +63,15 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (gameState === 'perfectScore' && soundEnabled && celebrationAudioRef.current) {
       celebrationAudioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
+    }
+  }, [gameState, soundEnabled]);
+
+  // Play sad sound on level decrease
+  useEffect(() => {
+    if (gameState === 'levelDown' && soundEnabled && levelDownAudioRef.current) {
+      levelDownAudioRef.current.play().catch(error => {
         console.log('Audio playback failed:', error);
       });
     }
@@ -541,10 +552,18 @@ const CognitiveTaskGame = () => {
         src="https://assets.mixkit.co/active_storage/sfx/2876/2876-preview.mp3"
         preload="auto"
       />
+      <audio
+        ref={levelDownAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/1242/1242-preview.mp3"
+        preload="auto"
+      />
 
       {gameState === 'menu' && (
         <div className="max-w-2xl w-full space-y-6">
-          <h1 className="text-4xl font-bold text-center mb-8">Adaptive Posner</h1>
+          <h1 className="text-4xl font-bold text-center mb-4">Adaptive Posner</h1>
+          <p className="text-center text-gray-400 italic text-sm mb-8">
+            In memoriam of those 44 unfortunate ones who were brutally exiled from Noetica...
+          </p>
 
           {savedAdaptiveLevel > 1 && (
             <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-6 rounded-lg space-y-3">
