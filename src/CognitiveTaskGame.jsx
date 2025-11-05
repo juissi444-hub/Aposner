@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play } from 'lucide-react';
+import { Play, Eye, EyeOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const CognitiveTaskGame = () => {
@@ -33,6 +33,7 @@ const CognitiveTaskGame = () => {
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
 
@@ -135,6 +136,7 @@ const CognitiveTaskGame = () => {
         setShowAuth(false);
         setUsername('');
         setPassword('');
+        setShowPassword(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: `${username}@adaptiveposner.local`,
@@ -144,6 +146,7 @@ const CognitiveTaskGame = () => {
         setShowAuth(false);
         setUsername('');
         setPassword('');
+        setShowPassword(false);
       }
     } catch (error) {
       setAuthError(error.message);
@@ -1094,14 +1097,23 @@ const CognitiveTaskGame = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                  required
-                  minLength={6}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-2 pr-12 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               {authError && (
                 <p className="text-red-400 text-sm">{authError}</p>
@@ -1117,6 +1129,7 @@ const CognitiveTaskGame = () => {
                 onClick={() => {
                   setAuthMode(authMode === 'login' ? 'signup' : 'login');
                   setAuthError('');
+                  setShowPassword(false);
                 }}
                 className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg"
               >
@@ -1129,6 +1142,7 @@ const CognitiveTaskGame = () => {
                   setAuthError('');
                   setUsername('');
                   setPassword('');
+                  setShowPassword(false);
                 }}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
               >
