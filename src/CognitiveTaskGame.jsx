@@ -655,7 +655,7 @@ const CognitiveTaskGame = () => {
               </button>
             </div>
             <div className="text-sm text-gray-400 space-y-2 mt-4">
-              <p><strong>Manual Mode:</strong> Choose your own level (1-20) and number of tasks (10-60)</p>
+              <p><strong>Manual Mode:</strong> Choose your own level (1-18) and number of tasks (10-60)</p>
               <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
             </div>
           </div>
@@ -669,7 +669,7 @@ const CognitiveTaskGame = () => {
               <input
                 type="range"
                 min="1"
-                max="20"
+                max="18"
                 value={level}
                 onChange={(e) => setLevel(parseInt(e.target.value))}
                 className="w-full"
