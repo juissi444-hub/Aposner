@@ -1202,11 +1202,12 @@ const CognitiveTaskGame = () => {
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
-                  <div className="grid gap-6 font-bold text-sm text-gray-400 px-4 py-2 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 80px 80px 150px'}}>
+                  <div className="grid gap-6 font-bold text-sm text-gray-400 px-4 py-2 min-w-[700px]" style={{gridTemplateColumns: '60px 1fr 80px 80px 100px 150px'}}>
                     <div>Rank</div>
                     <div>Username</div>
                     <div className="text-center">Level</div>
                     <div className="text-center">Score</div>
+                    <div className="text-center">Progress</div>
                     <div className="text-right">Percentile</div>
                   </div>
                   {leaderboard.map((entry, index) => {
@@ -1214,6 +1215,9 @@ const CognitiveTaskGame = () => {
                     const percentile = leaderboard.length > 1
                       ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
                       : 100;
+
+                    // Calculate level completion percentage (out of 30 tasks in adaptive mode)
+                    const levelProgress = Math.round((entry.best_score / 30) * 100);
 
                     // Get styling based on rank
                     let rankStyle = '';
@@ -1237,8 +1241,8 @@ const CognitiveTaskGame = () => {
                     return (
                       <div
                         key={entry.user_id}
-                        className={`grid gap-6 px-4 py-3 rounded-lg min-w-[600px] ${rankStyle}`}
-                        style={{gridTemplateColumns: '60px 1fr 80px 80px 150px'}}
+                        className={`grid gap-6 px-4 py-3 rounded-lg min-w-[700px] ${rankStyle}`}
+                        style={{gridTemplateColumns: '60px 1fr 80px 80px 100px 150px'}}
                       >
                         <div className="font-bold">
                           {index === 0 && '🥇'}
@@ -1249,6 +1253,7 @@ const CognitiveTaskGame = () => {
                         <div className="truncate">{entry.username}</div>
                         <div className="text-center">{entry.highest_level}</div>
                         <div className="text-center">{entry.best_score}</div>
+                        <div className="text-center font-semibold text-green-400">{levelProgress}%</div>
                         <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
                       </div>
                     );
