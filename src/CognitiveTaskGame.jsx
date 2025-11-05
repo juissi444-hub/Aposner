@@ -22,7 +22,11 @@ const CognitiveTaskGame = () => {
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
 
-  const getTimeForLevel = (lvl) => lvl === 11 ? 100 : Math.max(100, 2000 - (lvl - 1) * 250);
+  const getTimeForLevel = (lvl) => {
+    if (lvl === 11) return 100;
+    if (lvl >= 8) return 500 - (lvl - 7) * 50;
+    return 2000 - (lvl - 1) * 250;
+  };
 
   // Load progress from localStorage on mount
   useEffect(() => {
