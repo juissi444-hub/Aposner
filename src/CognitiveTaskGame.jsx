@@ -1176,19 +1176,29 @@ const CognitiveTaskGame = () => {
                       ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
                       : 100;
 
-                    // Check if top 5
-                    const isTopFive = index < 5;
+                    // Get styling based on rank
+                    let rankStyle = '';
+                    if (index === 0) {
+                      // 1st place - Golden
+                      rankStyle = 'bg-gradient-to-r from-yellow-900 to-yellow-800 border-2 border-yellow-500 shadow-lg';
+                    } else if (index === 1) {
+                      // 2nd place - Silver
+                      rankStyle = 'bg-gradient-to-r from-gray-400 to-gray-500 border-2 border-gray-300 shadow-lg text-gray-900';
+                    } else if (index === 2) {
+                      // 3rd place - Bronze
+                      rankStyle = 'bg-gradient-to-r from-orange-900 to-orange-800 border-2 border-orange-600 shadow-lg';
+                    } else if (entry.user_id === user?.id) {
+                      // Current user (not in top 3)
+                      rankStyle = 'bg-blue-900';
+                    } else {
+                      // Others
+                      rankStyle = 'bg-gray-700';
+                    }
 
                     return (
                       <div
                         key={entry.user_id}
-                        className={`grid grid-cols-5 gap-4 px-4 py-3 rounded-lg ${
-                          isTopFive
-                            ? 'bg-gradient-to-r from-yellow-900 to-yellow-800 border-2 border-yellow-500 shadow-lg'
-                            : entry.user_id === user?.id
-                              ? 'bg-blue-900'
-                              : 'bg-gray-700'
-                        }`}
+                        className={`grid grid-cols-5 gap-4 px-4 py-3 rounded-lg ${rankStyle}`}
                       >
                         <div className="font-bold">
                           {index === 0 && '🥇'}
