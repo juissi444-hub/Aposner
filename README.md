@@ -1,4 +1,4 @@
-# Cognitive Task Game
+# Adaptive Posner
 
 A cognitive task game built with React to test your mental agility through various relationship recognition challenges.
 
@@ -11,11 +11,29 @@ A cognitive task game built with React to test your mental agility through vario
   - Sequential Numbers (e.g., 3-4, 24-25)
   - Number Forms (e.g., seven-two, XI-V, 7-4)
   - Same Meaning Numbers (e.g., 2-two, V-5, five-5)
+  - Same Time (e.g., 🕐-1:00, 3:30-half past three)
 
-- **Configurable Difficulty**: 10 levels with decreasing response times
-- **Customizable Sessions**: Choose between 10-60 tasks per session
+- **Two Game Modes**:
+  - **Manual Mode**: Choose your own level (1-18) and number of tasks (10-60)
+  - **Adaptive Mode**: Start at level 1, progress automatically with 90% accuracy (27/30 correct)
+    - Get 6 wrong and level decreases!
+    - Progress is saved automatically
+    - Only adaptive mode counts towards leaderboard
+
+- **Sound Effects**:
+  - Correct/incorrect answer feedback sounds
+  - Celebration sound for perfect scores (30/30)
+  - Boo sound when failing (6 incorrect answers)
+  - Toggle sound on/off in settings
+
+- **Authentication & Leaderboard** (Optional - requires Supabase setup):
+  - Username/password authentication
+  - Global leaderboard tracking highest levels and best scores
+  - Only tracks adaptive mode performance
+
 - **Instant Feedback**: Visual color-coded feedback for correct/incorrect/timeout responses
 - **Performance Tracking**: View your accuracy percentage at the end of each session
+- **Mobile Support**: Touch-friendly buttons for mobile devices
 
 ## Local Development
 
@@ -43,6 +61,38 @@ npm run dev
 ```
 
 4. Open your browser and navigate to `http://localhost:5173`
+
+### Optional: Supabase Setup (for Authentication & Leaderboard)
+
+If you want to enable the authentication and leaderboard features, you'll need to set up a Supabase project:
+
+1. Create a free account at [Supabase](https://supabase.com)
+
+2. Create a new project
+
+3. In your Supabase project dashboard:
+   - Go to **SQL Editor**
+   - Run the SQL script from `supabase-schema.sql` (in the project root)
+   - This creates the `leaderboard` table and sets up Row Level Security policies
+
+4. Get your project credentials:
+   - Go to **Project Settings** > **API**
+   - Copy your **Project URL** and **anon/public** API key
+
+5. Create a `.env` file in the project root:
+```bash
+cp .env.example .env
+```
+
+6. Edit `.env` and add your Supabase credentials:
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+7. Restart the development server to apply the changes
+
+**Note**: The game works without Supabase - authentication and leaderboard features simply won't be available.
 
 ### Build for Production
 

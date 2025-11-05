@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Play } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const CognitiveTaskGame = () => {
   const celebrationAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const incorrectAudioRef = useRef(null);
   const levelDownAudioRef = useRef(null);
+  const successAudioRef = useRef(null);
   const timeoutRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
@@ -23,6 +25,16 @@ const CognitiveTaskGame = () => {
   const [feedback, setFeedback] = useState(null);
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
+
+  // Authentication and leaderboard states
+  const [user, setUser] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const getTimeForLevel = (lvl) => {
     if (lvl >= 15) return Math.max(50, 150 - (lvl - 14) * 25);
@@ -50,6 +62,22 @@ const CognitiveTaskGame = () => {
     if (savedSound !== null) {
       setSoundEnabled(savedSound === 'true');
     }
+
+    // Check for existing session
+    if (isSupabaseConfigured()) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setUser(session.user);
+        }
+      });
+
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user || null);
+      });
+
+      return () => subscription.unsubscribe();
+    }
   }, []);
 
   // Toggle sound setting
@@ -59,10 +87,133 @@ const CognitiveTaskGame = () => {
     localStorage.setItem('adaptivePosnerSound', String(newSoundState));
   };
 
-  // Play celebration sound on perfect score
+  // Stop all currently playing sounds
+  const stopAllSounds = useCallback(() => {
+    [celebrationAudioRef, correctAudioRef, incorrectAudioRef, levelDownAudioRef, successAudioRef].forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+  }, []);
+
+  // Authentication functions
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    if (!isSupabaseConfigured()) return;
+
+    setAuthError('');
+
+    try {
+      if (authMode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email: `${username}@adaptiveposner.local`,
+          password: password,
+          options: {
+            data: {
+              username: username
+            }
+          }
+        });
+        if (error) throw error;
+
+        // Create leaderboard entry for new user
+        if (data.user) {
+          const { error: insertError } = await supabase
+            .from('leaderboard')
+            .insert([
+              {
+                user_id: data.user.id,
+                username: username,
+                highest_level: 1,
+                best_score: 0
+              }
+            ]);
+          if (insertError) throw insertError;
+        }
+
+        setShowAuth(false);
+        setUsername('');
+        setPassword('');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: `${username}@adaptiveposner.local`,
+          password: password
+        });
+        if (error) throw error;
+        setShowAuth(false);
+        setUsername('');
+        setPassword('');
+      }
+    } catch (error) {
+      setAuthError(error.message);
+    }
+  };
+
+  const handleLogout = async () => {
+    if (!isSupabaseConfigured()) return;
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  // Leaderboard functions
+  const loadLeaderboard = useCallback(async () => {
+    if (!isSupabaseConfigured()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .order('highest_level', { ascending: false })
+        .order('best_score', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setLeaderboard(data || []);
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+    }
+  }, []);
+
+  const updateLeaderboard = useCallback(async (newLevel, newScore) => {
+    if (!isSupabaseConfigured() || !user || mode !== 'adaptive') return;
+
+    try {
+      // Get current leaderboard entry
+      const { data: currentData, error: fetchError } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+
+      const shouldUpdate = !currentData ||
+                          newLevel > currentData.highest_level ||
+                          (newLevel === currentData.highest_level && newScore > currentData.best_score);
+
+      if (shouldUpdate) {
+        const { error: updateError } = await supabase
+          .from('leaderboard')
+          .upsert({
+            user_id: user.id,
+            username: user.user_metadata?.username || user.email,
+            highest_level: Math.max(newLevel, currentData?.highest_level || 0),
+            best_score: Math.max(newScore, currentData?.best_score || 0),
+            updated_at: new Date().toISOString()
+          });
+
+        if (updateError) throw updateError;
+      }
+    } catch (error) {
+      console.error('Error updating leaderboard:', error);
+    }
+  }, [user, mode]);
+
+  // Play success sound on perfect score
   useEffect(() => {
-    if (gameState === 'perfectScore' && soundEnabled && celebrationAudioRef.current) {
-      celebrationAudioRef.current.play().catch(error => {
+    if (gameState === 'perfectScore' && soundEnabled && successAudioRef.current) {
+      successAudioRef.current.play().catch(error => {
         console.log('Audio playback failed:', error);
       });
     }
@@ -78,7 +229,7 @@ const CognitiveTaskGame = () => {
   }, [gameState, soundEnabled]);
 
   // Save progress to localStorage
-  const saveProgress = useCallback((newLevel) => {
+  const saveProgress = useCallback((newLevel, currentScore = 0) => {
     localStorage.setItem('adaptivePosnerLevel', String(newLevel));
     setSavedAdaptiveLevel(newLevel);
 
@@ -87,7 +238,12 @@ const CognitiveTaskGame = () => {
       localStorage.setItem('adaptivePosnerHighest', String(newLevel));
       setHighestLevel(newLevel);
     }
-  }, [highestLevel]);
+
+    // Update leaderboard if in adaptive mode
+    if (mode === 'adaptive') {
+      updateLeaderboard(newLevel, currentScore);
+    }
+  }, [highestLevel, mode, updateLeaderboard]);
 
   // Reset progress
   const resetProgress = () => {
@@ -346,9 +502,11 @@ const CognitiveTaskGame = () => {
   const handleLevelDecrease = useCallback(() => {
     setGameState('levelDown');
     setTimeout(() => {
+      stopAllSounds();
+      const currentScore = score;
       setLevel(prev => {
         const newLevel = Math.max(1, prev - 1);
-        saveProgress(newLevel);
+        saveProgress(newLevel, currentScore);
         return newLevel;
       });
       setScore(0);
@@ -357,7 +515,7 @@ const CognitiveTaskGame = () => {
       setTaskHistory([]);
       prepareNextTask();
     }, 2000);
-  }, [saveProgress]);
+  }, [saveProgress, stopAllSounds, score]);
 
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
@@ -377,9 +535,11 @@ const CognitiveTaskGame = () => {
         }
         // Progress to next level
         setTimeout(() => {
+          stopAllSounds();
+          const currentScore = score;
           setLevel(prev => {
             const newLevel = prev + 1;
-            saveProgress(newLevel);
+            saveProgress(newLevel, currentScore);
             return newLevel;
           });
           setScore(0);
@@ -399,7 +559,7 @@ const CognitiveTaskGame = () => {
         setGameState('menu');
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -509,6 +669,7 @@ const CognitiveTaskGame = () => {
     const handleKeyPress = (e) => {
       if (e.key === 'Escape' && gameState !== 'menu') {
         e.preventDefault();
+        stopAllSounds();
         setGameState('menu');
         setFeedback(null);
       } else if (e.key === ' ' && gameState === 'showRelation') {
@@ -525,7 +686,7 @@ const CognitiveTaskGame = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameState, handleSpacePress, handleResponse, userAnswered]);
+  }, [gameState, handleSpacePress, handleResponse, userAnswered, stopAllSounds]);
 
   const getFeedbackColor = () => {
     if (feedback === 'correct') return 'bg-green-600';
@@ -554,7 +715,12 @@ const CognitiveTaskGame = () => {
       />
       <audio
         ref={levelDownAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/1242/1242-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2/2-preview.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={successAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"
         preload="auto"
       />
 
@@ -564,6 +730,46 @@ const CognitiveTaskGame = () => {
           <p className="text-center text-gray-400 italic text-sm mb-8">
             In memoriam of those 44 unfortunate ones who were brutally exiled from Noetica...
           </p>
+
+          {isSupabaseConfigured() && (
+            <div className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
+              {user ? (
+                <>
+                  <div>
+                    <p className="text-sm text-gray-400">Logged in as</p>
+                    <p className="font-bold text-green-400">{user.user_metadata?.username || user.email}</p>
+                  </div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => {
+                        loadLeaderboard();
+                        setShowLeaderboard(true);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                    >
+                      Leaderboard
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                  >
+                    Login / Sign Up
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           {savedAdaptiveLevel > 1 && (
             <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-6 rounded-lg space-y-3">
@@ -712,7 +918,10 @@ const CognitiveTaskGame = () => {
             Continue
           </button>
           <button
-            onClick={() => setGameState('menu')}
+            onClick={() => {
+              stopAllSounds();
+              setGameState('menu');
+            }}
             className="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
           >
             Back to main menu
@@ -752,7 +961,10 @@ const CognitiveTaskGame = () => {
             </button>
           </div>
           <button
-            onClick={() => setGameState('menu')}
+            onClick={() => {
+              stopAllSounds();
+              setGameState('menu');
+            }}
             className="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
           >
             Back to main menu
@@ -859,6 +1071,119 @@ const CognitiveTaskGame = () => {
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Authentication Modal */}
+      {showAuth && isSupabaseConfigured() && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-8 max-w-md w-full">
+            <h2 className="text-3xl font-bold mb-6 text-center">
+              {authMode === 'login' ? 'Login' : 'Sign Up'}
+            </h2>
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                  required
+                  minLength={6}
+                />
+              </div>
+              {authError && (
+                <p className="text-red-400 text-sm">{authError}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                {authMode === 'login' ? 'Login' : 'Sign Up'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode(authMode === 'login' ? 'signup' : 'login');
+                  setAuthError('');
+                }}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                {authMode === 'login' ? 'Need an account? Sign Up' : 'Have an account? Login'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuth(false);
+                  setAuthError('');
+                  setUsername('');
+                  setPassword('');
+                }}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Leaderboard Modal */}
+      {showLeaderboard && isSupabaseConfigured() && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">Leaderboard</h2>
+            <p className="text-center text-sm text-gray-400 mb-4">Adaptive Mode Only</p>
+            <div className="space-y-2">
+              {leaderboard.length === 0 ? (
+                <p className="text-center text-gray-400">No entries yet. Be the first!</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-4 gap-4 font-bold text-sm text-gray-400 px-4 py-2">
+                    <div>Rank</div>
+                    <div>Username</div>
+                    <div>Highest Level</div>
+                    <div>Best Score</div>
+                  </div>
+                  {leaderboard.map((entry, index) => (
+                    <div
+                      key={entry.user_id}
+                      className={`grid grid-cols-4 gap-4 px-4 py-3 rounded-lg ${
+                        entry.user_id === user?.id ? 'bg-blue-900' : 'bg-gray-700'
+                      }`}
+                    >
+                      <div className="font-bold">
+                        {index === 0 && '🥇'}
+                        {index === 1 && '🥈'}
+                        {index === 2 && '🥉'}
+                        {index > 2 && `#${index + 1}`}
+                      </div>
+                      <div>{entry.username}</div>
+                      <div>{entry.highest_level}</div>
+                      <div>{entry.best_score}</div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setShowLeaderboard(false)}
+              className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>
