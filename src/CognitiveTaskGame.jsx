@@ -5,6 +5,8 @@ const CognitiveTaskGame = () => {
   const celebrationAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const incorrectAudioRef = useRef(null);
+  const levelDownAudioRef = useRef(null);
+  const timeoutRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
@@ -22,7 +24,12 @@ const CognitiveTaskGame = () => {
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
 
-  const getTimeForLevel = (lvl) => lvl === 11 ? 100 : 1500 - (lvl - 1) * 150;
+  const getTimeForLevel = (lvl) => {
+    if (lvl >= 15) return Math.max(50, 150 - (lvl - 14) * 25);
+    if (lvl >= 10) return 350 - (lvl - 10) * 50;
+    if (lvl >= 8) return 500 - (lvl - 7) * 50;
+    return 2000 - (lvl - 1) * 250;
+  };
 
   // Load progress from localStorage on mount
   useEffect(() => {
@@ -61,6 +68,15 @@ const CognitiveTaskGame = () => {
     }
   }, [gameState, soundEnabled]);
 
+  // Play sad sound on level decrease
+  useEffect(() => {
+    if (gameState === 'levelDown' && soundEnabled && levelDownAudioRef.current) {
+      levelDownAudioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
+    }
+  }, [gameState, soundEnabled]);
+
   // Save progress to localStorage
   const saveProgress = useCallback((newLevel) => {
     localStorage.setItem('adaptivePosnerLevel', String(newLevel));
@@ -88,7 +104,8 @@ const CognitiveTaskGame = () => {
     'same-color': 'Same Color (grass-emerald, paper-snow)',
     'followup-numerical': 'Sequential Numbers (3-4, 24-25)',
     'physical-numerical': 'Number Forms (seven-two, XI-V, 7-4)',
-    'meaning': 'Same Meaning Numbers (2-two, V-5, five-5)'
+    'meaning': 'Same Meaning Numbers (2-two, V-5, five-5)',
+    'same-time': 'Same Time (🕐-1:00, 3:30-half past three)'
   };
 
   const wordPairs = {
@@ -165,6 +182,31 @@ const CognitiveTaskGame = () => {
       ['XVI', '16'], ['XVII', '17'], ['XVIII', '18'], ['XIX', '19'], ['XX', '20'],
       ['21', 'twenty-one'], ['22', 'twenty-two'], ['23', 'twenty-three'], ['24', 'twenty-four'], ['25', 'twenty-five'],
       ['thirty', 'XXX'], ['forty', 'XL'], ['fifty', 'L'], ['XXV', '25'], ['XXVI', '26']
+    ],
+    'same-time': [
+      // Clock emoji to digital
+      ['🕐', '1:00'], ['🕑', '2:00'], ['🕒', '3:00'], ['🕓', '4:00'], ['🕔', '5:00'], ['🕕', '6:00'],
+      ['🕖', '7:00'], ['🕗', '8:00'], ['🕘', '9:00'], ['🕙', '10:00'], ['🕚', '11:00'], ['🕛', '12:00'],
+      ['🕜', '1:30'], ['🕝', '2:30'], ['🕞', '3:30'], ['🕟', '4:30'], ['🕠', '5:30'], ['🕡', '6:30'],
+      ['🕢', '7:30'], ['🕣', '8:30'], ['🕤', '9:30'], ['🕥', '10:30'], ['🕦', '11:30'], ['🕧', '12:30'],
+      // Clock emoji to verbal
+      ['🕐', 'one o\'clock'], ['🕑', 'two o\'clock'], ['🕒', 'three o\'clock'], ['🕓', 'four o\'clock'],
+      ['🕔', 'five o\'clock'], ['🕕', 'six o\'clock'], ['🕖', 'seven o\'clock'], ['🕗', 'eight o\'clock'],
+      ['🕘', 'nine o\'clock'], ['🕙', 'ten o\'clock'], ['🕚', 'eleven o\'clock'], ['🕛', 'twelve o\'clock'],
+      ['🕜', 'half past one'], ['🕝', 'half past two'], ['🕞', 'half past three'], ['🕟', 'half past four'],
+      ['🕠', 'half past five'], ['🕡', 'half past six'], ['🕢', 'half past seven'], ['🕣', 'half past eight'],
+      ['🕤', 'half past nine'], ['🕥', 'half past ten'], ['🕦', 'half past eleven'], ['🕧', 'half past twelve'],
+      // Digital to verbal
+      ['1:00', 'one o\'clock'], ['2:00', 'two o\'clock'], ['3:00', 'three o\'clock'], ['4:00', 'four o\'clock'],
+      ['5:00', 'five o\'clock'], ['6:00', 'six o\'clock'], ['7:00', 'seven o\'clock'], ['8:00', 'eight o\'clock'],
+      ['9:00', 'nine o\'clock'], ['10:00', 'ten o\'clock'], ['11:00', 'eleven o\'clock'], ['12:00', 'twelve o\'clock'],
+      ['1:30', 'half past one'], ['2:30', 'half past two'], ['3:30', 'half past three'], ['4:30', 'half past four'],
+      ['5:30', 'half past five'], ['6:30', 'half past six'], ['7:30', 'half past seven'], ['8:30', 'half past eight'],
+      ['9:30', 'half past nine'], ['10:30', 'half past ten'], ['11:30', 'half past eleven'], ['12:30', 'half past twelve'],
+      ['1:15', 'quarter past one'], ['2:15', 'quarter past two'], ['3:15', 'quarter past three'], ['4:15', 'quarter past four'],
+      ['5:15', 'quarter past five'], ['6:15', 'quarter past six'], ['7:15', 'quarter past seven'], ['8:15', 'quarter past eight'],
+      ['1:45', 'quarter to two'], ['2:45', 'quarter to three'], ['3:45', 'quarter to four'], ['4:45', 'quarter to five'],
+      ['5:45', 'quarter to six'], ['6:45', 'quarter to seven'], ['7:45', 'quarter to eight'], ['8:45', 'quarter to nine']
     ]
   };
 
@@ -240,6 +282,36 @@ const CognitiveTaskGame = () => {
       const format2 = formats[Math.floor(Math.random() * formats.length)];
 
       return [format1(num1), format2(num2)];
+    } else if (relationType === 'same-time') {
+      // For same-time, use different times in different formats
+      const clocks = ['🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛'];
+      const clocksHalf = ['🕜', '🕝', '🕞', '🕟', '🕠', '🕡', '🕢', '🕣', '🕤', '🕥', '🕦', '🕧'];
+      const digitalHours = ['1:00', '2:00', '3:00', '4:00', '5:00', '6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00'];
+      const digitalHalf = ['1:30', '2:30', '3:30', '4:30', '5:30', '6:30', '7:30', '8:30', '9:30', '10:30', '11:30', '12:30'];
+      const verbalHours = ['one o\'clock', 'two o\'clock', 'three o\'clock', 'four o\'clock', 'five o\'clock', 'six o\'clock',
+                           'seven o\'clock', 'eight o\'clock', 'nine o\'clock', 'ten o\'clock', 'eleven o\'clock', 'twelve o\'clock'];
+      const verbalHalf = ['half past one', 'half past two', 'half past three', 'half past four', 'half past five', 'half past six',
+                          'half past seven', 'half past eight', 'half past nine', 'half past ten', 'half past eleven', 'half past twelve'];
+
+      // Pick two different time indices
+      let idx1 = Math.floor(Math.random() * 12);
+      let idx2 = Math.floor(Math.random() * 12);
+      while (idx1 === idx2) {
+        idx2 = Math.floor(Math.random() * 12);
+      }
+
+      // Randomly pick formats for both sides
+      const allFormats = [
+        [...clocks, ...clocksHalf],
+        [...digitalHours, ...digitalHalf],
+        [...verbalHours, ...verbalHalf]
+      ];
+
+      const format1Type = Math.floor(Math.random() * 3);
+      const format2Type = Math.floor(Math.random() * 3);
+
+      return [allFormats[format1Type][Math.floor(Math.random() * allFormats[format1Type].length)],
+              allFormats[format2Type][Math.floor(Math.random() * allFormats[format2Type].length)]];
     }
 
     return ['error', 'error'];
@@ -260,7 +332,6 @@ const CognitiveTaskGame = () => {
     setWrongCount(0);
     setCurrentTask(0);
     setTaskHistory([]);
-    setGameState('showRelation');
     prepareNextTask();
   };
 
@@ -290,6 +361,12 @@ const CognitiveTaskGame = () => {
 
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
+      // Check if 6 or more mistakes were made
+      if (wrongCount >= 6) {
+        handleLevelDecrease();
+        return;
+      }
+
       const percentage = (score / numTasks) * 100;
       if (percentage >= 90) {
         // Check if perfect score (100%)
@@ -322,7 +399,7 @@ const CognitiveTaskGame = () => {
         setGameState('menu');
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -337,7 +414,13 @@ const CognitiveTaskGame = () => {
 
       setGameState('showWords');
 
-      setTimeout(() => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Set timeout for no answer
+      timeoutRef.current = setTimeout(() => {
         if (!userAnswered) {
           // Timeout - no answer given
           setFeedback('timeout');
@@ -349,18 +432,9 @@ const CognitiveTaskGame = () => {
             correct: false
           }]);
 
-          // Check if wrong count reaches 6 in adaptive mode
+          // Track wrong count in adaptive mode
           if (mode === 'adaptive') {
-            const newWrongCount = wrongCount + 1;
-            setWrongCount(newWrongCount);
-
-            if (newWrongCount >= 6) {
-              setTimeout(() => {
-                setFeedback(null);
-                handleLevelDecrease();
-              }, 700);
-              return;
-            }
+            setWrongCount(prev => prev + 1);
           }
 
           setTimeout(() => {
@@ -379,6 +453,12 @@ const CognitiveTaskGame = () => {
 
   const handleResponse = useCallback((userSaysYes) => {
     if (gameState !== 'showWords' || userAnswered) return;
+
+    // Clear the timeout since user answered
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
     setUserAnswered(true);
     const correct = userSaysYes === isActualRelation;
@@ -400,18 +480,9 @@ const CognitiveTaskGame = () => {
     if (correct) {
       setScore(prev => prev + 1);
     } else {
-      // Wrong answer - increment wrong count in adaptive mode
+      // Track wrong count in adaptive mode
       if (mode === 'adaptive') {
-        const newWrongCount = wrongCount + 1;
-        setWrongCount(newWrongCount);
-
-        if (newWrongCount >= 6) {
-          setTimeout(() => {
-            setFeedback(null);
-            handleLevelDecrease();
-          }, 700);
-          return;
-        }
+        setWrongCount(prev => prev + 1);
       }
     }
 
@@ -473,18 +544,26 @@ const CognitiveTaskGame = () => {
       />
       <audio
         ref={correctAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2868/2868-preview.mp3"
         preload="auto"
       />
       <audio
         ref={incorrectAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2876/2876-preview.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={levelDownAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/1242/1242-preview.mp3"
         preload="auto"
       />
 
       {gameState === 'menu' && (
         <div className="max-w-2xl w-full space-y-6">
-          <h1 className="text-4xl font-bold text-center mb-8">Adaptive Posner</h1>
+          <h1 className="text-4xl font-bold text-center mb-4">Adaptive Posner</h1>
+          <p className="text-center text-gray-400 italic text-sm mb-8">
+            In memoriam of those 44 unfortunate ones who were brutally exiled from Noetica...
+          </p>
 
           {savedAdaptiveLevel > 1 && (
             <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-6 rounded-lg space-y-3">
@@ -503,6 +582,28 @@ const CognitiveTaskGame = () => {
               </div>
             </div>
           )}
+
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-medium">Sound Effects</p>
+                <p className="text-sm text-gray-400">Play feedback sounds during gameplay</p>
+              </div>
+              <button
+                onClick={toggleSound}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  soundEnabled ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    soundEnabled ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">How to Train</h2>
@@ -554,7 +655,7 @@ const CognitiveTaskGame = () => {
               </button>
             </div>
             <div className="text-sm text-gray-400 space-y-2 mt-4">
-              <p><strong>Manual Mode:</strong> Choose your own level (1-11) and number of tasks (10-60)</p>
+              <p><strong>Manual Mode:</strong> Choose your own level (1-18) and number of tasks (10-60)</p>
               <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
             </div>
           </div>
@@ -568,7 +669,7 @@ const CognitiveTaskGame = () => {
               <input
                 type="range"
                 min="1"
-                max="11"
+                max="18"
                 value={level}
                 onChange={(e) => setLevel(parseInt(e.target.value))}
                 className="w-full"
@@ -587,28 +688,6 @@ const CognitiveTaskGame = () => {
                 onChange={(e) => setNumTasks(parseInt(e.target.value))}
                 className="w-full"
               />
-            </div>
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-lg font-medium">Sound Effects</p>
-                <p className="text-sm text-gray-400">Play feedback sounds during gameplay</p>
-              </div>
-              <button
-                onClick={toggleSound}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                  soundEnabled ? 'bg-green-600' : 'bg-gray-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                    soundEnabled ? 'translate-x-7' : 'translate-x-1'
-                  }`}
-                />
-              </button>
             </div>
           </div>
         </div>
@@ -731,13 +810,10 @@ const CognitiveTaskGame = () => {
           <div className="text-8xl font-bold text-red-400">⚠️</div>
           <h2 className="text-5xl font-bold text-red-400">Too Many Errors!</h2>
           <div className="text-3xl text-white">
-            6 Wrong Answers
+            You got 6 incorrect.
           </div>
           <div className="text-2xl text-gray-400">
-            Level {level} → Level {Math.max(1, level - 1)}
-          </div>
-          <div className="text-xl text-yellow-400">
-            {level > 1 ? 'Decreasing difficulty...' : 'Restarting at Level 1...'}
+            Decreasing level to {Math.max(1, level - 1)}...
           </div>
         </div>
       )}
