@@ -1156,7 +1156,7 @@ const CognitiveTaskGame = () => {
       {/* Leaderboard Modal */}
       {showLeaderboard && isSupabaseConfigured() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-gray-800 rounded-lg p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <h2 className="text-3xl font-bold mb-6 text-center">Leaderboard</h2>
             <p className="text-center text-sm text-gray-400 mb-4">Adaptive Mode Only</p>
             <div className="space-y-2">
@@ -1164,30 +1164,39 @@ const CognitiveTaskGame = () => {
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
-                  <div className="grid grid-cols-4 gap-4 font-bold text-sm text-gray-400 px-4 py-2">
+                  <div className="grid grid-cols-5 gap-4 font-bold text-sm text-gray-400 px-4 py-2">
                     <div>Rank</div>
                     <div>Username</div>
                     <div>Highest Level</div>
                     <div>Best Score</div>
+                    <div>Percentile</div>
                   </div>
-                  {leaderboard.map((entry, index) => (
-                    <div
-                      key={entry.user_id}
-                      className={`grid grid-cols-4 gap-4 px-4 py-3 rounded-lg ${
-                        entry.user_id === user?.id ? 'bg-blue-900' : 'bg-gray-700'
-                      }`}
-                    >
-                      <div className="font-bold">
-                        {index === 0 && '🥇'}
-                        {index === 1 && '🥈'}
-                        {index === 2 && '🥉'}
-                        {index > 2 && `#${index + 1}`}
+                  {leaderboard.map((entry, index) => {
+                    // Calculate percentile: percentage of players you're better than
+                    const percentile = leaderboard.length > 1
+                      ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
+                      : 100;
+
+                    return (
+                      <div
+                        key={entry.user_id}
+                        className={`grid grid-cols-5 gap-4 px-4 py-3 rounded-lg ${
+                          entry.user_id === user?.id ? 'bg-blue-900' : 'bg-gray-700'
+                        }`}
+                      >
+                        <div className="font-bold">
+                          {index === 0 && '🥇'}
+                          {index === 1 && '🥈'}
+                          {index === 2 && '🥉'}
+                          {index > 2 && `#${index + 1}`}
+                        </div>
+                        <div>{entry.username}</div>
+                        <div>{entry.highest_level}</div>
+                        <div>{entry.best_score}</div>
+                        <div className="font-semibold text-yellow-400">{percentile}th</div>
                       </div>
-                      <div>{entry.username}</div>
-                      <div>{entry.highest_level}</div>
-                      <div>{entry.best_score}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>
