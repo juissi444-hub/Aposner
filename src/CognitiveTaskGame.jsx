@@ -168,8 +168,7 @@ const CognitiveTaskGame = () => {
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
-        .order('best_score', { ascending: false })
-        .limit(100);
+        .order('best_score', { ascending: false });
 
       if (error) throw error;
       setLeaderboard(data || []);
@@ -1177,11 +1176,18 @@ const CognitiveTaskGame = () => {
                       ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
                       : 100;
 
+                    // Check if top 5
+                    const isTopFive = index < 5;
+
                     return (
                       <div
                         key={entry.user_id}
                         className={`grid grid-cols-5 gap-4 px-4 py-3 rounded-lg ${
-                          entry.user_id === user?.id ? 'bg-blue-900' : 'bg-gray-700'
+                          isTopFive
+                            ? 'bg-gradient-to-r from-yellow-900 to-yellow-800 border-2 border-yellow-500 shadow-lg'
+                            : entry.user_id === user?.id
+                              ? 'bg-blue-900'
+                              : 'bg-gray-700'
                         }`}
                       >
                         <div className="font-bold">
@@ -1193,7 +1199,7 @@ const CognitiveTaskGame = () => {
                         <div>{entry.username}</div>
                         <div>{entry.highest_level}</div>
                         <div>{entry.best_score}</div>
-                        <div className="font-semibold text-yellow-400">{percentile}th</div>
+                        <div className="font-semibold text-yellow-400">{percentile}th percentile</div>
                       </div>
                     );
                   })}
