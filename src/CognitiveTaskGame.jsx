@@ -264,7 +264,6 @@ const CognitiveTaskGame = () => {
     setWrongCount(0);
     setCurrentTask(0);
     setTaskHistory([]);
-    setGameState('showRelation');
     prepareNextTask();
   };
 
@@ -294,6 +293,12 @@ const CognitiveTaskGame = () => {
 
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
+      // Check if 6 or more mistakes were made
+      if (wrongCount >= 6) {
+        handleLevelDecrease();
+        return;
+      }
+
       const percentage = (score / numTasks) * 100;
       if (percentage >= 90) {
         // Check if perfect score (100%)
@@ -326,7 +331,7 @@ const CognitiveTaskGame = () => {
         setGameState('menu');
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -353,18 +358,9 @@ const CognitiveTaskGame = () => {
             correct: false
           }]);
 
-          // Check if wrong count reaches 6 in adaptive mode
+          // Track wrong count in adaptive mode
           if (mode === 'adaptive') {
-            const newWrongCount = wrongCount + 1;
-            setWrongCount(newWrongCount);
-
-            if (newWrongCount >= 6) {
-              setTimeout(() => {
-                setFeedback(null);
-                handleLevelDecrease();
-              }, 700);
-              return;
-            }
+            setWrongCount(prev => prev + 1);
           }
 
           setTimeout(() => {
@@ -404,18 +400,9 @@ const CognitiveTaskGame = () => {
     if (correct) {
       setScore(prev => prev + 1);
     } else {
-      // Wrong answer - increment wrong count in adaptive mode
+      // Track wrong count in adaptive mode
       if (mode === 'adaptive') {
-        const newWrongCount = wrongCount + 1;
-        setWrongCount(newWrongCount);
-
-        if (newWrongCount >= 6) {
-          setTimeout(() => {
-            setFeedback(null);
-            handleLevelDecrease();
-          }, 700);
-          return;
-        }
+        setWrongCount(prev => prev + 1);
       }
     }
 
@@ -482,7 +469,7 @@ const CognitiveTaskGame = () => {
       />
       <audio
         ref={incorrectAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3"
         preload="auto"
       />
 
@@ -507,6 +494,28 @@ const CognitiveTaskGame = () => {
               </div>
             </div>
           )}
+
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-medium">Sound Effects</p>
+                <p className="text-sm text-gray-400">Play feedback sounds during gameplay</p>
+              </div>
+              <button
+                onClick={toggleSound}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  soundEnabled ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    soundEnabled ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
@@ -591,28 +600,6 @@ const CognitiveTaskGame = () => {
                 onChange={(e) => setNumTasks(parseInt(e.target.value))}
                 className="w-full"
               />
-            </div>
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-lg font-medium">Sound Effects</p>
-                <p className="text-sm text-gray-400">Play feedback sounds during gameplay</p>
-              </div>
-              <button
-                onClick={toggleSound}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                  soundEnabled ? 'bg-green-600' : 'bg-gray-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                    soundEnabled ? 'translate-x-7' : 'translate-x-1'
-                  }`}
-                />
-              </button>
             </div>
           </div>
         </div>
