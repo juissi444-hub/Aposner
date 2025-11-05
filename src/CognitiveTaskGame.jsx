@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play } from 'lucide-react';
+import { Play, Eye, EyeOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const CognitiveTaskGame = () => {
@@ -33,6 +33,7 @@ const CognitiveTaskGame = () => {
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
 
@@ -135,6 +136,7 @@ const CognitiveTaskGame = () => {
         setShowAuth(false);
         setUsername('');
         setPassword('');
+        setShowPassword(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: `${username}@adaptiveposner.local`,
@@ -144,6 +146,7 @@ const CognitiveTaskGame = () => {
         setShowAuth(false);
         setUsername('');
         setPassword('');
+        setShowPassword(false);
       }
     } catch (error) {
       setAuthError(error.message);
@@ -165,8 +168,7 @@ const CognitiveTaskGame = () => {
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
-        .order('best_score', { ascending: false })
-        .limit(100);
+        .order('best_score', { ascending: false });
 
       if (error) throw error;
       setLeaderboard(data || []);
@@ -1094,14 +1096,23 @@ const CognitiveTaskGame = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                  required
-                  minLength={6}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-2 pr-12 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               {authError && (
                 <p className="text-red-400 text-sm">{authError}</p>
@@ -1117,6 +1128,7 @@ const CognitiveTaskGame = () => {
                 onClick={() => {
                   setAuthMode(authMode === 'login' ? 'signup' : 'login');
                   setAuthError('');
+                  setShowPassword(false);
                 }}
                 className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg"
               >
@@ -1129,6 +1141,7 @@ const CognitiveTaskGame = () => {
                   setAuthError('');
                   setUsername('');
                   setPassword('');
+                  setShowPassword(false);
                 }}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
               >
@@ -1142,7 +1155,7 @@ const CognitiveTaskGame = () => {
       {/* Leaderboard Modal */}
       {showLeaderboard && isSupabaseConfigured() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-gray-800 rounded-lg p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <h2 className="text-3xl font-bold mb-6 text-center">Leaderboard</h2>
             <p className="text-center text-sm text-gray-400 mb-4">Adaptive Mode Only</p>
             <div className="space-y-2">
@@ -1150,30 +1163,56 @@ const CognitiveTaskGame = () => {
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
-                  <div className="grid grid-cols-4 gap-4 font-bold text-sm text-gray-400 px-4 py-2">
+                  <div className="grid grid-cols-5 gap-4 font-bold text-sm text-gray-400 px-4 py-2">
                     <div>Rank</div>
                     <div>Username</div>
                     <div>Highest Level</div>
                     <div>Best Score</div>
+                    <div>Percentile</div>
                   </div>
-                  {leaderboard.map((entry, index) => (
-                    <div
-                      key={entry.user_id}
-                      className={`grid grid-cols-4 gap-4 px-4 py-3 rounded-lg ${
-                        entry.user_id === user?.id ? 'bg-blue-900' : 'bg-gray-700'
-                      }`}
-                    >
-                      <div className="font-bold">
-                        {index === 0 && '🥇'}
-                        {index === 1 && '🥈'}
-                        {index === 2 && '🥉'}
-                        {index > 2 && `#${index + 1}`}
+                  {leaderboard.map((entry, index) => {
+                    // Calculate percentile: percentage of players you're better than
+                    const percentile = leaderboard.length > 1
+                      ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
+                      : 100;
+
+                    // Get styling based on rank
+                    let rankStyle = '';
+                    if (index === 0) {
+                      // 1st place - Golden
+                      rankStyle = 'bg-gradient-to-r from-yellow-900 to-yellow-800 border-2 border-yellow-500 shadow-lg';
+                    } else if (index === 1) {
+                      // 2nd place - Silver
+                      rankStyle = 'bg-gradient-to-r from-gray-400 to-gray-500 border-2 border-gray-300 shadow-lg text-gray-900';
+                    } else if (index === 2) {
+                      // 3rd place - Bronze
+                      rankStyle = 'bg-gradient-to-r from-orange-900 to-orange-800 border-2 border-orange-600 shadow-lg';
+                    } else if (entry.user_id === user?.id) {
+                      // Current user (not in top 3)
+                      rankStyle = 'bg-blue-900';
+                    } else {
+                      // Others
+                      rankStyle = 'bg-gray-700';
+                    }
+
+                    return (
+                      <div
+                        key={entry.user_id}
+                        className={`grid grid-cols-5 gap-4 px-4 py-3 rounded-lg ${rankStyle}`}
+                      >
+                        <div className="font-bold">
+                          {index === 0 && '🥇'}
+                          {index === 1 && '🥈'}
+                          {index === 2 && '🥉'}
+                          {index > 2 && `#${index + 1}`}
+                        </div>
+                        <div>{entry.username}</div>
+                        <div>{entry.highest_level}</div>
+                        <div>{entry.best_score}</div>
+                        <div className="font-semibold text-yellow-400">{percentile}th percentile</div>
                       </div>
-                      <div>{entry.username}</div>
-                      <div>{entry.highest_level}</div>
-                      <div>{entry.best_score}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>
