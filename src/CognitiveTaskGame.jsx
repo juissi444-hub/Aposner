@@ -756,7 +756,7 @@ const CognitiveTaskGame = () => {
       />
       <audio
         ref={levelDownAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/2/2-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/1/1-preview.mp3"
         preload="auto"
       />
       <audio
