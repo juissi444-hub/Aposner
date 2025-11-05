@@ -5,6 +5,7 @@ const CognitiveTaskGame = () => {
   const celebrationAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const incorrectAudioRef = useRef(null);
+  const levelDownAudioRef = useRef(null);
   const timeoutRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
@@ -61,6 +62,15 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (gameState === 'perfectScore' && soundEnabled && celebrationAudioRef.current) {
       celebrationAudioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
+    }
+  }, [gameState, soundEnabled]);
+
+  // Play sad sound on level decrease
+  useEffect(() => {
+    if (gameState === 'levelDown' && soundEnabled && levelDownAudioRef.current) {
+      levelDownAudioRef.current.play().catch(error => {
         console.log('Audio playback failed:', error);
       });
     }
@@ -539,6 +549,11 @@ const CognitiveTaskGame = () => {
       <audio
         ref={incorrectAudioRef}
         src="https://assets.mixkit.co/active_storage/sfx/2876/2876-preview.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={levelDownAudioRef}
+        src="https://assets.mixkit.co/active_storage/sfx/1242/1242-preview.mp3"
         preload="auto"
       />
 
