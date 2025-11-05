@@ -1163,12 +1163,12 @@ const CognitiveTaskGame = () => {
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
-                  <div className="grid grid-cols-5 gap-4 font-bold text-sm text-gray-400 px-4 py-2">
+                  <div className="grid gap-4 font-bold text-sm text-gray-400 px-4 py-2" style={{gridTemplateColumns: 'auto 1fr auto auto minmax(140px, auto)'}}>
                     <div>Rank</div>
                     <div>Username</div>
-                    <div>Highest Level</div>
-                    <div>Best Score</div>
-                    <div>Percentile</div>
+                    <div className="text-center">Level</div>
+                    <div className="text-center">Score</div>
+                    <div className="text-right">Percentile</div>
                   </div>
                   {leaderboard.map((entry, index) => {
                     // Calculate percentile: percentage of players you're better than
@@ -1198,7 +1198,8 @@ const CognitiveTaskGame = () => {
                     return (
                       <div
                         key={entry.user_id}
-                        className={`grid grid-cols-5 gap-4 px-4 py-3 rounded-lg ${rankStyle}`}
+                        className={`grid gap-4 px-4 py-3 rounded-lg ${rankStyle}`}
+                        style={{gridTemplateColumns: 'auto 1fr auto auto minmax(140px, auto)'}}
                       >
                         <div className="font-bold">
                           {index === 0 && '🥇'}
@@ -1206,10 +1207,10 @@ const CognitiveTaskGame = () => {
                           {index === 2 && '🥉'}
                           {index > 2 && `#${index + 1}`}
                         </div>
-                        <div>{entry.username}</div>
-                        <div>{entry.highest_level}</div>
-                        <div>{entry.best_score}</div>
-                        <div className="font-semibold text-yellow-400">{percentile}th percentile</div>
+                        <div className="truncate">{entry.username}</div>
+                        <div className="text-center">{entry.highest_level}</div>
+                        <div className="text-center">{entry.best_score}</div>
+                        <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
                       </div>
                     );
                   })}
