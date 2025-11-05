@@ -94,7 +94,7 @@ npm run build
 2. Go to [Netlify Drop](https://app.netlify.com/drop)
 3. Drag the `dist` folder to the upload area
 
-## How to Play
+## How to Train
 
 1. **Start**: Click "Start Game" on the main menu
 2. **Read the Relationship**: Each round shows a possible relationship type
