@@ -25,7 +25,8 @@ const CognitiveTaskGame = () => {
   const [taskHistory, setTaskHistory] = useState([]);
 
   const getTimeForLevel = (lvl) => {
-    if (lvl >= 10) return Math.max(100, 350 - (lvl - 10) * 50);
+    if (lvl >= 15) return Math.max(50, 150 - (lvl - 14) * 25);
+    if (lvl >= 10) return 350 - (lvl - 10) * 50;
     if (lvl >= 8) return 500 - (lvl - 7) * 50;
     return 2000 - (lvl - 1) * 250;
   };
