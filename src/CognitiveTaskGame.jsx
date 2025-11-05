@@ -424,6 +424,14 @@ const CognitiveTaskGame = () => {
         if (!userAnswered) {
           // Timeout - no answer given
           setFeedback('timeout');
+
+          // Play error sound for timeout
+          if (soundEnabled && incorrectAudioRef.current) {
+            incorrectAudioRef.current.play().catch(error => {
+              console.log('Timeout sound playback failed:', error);
+            });
+          }
+
           setTaskHistory(prev => [...prev, {
             relation: currentRelation,
             words: currentWords,
@@ -449,7 +457,7 @@ const CognitiveTaskGame = () => {
         }
       }, getTimeForLevel(level));
     }
-  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease]);
+  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease, soundEnabled]);
 
   const handleResponse = useCallback((userSaysYes) => {
     if (gameState !== 'showWords' || userAnswered) return;
