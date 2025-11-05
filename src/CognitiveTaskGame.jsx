@@ -606,7 +606,7 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
+            <h2 className="text-2xl font-semibold mb-4">How to Train</h2>
             <p className="text-gray-300">
               You will be shown a possible relationship, then two words. Decide if the words match the relationship before time runs out!
             </p>
