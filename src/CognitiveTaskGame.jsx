@@ -559,7 +559,10 @@ const CognitiveTaskGame = () => {
 
       {gameState === 'menu' && (
         <div className="max-w-2xl w-full space-y-6">
-          <h1 className="text-4xl font-bold text-center mb-8">Adaptive Posner</h1>
+          <h1 className="text-4xl font-bold text-center mb-4">Adaptive Posner</h1>
+          <p className="text-center text-gray-400 italic text-sm mb-8">
+            In memoriam of those 44 unfortunate ones who were brutally exiled from Noetica...
+          </p>
 
           {savedAdaptiveLevel > 1 && (
             <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-6 rounded-lg space-y-3">
