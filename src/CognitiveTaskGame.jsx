@@ -5,6 +5,7 @@ const CognitiveTaskGame = () => {
   const celebrationAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const incorrectAudioRef = useRef(null);
+  const timeoutRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
@@ -346,7 +347,13 @@ const CognitiveTaskGame = () => {
 
       setGameState('showWords');
 
-      setTimeout(() => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Set timeout for no answer
+      timeoutRef.current = setTimeout(() => {
         if (!userAnswered) {
           // Timeout - no answer given
           setFeedback('timeout');
@@ -379,6 +386,12 @@ const CognitiveTaskGame = () => {
 
   const handleResponse = useCallback((userSaysYes) => {
     if (gameState !== 'showWords' || userAnswered) return;
+
+    // Clear the timeout since user answered
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
     setUserAnswered(true);
     const correct = userSaysYes === isActualRelation;
@@ -464,12 +477,12 @@ const CognitiveTaskGame = () => {
       />
       <audio
         ref={correctAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2868/2868-preview.mp3"
         preload="auto"
       />
       <audio
         ref={incorrectAudioRef}
-        src="https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2876/2876-preview.mp3"
         preload="auto"
       />
 
