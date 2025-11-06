@@ -112,7 +112,7 @@ const CognitiveTaskGame = () => {
       return 750 - (lvl - 6) * 50;
     }
 
-    // Levels 16-27: Explicit timings (final level is 27)
+    // Levels 16-28: Explicit timings (final level is 28)
     const levelTimings = {
       16: 275,
       17: 250,
@@ -125,10 +125,11 @@ const CognitiveTaskGame = () => {
       24: 137.5,
       25: 125,
       26: 112.5,
-      27: 100
+      27: 100,
+      28: 100
     };
 
-    // Return explicit timing for levels 16-27, or 100ms for any level beyond 27
+    // Return explicit timing for levels 16-28, or 100ms for any level beyond 28
     return levelTimings[lvl] || 100;
   };
 
