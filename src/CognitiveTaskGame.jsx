@@ -312,7 +312,11 @@ const CognitiveTaskGame = () => {
       if (!data || data.length === 0) {
         console.warn('⚠️ No leaderboard entries found - check if users have played in Adaptive mode');
       } else {
-        console.log('📊 Leaderboard data:', JSON.stringify(data, null, 2));
+        console.log('📊 Full leaderboard data from database:');
+        data.forEach((entry, i) => {
+          console.log(`   Entry ${i+1}: username=${entry.username}, highest_level=${entry.highest_level}, best_score=${entry.best_score}`);
+        });
+        console.log('📊 Complete data (JSON):', JSON.stringify(data, null, 2));
       }
 
       setLeaderboard(data || []);
@@ -395,6 +399,15 @@ const CognitiveTaskGame = () => {
 
       console.log(`✅ Leaderboard updated successfully!`);
       console.log(`✅ Data saved to database:`, upsertData);
+
+      // Verify the save by querying back
+      const { data: verifyData } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      console.log(`✅ Verification query - data in database:`, verifyData);
+      console.log(`✅ Verification: highest_level=${verifyData?.highest_level}, best_score=${verifyData?.best_score}`);
     } catch (error) {
       console.error('❌ Error updating leaderboard:', error);
       console.error('❌ Full error:', JSON.stringify(error, null, 2));
@@ -1787,14 +1800,22 @@ const CognitiveTaskGame = () => {
                     // Calculate level completion percentage (out of 30 tasks in adaptive mode)
                     const bestScore = entry.best_score || 0;
                     const levelProgress = Math.round((bestScore / 30) * 100);
-                    console.log(`📊 Leaderboard entry ${index + 1}:`, {
-                      username: entry.username,
-                      highest_level: entry.highest_level,
-                      best_score: entry.best_score,
-                      bestScore: bestScore,
-                      calculation: `${bestScore}/30 = ${levelProgress}%`,
-                      percentile: `${percentile}th`
-                    });
+
+                    // Detailed logging for debugging
+                    console.log(`📊 Leaderboard entry ${index + 1}:`);
+                    console.log(`   Username: ${entry.username}`);
+                    console.log(`   Highest Level: ${entry.highest_level}`);
+                    console.log(`   Best Score (raw from DB): ${entry.best_score}`);
+                    console.log(`   Best Score (after ||0): ${bestScore}`);
+                    console.log(`   Calculation: ${bestScore}/30 = ${levelProgress}%`);
+                    console.log(`   Percentile: ${percentile}th`);
+
+                    if (entry.best_score === null || entry.best_score === undefined) {
+                      console.warn(`⚠️ WARNING: best_score is ${entry.best_score} for ${entry.username}!`);
+                    }
+                    if (levelProgress === 0 && entry.highest_level > 0) {
+                      console.warn(`⚠️ WARNING: Level ${entry.highest_level} but 0% completion for ${entry.username}!`);
+                    }
 
                     // Get styling based on rank
                     let rankStyle = '';
