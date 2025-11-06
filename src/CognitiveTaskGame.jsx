@@ -102,7 +102,6 @@ const CognitiveTaskGame = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
@@ -210,83 +209,48 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
-    const isChrome = navigator.userAgent.includes('Chrome');
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    console.log('🔄 Auth effect initializing...');
-    console.log(`📱 Browser: ${isChrome ? 'Chrome' : 'Other'}, Mobile: ${isMobile}`);
     let mounted = true;
 
-    // Restore session on mount - Chrome-compatible
+    // Restore session on mount
     const restoreSession = async () => {
       try {
-        console.log(`🔍 Restoring session... [${isChrome ? 'Chrome' : 'Browser'}]`);
-
-        // Add timeout for Chrome
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Session restore timeout')), 5000)
-        );
-
-        const sessionPromise = supabase.auth.getSession();
-
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
+        const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('❌ Session restore error:', error.message, error);
           setUser(null);
           return;
         }
 
         if (session?.user) {
-          console.log(`✅ Session restored: ${session.user.email} [${isChrome ? 'Chrome' : 'Browser'}]`);
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
-          console.log('ℹ️ No session found in storage');
           setUser(null);
         }
       } catch (error) {
-        console.error('❌ Exception restoring session:', error.message || error);
-        if (error.message === 'Session restore timeout') {
-          console.error('⏱️ Chrome session restore timeout');
-        }
         setUser(null);
       }
     };
 
-    // Immediately try to restore session
     restoreSession();
 
-    // Listen for auth changes - Chrome-compatible
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(`🔄 Auth event: ${event} [${isChrome ? 'Chrome' : 'Browser'}]`);
-
-      if (!mounted) {
-        console.log('⚠️ Component unmounted, ignoring auth event');
-        return;
-      }
+      if (!mounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log(`✅ Signed in: ${session.user.email} [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(session.user);
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
         loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        console.log(`👋 Signed out [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(null);
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        console.log(`🔄 Token refreshed [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(session.user);
       } else if (event === 'USER_UPDATED' && session?.user) {
-        console.log(`🔄 User updated [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(session.user);
-      } else if (event === 'INITIAL_SESSION') {
-        console.log(`📍 Initial session check [${isChrome ? 'Chrome' : 'Browser'}]`);
-        if (session?.user) {
-          setUser(session.user);
-        }
       }
     });
 
@@ -399,103 +363,58 @@ const CognitiveTaskGame = () => {
 
     const anonId = localStorage.getItem('aposner-anonymous-id');
     if (!anonId) {
-      console.log('📝 No anonymous ID found - skipping migration');
       return;
     }
 
     try {
-      console.log('🔄 Migrating anonymous data to account...');
-      console.log('🔄 Anonymous ID:', anonId);
-      console.log('🔄 User ID:', userId);
-
-      // Get anonymous user's leaderboard data
+      // Anonymous users don't have leaderboard entries (only authenticated users do)
+      // Just get their local progress from user_progress table
       const { data: anonData, error: anonError } = await supabase
-        .from('leaderboard')
+        .from('user_progress')
         .select('*')
         .eq('user_id', anonId)
         .single();
 
-      if (anonError && anonError.code !== 'PGRST116') {
-        console.error('❌ Error fetching anonymous data:', anonError);
-        return;
-      }
-
-      if (!anonData) {
-        console.log('📝 No anonymous leaderboard data found - clearing ID');
+      // Ignore any errors - anonymous data migration is optional
+      if (anonError || !anonData) {
         localStorage.removeItem('aposner-anonymous-id');
         return;
       }
 
-      console.log('📥 Found anonymous data:', anonData);
-
-      // Get user's existing leaderboard data (if any)
-      const { data: userData, error: userError } = await supabase
+      // Get user's existing data
+      const { data: userData } = await supabase
         .from('leaderboard')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (userError && userError.code !== 'PGRST116') {
-        console.error('❌ Error fetching user data:', userError);
-        return;
+      // If anonymous data has better progress, update user's leaderboard
+      const currentLevel = anonData.current_level || 0;
+      const highestLevel = anonData.highest_level || 0;
+      const bestScore = anonData.best_score || 0;
+
+      if (highestLevel > (userData?.highest_level || 0) ||
+          bestScore > (userData?.best_score || 0)) {
+        await supabase
+          .from('leaderboard')
+          .upsert({
+            user_id: userId,
+            username: username,
+            highest_level: Math.max(highestLevel, userData?.highest_level || 0),
+            best_score: Math.max(bestScore, userData?.best_score || 0),
+            is_anonymous: false,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' });
       }
 
-      console.log('📥 Existing user data:', userData);
-
-      // Merge data - keep maximum values
-      const mergedData = {
-        user_id: userId,
-        username: username,
-        highest_level: Math.max(
-          anonData.highest_level || 0,
-          userData?.highest_level || 0
-        ),
-        best_score: Math.max(
-          anonData.best_score || 0,
-          userData?.best_score || 0
-        ),
-        // Keep the better average answer time (lower is better)
-        average_answer_time: (() => {
-          const anonTime = anonData.average_answer_time;
-          const userTime = userData?.average_answer_time;
-          if (anonTime && userTime) return Math.min(anonTime, userTime);
-          return anonTime || userTime || null;
-        })(),
-        is_anonymous: false,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('💾 Merged data to save:', mergedData);
-
-      // Update user's leaderboard entry
-      const { error: upsertError } = await supabase
-        .from('leaderboard')
-        .upsert(mergedData, { onConflict: 'user_id' });
-
-      if (upsertError) {
-        console.error('❌ Error upserting merged data:', upsertError);
-        return;
-      }
-
-      console.log('✅ User data updated with merged values');
-
-      // Delete anonymous entry
-      const { error: deleteError } = await supabase
-        .from('leaderboard')
+      // Delete anonymous progress entry
+      await supabase
+        .from('user_progress')
         .delete()
         .eq('user_id', anonId);
 
-      if (deleteError) {
-        console.error('❌ Error deleting anonymous entry:', deleteError);
-        // Continue anyway - the important part (data migration) is done
-      } else {
-        console.log('✅ Anonymous entry deleted');
-      }
-
-      // Clear anonymous ID from localStorage
+      // Clear anonymous ID
       localStorage.removeItem('aposner-anonymous-id');
-      console.log('✅ Anonymous ID cleared from localStorage');
-      console.log('✅ Migration complete!');
     } catch (error) {
       console.error('❌ Migration failed:', error);
     }
@@ -619,47 +538,24 @@ const CognitiveTaskGame = () => {
     }
   }, []);
 
-  // Leaderboard loading - Chrome-compatible with timeout
+  // Leaderboard loading
   const loadLeaderboard = useCallback(async () => {
-    if (!isSupabaseConfigured()) {
-      console.error('❌ Supabase not configured');
-      return;
-    }
-
-    setLeaderboardLoading(true);
-    const isChrome = navigator.userAgent.includes('Chrome');
-    console.log(`📊 Loading leaderboard... [${isChrome ? 'Chrome' : 'Browser'}]`);
+    if (!isSupabaseConfigured()) return;
 
     try {
-      // Add timeout for Chrome (prevents infinite loading)
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), 10000)
-      );
-
-      const queryPromise = supabase
+      const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
-      // Race between query and timeout
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-
       if (error) {
-        console.error('❌ Leaderboard error:', error.message, error);
         setLeaderboard([]);
       } else {
-        console.log(`✅ Loaded ${data?.length || 0} leaderboard entries`);
         setLeaderboard(data || []);
       }
     } catch (error) {
-      console.error('❌ Exception loading leaderboard:', error.message || error);
-      if (error.message === 'Timeout') {
-        console.error('⏱️ Chrome timeout - leaderboard took too long');
-      }
       setLeaderboard([]);
-    } finally {
-      setLeaderboardLoading(false);
     }
   }, [user]);
 
@@ -4456,23 +4352,7 @@ const CognitiveTaskGame = () => {
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 px-1">
               <div className="space-y-2">
-              {leaderboardLoading ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-center text-gray-400">Loading leaderboard...</p>
-                  <p className="text-center text-gray-500 text-sm mt-2">This may take a moment on mobile</p>
-                  <button
-                    onClick={() => {
-                      console.log('❌ User cancelled leaderboard loading');
-                      setLeaderboardLoading(false);
-                      setLeaderboard([]);
-                    }}
-                    className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : leaderboard.length === 0 ? (
+              {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
