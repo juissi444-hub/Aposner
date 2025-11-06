@@ -1277,6 +1277,14 @@ const CognitiveTaskGame = () => {
       const percentage = (score / numTasks) * 100;
       console.log(`📊 Level completion check: ${score}/${numTasks} = ${percentage.toFixed(1)}%`);
       console.log(`📊 Level up threshold: 90% (27/30 or better)`);
+      console.log(`📊 Calculation: ${score} / ${numTasks} * 100 = ${percentage}`);
+      console.log(`📊 Is ${percentage} >= 90? ${percentage >= 90}`);
+
+      if (score >= 27) {
+        console.log(`✅✅✅ SCORE IS ${score} >= 27 - SHOULD LEVEL UP!`);
+      } else {
+        console.log(`❌❌❌ SCORE IS ${score} < 27 - CANNOT LEVEL UP`);
+      }
 
       if (percentage >= 90) {
         console.log(`✅ LEVEL UP! Score ${score}/${numTasks} (${percentage.toFixed(1)}%) >= 90%`);
@@ -1400,11 +1408,25 @@ const CognitiveTaskGame = () => {
     }
 
     if (correct) {
-      setScore(prev => prev + 1);
+      setScore(prev => {
+        const newScore = prev + 1;
+        console.log(`✅ CORRECT! Score: ${prev} → ${newScore} (Task ${currentTask + 1}/${numTasks})`);
+        if (newScore === 27) {
+          console.log(`🎯🎯🎯 SCORE REACHED 27! Should level up after task 30 completes!`);
+        }
+        return newScore;
+      });
     } else {
       // Track wrong count in adaptive mode
       if (mode === 'adaptive') {
-        setWrongCount(prev => prev + 1);
+        setWrongCount(prev => {
+          const newWrongCount = prev + 1;
+          console.log(`❌ WRONG! Wrong count: ${prev} → ${newWrongCount} (Task ${currentTask + 1}/${numTasks})`);
+          if (newWrongCount >= 6) {
+            console.log(`🚨🚨🚨 WRONG COUNT >= 6! Will drop level when session ends!`);
+          }
+          return newWrongCount;
+        });
       }
     }
 
