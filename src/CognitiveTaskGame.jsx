@@ -784,7 +784,7 @@ const CognitiveTaskGame = () => {
     'antonym': 'Antonym/Opposite (dark-light, cold-warm)',
     'same-color': 'Same Color (grass-emerald, paper-snow)',
     'followup-numerical': 'Sequential Numbers (3-4, 24-25)',
-    'physical-numerical': 'Number Forms (seven-two, XI-V, 7-4)',
+    'physical-numerical': 'Sequential Number Forms (one-two, II-III, 3-4)',
     'meaning': 'Same Meaning Numbers (2-two, V-5, five-5)',
     'same-time': 'Same Time (🕐-1:00, 3:30-half past three)'
   };
@@ -1444,25 +1444,27 @@ const CognitiveTaskGame = () => {
       const verbalHalf = ['half past one', 'half past two', 'half past three', 'half past four', 'half past five', 'half past six',
                           'half past seven', 'half past eight', 'half past nine', 'half past ten', 'half past eleven', 'half past twelve'];
 
-      // Pick two different time indices
-      let idx1 = Math.floor(Math.random() * 12);
-      let idx2 = Math.floor(Math.random() * 12);
-      while (idx1 === idx2) {
-        idx2 = Math.floor(Math.random() * 12);
-      }
-
-      // Randomly pick formats for both sides
-      const allFormats = [
-        [...clocks, ...clocksHalf],
-        [...digitalHours, ...digitalHalf],
-        [...verbalHours, ...verbalHalf]
+      // Create array of all possible times (24 total: 12 on-the-hour + 12 half-past)
+      const allTimes = [
+        // Hour times (index 0-11)
+        ...clocks.map((c, i) => ({ clock: c, digital: digitalHours[i], verbal: verbalHours[i] })),
+        // Half-past times (index 12-23)
+        ...clocksHalf.map((c, i) => ({ clock: c, digital: digitalHalf[i], verbal: verbalHalf[i] }))
       ];
 
-      const format1Type = Math.floor(Math.random() * 3);
-      const format2Type = Math.floor(Math.random() * 3);
+      // Pick two DIFFERENT time indices (ensuring they represent different actual times)
+      let idx1 = Math.floor(Math.random() * allTimes.length);
+      let idx2 = Math.floor(Math.random() * allTimes.length);
+      while (idx1 === idx2) {
+        idx2 = Math.floor(Math.random() * allTimes.length);
+      }
 
-      return [allFormats[format1Type][Math.floor(Math.random() * allFormats[format1Type].length)],
-              allFormats[format2Type][Math.floor(Math.random() * allFormats[format2Type].length)]];
+      // Pick random formats for each time
+      const formats = ['clock', 'digital', 'verbal'];
+      const format1 = formats[Math.floor(Math.random() * formats.length)];
+      const format2 = formats[Math.floor(Math.random() * formats.length)];
+
+      return [allTimes[idx1][format1], allTimes[idx2][format2]];
     }
 
     return ['error', 'error'];
