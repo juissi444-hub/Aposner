@@ -3225,8 +3225,8 @@ const CognitiveTaskGame = () => {
                       <div className="overflow-x-auto overflow-y-hidden pb-4">
                         <div className="flex justify-center" style={{minWidth: '100%'}}>
                           <svg width={graphWidth} height={graphHeight} className="overflow-visible">
-                          {/* Gradient definitions */}
-                          <defs>
+                            {/* Gradient definitions */}
+                            <defs>
                             <linearGradient id="bellGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                               <stop offset="0%" style={{stopColor: '#ef4444', stopOpacity: 0.7}} />
                               <stop offset="50%" style={{stopColor: '#f97316', stopOpacity: 0.4}} />
