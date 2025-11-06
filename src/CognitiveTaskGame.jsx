@@ -318,8 +318,8 @@ const CognitiveTaskGame = () => {
       return '';
     }
 
-    if (username.length < 3) {
-      return 'Username must be at least 3 characters';
+    if (username.length < 1) {
+      return 'Username must be at least 1 character';
     }
 
     if (username.length > 20) {
@@ -4390,7 +4390,7 @@ const CognitiveTaskGame = () => {
                   <div className="mb-2 text-red-400 text-sm">
                     <p className="font-semibold">Username requirements:</p>
                     <ul className="list-disc list-inside mt-1">
-                      <li>3-20 characters</li>
+                      <li>1-20 characters</li>
                       <li>Only letters, numbers, hyphens (-), and underscores (_)</li>
                       <li>No spaces</li>
                     </ul>
