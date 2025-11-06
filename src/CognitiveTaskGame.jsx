@@ -396,17 +396,21 @@ const CognitiveTaskGame = () => {
       return;
     }
 
-    // Validate data before attempting to save
-    if (newLevel <= 0) {
-      console.error('❌ BLOCKED: Invalid level (level must be >= 1, got:', newLevel, ')');
-      alert(`ERROR: Cannot save invalid level ${newLevel} to leaderboard. Level must be at least 1.`);
-      return;
+    // Validate and correct data before attempting to save
+    // If level is 0 or negative, set to 1 (minimum level)
+    let validLevel = newLevel;
+    if (validLevel <= 0) {
+      console.warn('⚠️ Level <= 0 detected, adjusting to level 1. Original:', newLevel);
+      validLevel = 1;
     }
 
-    if (newScore < 0) {
-      console.error('❌ BLOCKED: Invalid score (score cannot be negative, got:', newScore, ')');
-      return;
+    let validScore = newScore;
+    if (validScore < 0) {
+      console.warn('⚠️ Negative score detected, adjusting to 0. Original:', newScore);
+      validScore = 0;
     }
+
+    console.log(`📝 Saving to leaderboard: Level ${validLevel}, Score ${validScore}`);
 
     try {
       console.log(`📝 ✅ All checks passed - proceeding with leaderboard update`);
@@ -428,28 +432,28 @@ const CognitiveTaskGame = () => {
       console.log('📝 Current leaderboard data:', JSON.stringify(currentData, null, 2));
 
       // Determine the values to save
-      let highestLevel = newLevel;
-      let bestScore = newScore;
+      let highestLevel = validLevel;
+      let bestScore = validScore;
 
       if (currentData) {
-        console.log(`📝 Comparing: new level ${newLevel} vs current ${currentData.highest_level}`);
-        if (newLevel > currentData.highest_level) {
+        console.log(`📝 Comparing: new level ${validLevel} vs current ${currentData.highest_level}`);
+        if (validLevel > currentData.highest_level) {
           // Player reached a new highest level - use new level and its score
-          console.log(`✅ New highest level reached: ${newLevel} > ${currentData.highest_level}`);
-          highestLevel = newLevel;
-          bestScore = newScore;
-        } else if (newLevel === currentData.highest_level) {
+          console.log(`✅ New highest level reached: ${validLevel} > ${currentData.highest_level}`);
+          highestLevel = validLevel;
+          bestScore = validScore;
+        } else if (validLevel === currentData.highest_level) {
           // Same level - keep the highest level, update best score if higher
-          console.log(`✅ Same level ${newLevel}, comparing scores: new=${newScore}, old=${currentData.best_score}`);
+          console.log(`✅ Same level ${validLevel}, comparing scores: new=${validScore}, old=${currentData.best_score}`);
           highestLevel = currentData.highest_level;
-          bestScore = Math.max(newScore, currentData.best_score || 0);
+          bestScore = Math.max(validScore, currentData.best_score || 0);
         } else {
           // Playing a lower level - don't update
-          console.log(`⚠️ Lower level ${newLevel} < ${currentData.highest_level}, skipping update`);
+          console.log(`⚠️ Lower level ${validLevel} < ${currentData.highest_level}, skipping update`);
           return;
         }
       } else {
-        console.log(`📝 No current data found, creating new entry`);
+        console.log(`📝 No current data found, creating new entry with Level ${validLevel}, Score ${validScore}`);
       }
 
       console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}`);
