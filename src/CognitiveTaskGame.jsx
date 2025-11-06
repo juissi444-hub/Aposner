@@ -64,9 +64,13 @@ const CognitiveTaskGame = () => {
       setSoundEnabled(savedSound === 'true');
     }
 
-    // Check for existing session
+    // Check for existing session and set up auth listener
+    if (!isSupabaseConfigured()) return;
+
+    let subscription = null;
+
     const initAuth = async () => {
-      if (isSupabaseConfigured()) {
+      try {
         console.log('🔐 Checking for existing session...');
         const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -85,7 +89,7 @@ const CognitiveTaskGame = () => {
         }
 
         // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
           console.log('🔄 Auth state changed:', event);
           setUser(session?.user || null);
           if (session?.user) {
@@ -99,14 +103,21 @@ const CognitiveTaskGame = () => {
           }
         });
 
-        return () => {
-          console.log('🔌 Unsubscribing from auth changes');
-          subscription.unsubscribe();
-        };
+        subscription = authListener.subscription;
+      } catch (error) {
+        console.error('Error initializing auth:', error);
       }
     };
 
     initAuth();
+
+    // Cleanup function
+    return () => {
+      if (subscription) {
+        console.log('🔌 Unsubscribing from auth changes');
+        subscription.unsubscribe();
+      }
+    };
   }, [loadUserProgress]);
 
   // Toggle sound setting
