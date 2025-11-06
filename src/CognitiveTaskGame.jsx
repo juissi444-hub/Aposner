@@ -4496,7 +4496,6 @@ const CognitiveTaskGame = () => {
                 <div className="flex flex-col items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                   <p className="text-center text-gray-400">Loading leaderboard...</p>
-                  <p className="text-center text-gray-500 text-sm mt-2">This may take a moment on mobile</p>
                   <button
                     onClick={() => {
                       console.log('❌ User cancelled leaderboard loading');
@@ -4736,8 +4735,8 @@ const CognitiveTaskGame = () => {
                 // Wide enough to show full range comfortably - at least 50px per level
                 const minGraphWidth = Math.max((range + 1) * 50, isMobile ? 600 : 1200);
                 const graphWidth = minGraphWidth;
-                const graphHeight = isMobile ? 300 : 350; // Increased mobile height to show labels
-                const padding = isMobile ? 30 : 50;
+                const graphHeight = isMobile ? 360 : 400; // Increased height to show all labels
+                const padding = isMobile ? 40 : 50;
                 const chartWidth = graphWidth - 2 * padding;
                 const chartHeight = graphHeight - 2 * padding;
 
@@ -4849,13 +4848,13 @@ const CognitiveTaskGame = () => {
                         <p className="text-center text-xs text-gray-400 mb-2">← Scroll horizontally to see full curve →</p>
                       )}
                       <div className="overflow-x-auto overflow-y-hidden pb-12 -mx-2 px-2">
-                        <svg width={graphWidth} height={graphHeight} className="mx-auto block">
+                        <svg width={graphWidth} height={graphHeight} className="mx-auto block" style={{shapeRendering: 'geometricPrecision'}}>
                             {/* Gradient definitions */}
                             <defs>
                             <linearGradient id="bellGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" style={{stopColor: '#ef4444', stopOpacity: 0.7}} />
-                              <stop offset="50%" style={{stopColor: '#f97316', stopOpacity: 0.4}} />
-                              <stop offset="100%" style={{stopColor: '#fbbf24', stopOpacity: 0.1}} />
+                              <stop offset="0%" style={{stopColor: '#f87171', stopOpacity: 0.8}} />
+                              <stop offset="50%" style={{stopColor: '#fb923c', stopOpacity: 0.5}} />
+                              <stop offset="100%" style={{stopColor: '#fcd34d', stopOpacity: 0.2}} />
                             </linearGradient>
                             <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                               <stop offset="0%" style={{stopColor: '#8b5cf6', stopOpacity: 0.8}} />
@@ -4877,6 +4876,14 @@ const CognitiveTaskGame = () => {
                                 <feMergeNode in="SourceGraphic"/>
                               </feMerge>
                             </filter>
+                            <filter id="curveShadow">
+                              <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.4"/>
+                            </filter>
+                            <filter id="crispEdges">
+                              <feComponentTransfer>
+                                <feFuncA type="discrete" tableValues="0 1"/>
+                              </feComponentTransfer>
+                            </filter>
                           </defs>
 
                           {/* Grid lines */}
@@ -4897,7 +4904,10 @@ const CognitiveTaskGame = () => {
                           <path
                             d={filledPathData}
                             fill="url(#bellGradient)"
-                            fillOpacity="0.8"
+                            fillOpacity="0.85"
+                            stroke="#fb923c"
+                            strokeWidth="0.5"
+                            strokeOpacity="0.6"
                           />
 
                           {/* Standard deviation markers */}
@@ -4999,10 +5009,12 @@ const CognitiveTaskGame = () => {
                           <path
                             d={pathData}
                             fill="none"
-                            stroke="#dc2626"
-                            strokeWidth="3"
+                            stroke="#ef4444"
+                            strokeWidth="4"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            filter="url(#curveShadow)"
+                            style={{vectorEffect: 'non-scaling-stroke'}}
                           />
 
                           {/* Theoretical normal distribution curve for comparison */}
@@ -5010,11 +5022,13 @@ const CognitiveTaskGame = () => {
                             d={theoreticalPathData}
                             fill="none"
                             stroke="#10b981"
-                            strokeWidth="2"
+                            strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeDasharray="5,5"
-                            opacity="0.8"
+                            strokeDasharray="8,4"
+                            opacity="0.9"
+                            filter="url(#curveShadow)"
+                            style={{vectorEffect: 'non-scaling-stroke'}}
                           />
 
                           {/* Axes */}
@@ -5024,7 +5038,8 @@ const CognitiveTaskGame = () => {
                             x2={graphWidth - padding}
                             y2={graphHeight - padding}
                             stroke="#9ca3af"
-                            strokeWidth="2"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
                           />
                           <line
                             x1={padding}
@@ -5032,7 +5047,8 @@ const CognitiveTaskGame = () => {
                             x2={padding}
                             y2={graphHeight - padding}
                             stroke="#9ca3af"
-                            strokeWidth="2"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
                           />
 
                           {/* X-axis label */}
