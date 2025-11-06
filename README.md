@@ -92,7 +92,76 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 7. Restart the development server to apply the changes
 
+8. **IMPORTANT: Fix RLS Policies** - Run this SQL in Supabase SQL Editor to ensure leaderboard displays all users:
+
+```sql
+-- Fix RLS Policy for Leaderboard
+-- Run this in Supabase SQL Editor to enable proper RLS
+
+-- First, drop all existing policies on leaderboard
+DROP POLICY IF EXISTS "Allow public read access to leaderboard" ON leaderboard;
+DROP POLICY IF EXISTS "Allow users to insert own leaderboard entry" ON leaderboard;
+DROP POLICY IF EXISTS "Allow users to update own leaderboard entry" ON leaderboard;
+DROP POLICY IF EXISTS "Enable read access for all users" ON leaderboard;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON leaderboard;
+DROP POLICY IF EXISTS "Enable update for users based on user_id" ON leaderboard;
+
+-- Enable RLS (in case it was disabled)
+ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
+
+-- IMPORTANT: Create NEW policies with correct syntax
+
+-- 1. Allow ANYONE (even unauthenticated) to read ALL leaderboard entries
+CREATE POLICY "leaderboard_select_all"
+  ON leaderboard
+  FOR SELECT
+  TO public
+  USING (true);
+
+-- 2. Allow authenticated users to insert their own entry
+CREATE POLICY "leaderboard_insert_own"
+  ON leaderboard
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+-- 3. Allow authenticated users to update their own entry
+CREATE POLICY "leaderboard_update_own"
+  ON leaderboard
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Verify policies were created
+SELECT
+  policyname,
+  cmd as command,
+  roles,
+  qual as using_expression
+FROM pg_policies
+WHERE tablename = 'leaderboard'
+ORDER BY cmd;
+```
+
 **Note**: The game works without Supabase - authentication and leaderboard features simply won't be available.
+
+### Troubleshooting Supabase Setup
+
+**Leaderboard shows only 3 users or is empty:**
+- Run the RLS fix SQL above in Supabase SQL Editor
+- Check browser console (F12) for error messages
+- Verify the `leaderboard` table exists in Supabase Table Editor
+- Ensure users have played in Adaptive mode (Manual mode doesn't save to leaderboard)
+
+**Leaderboard shows 0% completion:**
+- This happens if users played before the RLS policies were fixed
+- Have users play again in Adaptive mode to update their scores
+- Or run `reset-leaderboard.sql` to clear all data and start fresh
+
+**Authentication errors:**
+- Disable email confirmation in Supabase: Settings → Authentication → Email Auth → Disable "Enable email confirmations"
+- The app uses format `username@adaptiveposner.local` automatically
 
 ### Build for Production
 
