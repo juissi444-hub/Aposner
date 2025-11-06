@@ -210,19 +210,34 @@ const CognitiveTaskGame = () => {
     if (!isSupabaseConfigured()) return;
 
     console.log('🔄 Auth effect initializing...');
+    console.log('📱 User Agent:', navigator.userAgent);
+    console.log('📱 Is mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     let mounted = true;
 
     // Function to restore session with retry logic (for mobile reliability)
     const restoreSession = async (retryCount = 0) => {
       try {
         console.log(`🔍 Attempting to restore session (attempt ${retryCount + 1})...`);
+
+        // Check if localStorage is accessible
+        try {
+          const testKey = 'aposner-storage-test';
+          localStorage.setItem(testKey, '1');
+          localStorage.removeItem(testKey);
+          console.log('✅ localStorage is accessible');
+        } catch (e) {
+          console.warn('⚠️ localStorage appears to be blocked or full:', e.message);
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
           console.error('❌ Error getting session:', error);
-          // Retry up to 3 times with exponential backoff
-          if (retryCount < 3 && mounted) {
-            const delay = Math.pow(2, retryCount) * 100; // 100ms, 200ms, 400ms
+          console.error('❌ Error name:', error.name);
+          console.error('❌ Error message:', error.message);
+          // Retry up to 5 times with exponential backoff (more retries for mobile)
+          if (retryCount < 5 && mounted) {
+            const delay = Math.pow(2, retryCount) * 150; // 150ms, 300ms, 600ms, 1200ms, 2400ms
             console.log(`⏱️ Retrying in ${delay}ms...`);
             setTimeout(() => restoreSession(retryCount + 1), delay);
           }
@@ -234,6 +249,7 @@ const CognitiveTaskGame = () => {
         if (session?.user) {
           console.log('✅ Session restored for user:', session.user.email);
           console.log('✅ User ID:', session.user.id);
+          console.log('✅ Session expires at:', new Date(session.expires_at * 1000).toLocaleString());
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
@@ -243,8 +259,9 @@ const CognitiveTaskGame = () => {
         }
       } catch (error) {
         console.error('❌ Exception restoring session:', error);
-        if (retryCount < 3 && mounted) {
-          setTimeout(() => restoreSession(retryCount + 1), Math.pow(2, retryCount) * 100);
+        console.error('❌ Exception stack:', error.stack);
+        if (retryCount < 5 && mounted) {
+          setTimeout(() => restoreSession(retryCount + 1), Math.pow(2, retryCount) * 150);
         }
       }
     };
@@ -696,6 +713,14 @@ const CognitiveTaskGame = () => {
       }
     }
   }, [user]);
+
+  // Auto-load leaderboard when modal opens
+  useEffect(() => {
+    if (showLeaderboard && isSupabaseConfigured()) {
+      console.log('📊 Leaderboard modal opened - auto-loading data...');
+      loadLeaderboard();
+    }
+  }, [showLeaderboard, loadLeaderboard]);
 
   const updateLeaderboard = useCallback(async (newLevel, newScore, currentResponseTimes = []) => {
     console.log('═'.repeat(80));
