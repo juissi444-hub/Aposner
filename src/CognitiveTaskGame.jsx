@@ -2464,40 +2464,12 @@ const CognitiveTaskGame = () => {
               ) : (
                 <>
                   <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
-                  <div className="space-x-2">
-                    <button
-                      onClick={async () => {
-                        console.log('═'.repeat(80));
-                        console.log('🎯🎯🎯 LEADERBOARD BUTTON CLICKED (ANONYMOUS USER) 🎯🎯🎯');
-                        console.log('📊 Supabase configured:', isSupabaseConfigured());
-                        console.log('📊 User: ANONYMOUS');
-                        console.log('📊 Current showLeaderboard state BEFORE setState:', showLeaderboard);
-
-                        setShowLeaderboard(true);
-
-                        console.log('📊 setShowLeaderboard(true) CALLED');
-                        console.log('📊 About to load leaderboard data...');
-
-                        try {
-                          await loadLeaderboard();
-                          console.log('✅ Leaderboard data loaded successfully');
-                        } catch (error) {
-                          console.error('❌ Error loading leaderboard:', error);
-                        }
-
-                        console.log('═'.repeat(80));
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
-                    >
-                      Leaderboard
-                    </button>
-                    <button
-                      onClick={() => setShowAuth(true)}
-                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
-                    >
-                      Login / Sign Up
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                  >
+                    Login / Sign Up
+                  </button>
                 </>
               )}
             </div>
