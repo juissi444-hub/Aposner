@@ -112,7 +112,7 @@ const CognitiveTaskGame = () => {
       return 750 - (lvl - 6) * 50;
     }
 
-    // Levels 16-27: Explicit timings (final level is 27)
+    // Levels 16-28: Explicit timings (final level is 28)
     const levelTimings = {
       16: 275,
       17: 250,
@@ -125,11 +125,12 @@ const CognitiveTaskGame = () => {
       24: 137.5,
       25: 125,
       26: 112.5,
-      27: 100
+      27: 100,
+      28: 87.5
     };
 
-    // Return explicit timing for levels 16-27, or 100ms for any level beyond 27
-    return levelTimings[lvl] || 100;
+    // Return explicit timing for levels 16-28, or 87.5ms for any level beyond 28
+    return levelTimings[lvl] || 87.5;
   };
 
   // Keep gameStateRef in sync with gameState
@@ -4046,10 +4047,10 @@ const CognitiveTaskGame = () => {
                 const minDataLevel = Math.min(...levels);
                 const maxDataLevel = Math.max(...levels);
 
-                // Extend range to show full distribution tails (mean ± 3.5σ)
+                // Extend range to show full distribution tails (mean ± 4σ)
                 // This ensures left and right tails are fully visible
-                const theoreticalMin = mean - 3.5 * stdDev;
-                const theoreticalMax = mean + 3.5 * stdDev;
+                const theoreticalMin = mean - 4 * stdDev;
+                const theoreticalMax = mean + 4 * stdDev;
 
                 // Use the wider of: theoretical range or actual data range
                 const minLevel = Math.floor(Math.min(theoreticalMin, minDataLevel - 2));
