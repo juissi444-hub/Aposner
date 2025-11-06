@@ -3130,18 +3130,18 @@ const CognitiveTaskGame = () => {
 
                 const bestPlayer = sortedPlayers[0];
 
-                // Adaptive range - always show full bell curve (mean ± 3σ) plus actual data
+                // Adaptive range - ALWAYS show full bell curve with both tails
                 const minDataLevel = Math.min(...levels);
                 const maxDataLevel = Math.max(...levels);
 
-                // Calculate theoretical bell curve range (mean ± 3 standard deviations)
-                const theoreticalMin = mean - 3 * stdDev;
-                const theoreticalMax = mean + 3 * stdDev;
+                // Calculate theoretical bell curve range (mean ± 3.5 standard deviations for full tails)
+                const theoreticalMin = mean - 3.5 * stdDev;
+                const theoreticalMax = mean + 3.5 * stdDev;
 
-                // Use the wider of: actual data range or theoretical bell curve range
-                // This ensures we always show the complete bell curve AND all player data
-                const minLevel = Math.max(1, Math.floor(Math.min(minDataLevel, theoreticalMin)));
-                const maxLevel = Math.min(27, Math.ceil(Math.max(maxDataLevel, theoreticalMax)));
+                // ALWAYS show the FULL theoretical range, not just data range
+                // This guarantees both tails are visible
+                const minLevel = Math.max(1, Math.floor(theoreticalMin));
+                const maxLevel = Math.min(27, Math.ceil(theoreticalMax));
                 const range = maxLevel - minLevel;
 
                 // Generate normal distribution curve points
@@ -3150,9 +3150,11 @@ const CognitiveTaskGame = () => {
                          Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
                 };
 
-                // Adaptive graph dimensions based on screen size
+                // Make graph wider to show full distribution - always wide enough for full curve
                 const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-                const graphWidth = isMobile ? Math.min(window.innerWidth - 40, 600) : 900;
+                // Wide enough to show full range comfortably - at least 50px per level
+                const minGraphWidth = Math.max((range + 1) * 50, isMobile ? 600 : 1200);
+                const graphWidth = minGraphWidth;
                 const graphHeight = isMobile ? 250 : 350;
                 const padding = isMobile ? 30 : 50;
                 const chartWidth = graphWidth - 2 * padding;
@@ -3220,8 +3222,9 @@ const CognitiveTaskGame = () => {
                     {/* Normal Distribution Graph */}
                     <div className="bg-gray-700 p-4 rounded-lg">
                       <h3 className="text-center text-lg font-bold mb-4">Normal Distribution Curve</h3>
-                      <div className="flex justify-center overflow-x-auto pb-4">
-                        <svg width={graphWidth} height={graphHeight} className="overflow-visible" style={{minWidth: isMobile ? '100%' : '600px'}}>
+                      <div className="overflow-x-auto overflow-y-hidden pb-4">
+                        <div className="flex justify-center" style={{minWidth: '100%'}}>
+                          <svg width={graphWidth} height={graphHeight} className="overflow-visible">
                           {/* Gradient definitions */}
                           <defs>
                             <linearGradient id="bellGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -3319,8 +3322,9 @@ const CognitiveTaskGame = () => {
                             // Calculate x position based on level
                             const x = padding + ((playerLevel - minLevel) / range) * chartWidth;
 
-                            // Calculate column width (thin columns for individual players)
-                            const columnWidth = Math.max(chartWidth / (leaderboard.length * 1.5), 2);
+                            // Calculate column width (VERY thin columns for individual players)
+                            // Maximum 4px wide, minimum 1.5px for visibility
+                            const columnWidth = Math.min(Math.max(chartWidth / (leaderboard.length * 3), 1.5), 4);
 
                             // Calculate height based on position (taller for better players)
                             const maxBarHeight = chartHeight * 0.8;
@@ -3394,18 +3398,6 @@ const CognitiveTaskGame = () => {
                             strokeWidth="2"
                           />
 
-                          {/* Y-axis label */}
-                          <text
-                            x={padding - 30}
-                            y={graphHeight / 2}
-                            textAnchor="middle"
-                            fill="#9ca3af"
-                            fontSize="12"
-                            transform={`rotate(-90, ${padding - 30}, ${graphHeight / 2})`}
-                          >
-                            Player Rank
-                          </text>
-
                           {/* X-axis label */}
                           <text
                             x={graphWidth / 2}
@@ -3417,6 +3409,7 @@ const CognitiveTaskGame = () => {
                             Level Achieved
                           </text>
                         </svg>
+                        </div>
                       </div>
 
                       {/* Legend */}
