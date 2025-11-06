@@ -19,6 +19,14 @@ A cognitive task game built with React to test your mental agility through vario
     - Get 6 wrong and level decreases!
     - Progress is saved automatically
     - Only adaptive mode counts towards leaderboard
+    - **Based on Scientific Research**: Follows the study design from "Training semantic long-term memory retrieval transfers to executive function and reading fluency"
+      - Levels 1-2: Physical/semantic tasks (whole-part, antonym, same-color, meaning)
+      - Levels 3+: Conceptual tasks (even, odd, doubled, tripled, sequential numbers, time)
+
+- **Experimental Mode** (Optional):
+  - Enable in settings to use all relation types at all levels
+  - Deviates from the research-based progression
+  - Useful for custom training or testing
 
 - **Sound Effects**:
   - Correct/incorrect answer feedback sounds
