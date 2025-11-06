@@ -300,7 +300,6 @@ const CognitiveTaskGame = () => {
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
-        .gt('highest_level', 0) // Only show users who have completed at least one level
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
@@ -1271,6 +1270,22 @@ const CognitiveTaskGame = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [gameState, handleSpacePress, handleResponse, userAnswered, stopAllSounds]);
 
+  // Prevent body scrolling when leaderboard modal is open
+  useEffect(() => {
+    if (showLeaderboard) {
+      console.log('🔒 Locking body scroll - leaderboard open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      console.log('🔓 Unlocking body scroll - leaderboard closed');
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup: ensure scroll is restored when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showLeaderboard]);
+
   const getFeedbackColor = () => {
     if (feedback === 'correct') return 'bg-green-600';
     if (feedback === 'wrong') return 'bg-red-600';
@@ -1796,32 +1811,43 @@ const CognitiveTaskGame = () => {
         return shouldShow;
       })() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Leaderboard</h2>
             <p className="text-center text-xs sm:text-sm text-gray-400 mb-1">Adaptive Mode Only</p>
             {leaderboard.length > 0 && (
               <p className="text-center text-xs sm:text-sm text-green-400 mb-3 sm:mb-4">
-                Showing {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''} • Gold/Silver/Bronze for Top 3
+                Showing all {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''} • Scroll to see more
               </p>
             )}
             {leaderboard.length === 0 && <div className="mb-3 sm:mb-4"></div>}
-            <div className="space-y-2 overflow-x-auto">
+
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2">
+              <div className="space-y-2">
               {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
                   {/* Desktop header - hidden on mobile */}
-                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
+                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
                     <div>Rank</div>
                     <div>Username</div>
                     <div>Highest Level</div>
                     <div className="text-right">Ranking</div>
                   </div>
                   {(() => {
-                    console.log(`🎨 RENDERING ${leaderboard.length} leaderboard entries to DOM`);
+                    console.log('═'.repeat(80));
+                    console.log(`🎨 RENDER PHASE - About to call .map() on leaderboard array`);
+                    console.log(`🎨 Leaderboard array length: ${leaderboard.length}`);
+                    console.log(`🎨 Leaderboard array is: ${Array.isArray(leaderboard) ? 'ARRAY' : 'NOT AN ARRAY'}`);
+                    console.log(`🎨 All usernames in array:`, leaderboard.map(e => e.username).join(', '));
+                    console.log(`🎨 Calling .map() NOW - should iterate ${leaderboard.length} times`);
+                    console.log('═'.repeat(80));
                     return null;
                   })()}
                   {leaderboard.map((entry, index) => {
+                    console.log(`🎨 .map() iteration #${index + 1}/${leaderboard.length}: Rendering ${entry.username}`);
+
                     // Calculate percentile: percentage of players you're better than
                     const percentile = leaderboard.length > 1
                       ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
@@ -1866,13 +1892,15 @@ const CognitiveTaskGame = () => {
                       rankStyle = 'bg-gray-700';
                     }
 
+                    console.log(`🎨 ✅ Returning JSX for entry #${index + 1}: ${entry.username} with rank style: ${rankStyle}`);
+
                     return (
                       <div
                         key={entry.user_id}
                         className={`rounded-lg ${rankStyle}`}
                       >
                         {/* Desktop layout */}
-                        <div className="hidden sm:grid gap-4 px-4 py-3 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
+                        <div className="hidden sm:grid gap-4 px-4 py-3" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
                           <div className="font-bold text-lg">
                             {index === 0 && '🥇'}
                             {index === 1 && '🥈'}
@@ -1888,7 +1916,7 @@ const CognitiveTaskGame = () => {
                         </div>
 
                         {/* Mobile layout */}
-                        <div className="sm:hidden px-3 py-3 space-y-2">
+                        <div className="block sm:hidden px-3 py-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-xl">
@@ -1909,12 +1937,22 @@ const CognitiveTaskGame = () => {
                       </div>
                     );
                   })}
+                  {(() => {
+                    console.log('═'.repeat(80));
+                    console.log(`🎨 ✅ .map() COMPLETED - All ${leaderboard.length} entries processed`);
+                    console.log(`🎨 React should now render ${leaderboard.length} leaderboard entry divs`);
+                    console.log('═'.repeat(80));
+                    return null;
+                  })()}
                 </>
               )}
+              </div>
             </div>
+
+            {/* Close button - fixed at bottom */}
             <button
               onClick={() => setShowLeaderboard(false)}
-              className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
+              className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0"
             >
               Close
             </button>
