@@ -4824,8 +4824,10 @@ const CognitiveTaskGame = () => {
 
                 // Calculate mean and standard deviation
                 const levels = leaderboard.map(e => e.highest_level || 0);
-                const mean = levels.reduce((sum, l) => sum + l, 0) / levels.length;
-                const variance = levels.reduce((sum, l) => sum + Math.pow(l - mean, 2), 0) / levels.length;
+                const n = levels.length;
+                const mean = levels.reduce((sum, l) => sum + l, 0) / n;
+                // Use sample variance (n-1) for unbiased estimation
+                const variance = levels.reduce((sum, l) => sum + Math.pow(l - mean, 2), 0) / (n > 1 ? n - 1 : n);
                 const stdDev = Math.sqrt(variance);
 
                 // Sort players by level and score (best first)
@@ -4908,8 +4910,37 @@ const CognitiveTaskGame = () => {
                   return { x: scaledX, y: scaledY };
                 });
 
-                // Create SVG path for curve outline
+                // Generate TRUE theoretical normal distribution curve for comparison
+                const normalDistribution = (x, mu, sigma) => {
+                  // Standard normal distribution formula: (1 / (σ√(2π))) * e^(-(x-μ)²/(2σ²))
+                  const coefficient = 1 / (sigma * Math.sqrt(2 * Math.PI));
+                  const exponent = -Math.pow(x - mu, 2) / (2 * Math.pow(sigma, 2));
+                  return coefficient * Math.exp(exponent);
+                };
+
+                // Generate theoretical normal curve points
+                const theoreticalPoints = [];
+                for (let x = minLevel; x <= maxLevel; x += step) {
+                  const y = normalDistribution(x, mean, stdDev);
+                  theoreticalPoints.push({ x, y });
+                }
+
+                // Normalize theoretical curve to match the visual scale of actual data
+                const maxTheoreticalY = Math.max(...theoreticalPoints.map(p => p.y));
+                const scaledTheoreticalPoints = theoreticalPoints.map(p => {
+                  const scaledX = padding + ((p.x - minLevel) / range) * chartWidth;
+                  // Scale to match the height of actual data curve
+                  const scaledY = graphHeight - padding - (p.y / maxTheoreticalY) * chartHeight;
+                  return { x: scaledX, y: scaledY };
+                });
+
+                // Create SVG path for actual data curve outline
                 const pathData = scaledPoints.map((p, i) =>
+                  `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+                ).join(' ');
+
+                // Create SVG path for theoretical normal curve
+                const theoreticalPathData = scaledTheoreticalPoints.map((p, i) =>
                   `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
                 ).join(' ');
 
@@ -4953,7 +4984,8 @@ const CognitiveTaskGame = () => {
 
                     {/* Actual Data Distribution Graph */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                      <h3 className="text-center text-lg font-bold mb-4">Actual Player Distribution Curve</h3>
+                      <h3 className="text-center text-lg font-bold mb-4">Player Distribution Analysis</h3>
+                      <p className="text-center text-xs text-gray-400 mb-3">Comparing actual player data vs theoretical normal distribution</p>
                       {isMobile && (
                         <p className="text-center text-xs text-gray-400 mb-2">← Scroll horizontally to see full curve →</p>
                       )}
@@ -5104,7 +5136,7 @@ const CognitiveTaskGame = () => {
                             );
                           })}
 
-                          {/* Normal distribution curve outline */}
+                          {/* Actual data distribution curve (smoothed histogram) */}
                           <path
                             d={pathData}
                             fill="none"
@@ -5112,6 +5144,18 @@ const CognitiveTaskGame = () => {
                             strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                          />
+
+                          {/* Theoretical normal distribution curve for comparison */}
+                          <path
+                            d={theoreticalPathData}
+                            fill="none"
+                            stroke="#10b981"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeDasharray="5,5"
+                            opacity="0.8"
                           />
 
                           {/* Axes */}
@@ -5149,7 +5193,15 @@ const CognitiveTaskGame = () => {
                       <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-4 text-xs sm:text-sm">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-4 rounded" style={{background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.7), rgba(251, 191, 36, 0.1))'}}></div>
-                          <span className="text-gray-300">Distribution Curve</span>
+                          <span className="text-gray-300">Filled Area</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-0.5 bg-red-600 rounded"></div>
+                          <span className="text-gray-300">Actual Data</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-0.5 bg-green-500 rounded" style={{backgroundImage: 'repeating-linear-gradient(90deg, #10b981, #10b981 4px, transparent 4px, transparent 8px)'}}></div>
+                          <span className="text-gray-300">Normal Curve</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-1 h-6 rounded" style={{background: 'linear-gradient(to bottom, #fbbf24, #d97706)', boxShadow: '0 0 8px rgba(251, 191, 36, 0.6)'}}></div>
