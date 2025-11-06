@@ -4054,7 +4054,7 @@ const CognitiveTaskGame = () => {
                 // This guarantees both tails are visible
                 // Make the max level adaptive to the highest level reached
                 // Show at least to the theoretical max OR the actual max data level + padding, whichever is larger
-                const minLevel = Math.max(1, Math.floor(theoreticalMin));
+                const minLevel = Math.floor(theoreticalMin); // Allow full left tail, no artificial minimum
                 const adaptiveMax = Math.max(Math.ceil(theoreticalMax), maxDataLevel + 2);
                 const maxLevel = adaptiveMax;
                 const range = maxLevel - minLevel;
