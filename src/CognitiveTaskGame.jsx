@@ -30,6 +30,8 @@ const CognitiveTaskGame = () => {
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
   const [usedPairs, setUsedPairs] = useState(new Set()); // Track used word pairs in current session
+  const [trialStartTime, setTrialStartTime] = useState(null); // Track when trial starts
+  const [responseTimes, setResponseTimes] = useState([]); // Track all response times for correct answers
 
   // Authentication and leaderboard states
   const [user, setUser] = useState(null);
@@ -263,40 +265,55 @@ const CognitiveTaskGame = () => {
 
     try {
       console.log('Loading user progress for user:', userId);
-      const { data, error } = await supabase
+
+      // Load from user_progress table (current progress)
+      const { data: progressData, error: progressError } = await supabase
+        .from('user_progress')
+        .select('current_level, highest_level, current_score')
+        .eq('user_id', userId)
+        .single();
+
+      // Load from leaderboard table (best achievements)
+      const { data: leaderboardData, error: leaderboardError } = await supabase
         .from('leaderboard')
         .select('highest_level, best_score')
         .eq('user_id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user progress:', error);
-        throw error;
+      if (progressError && progressError.code !== 'PGRST116') {
+        console.error('Error fetching user progress:', progressError);
       }
 
-      if (data) {
-        // Merge with localStorage - use the higher value for level
-        const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '1');
-        const supabaseLevel = data.highest_level || 1;
-        const maxLevel = Math.max(localLevel, supabaseLevel);
-
-        // For best_score, also merge with localStorage
-        const localBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
-        const supabaseBestScore = data.best_score || 0;
-        const maxBestScore = Math.max(localBestScore, supabaseBestScore);
-
-        // Update both localStorage and state
-        localStorage.setItem('adaptivePosnerLevel', String(maxLevel));
-        localStorage.setItem('adaptivePosnerHighest', String(maxLevel));
-        localStorage.setItem('adaptivePosnerBestScore', String(maxBestScore));
-        setSavedAdaptiveLevel(maxLevel);
-        setHighestLevel(maxLevel);
-        setLevel(maxLevel);
-
-        console.log(`✅ Loaded progress: Level (Local=${localLevel}, Supabase=${supabaseLevel}, Using=${maxLevel}), Score (Local=${localBestScore}, Supabase=${supabaseBestScore}, Using=${maxBestScore})`);
-      } else {
-        console.log('No progress data found for user, using defaults');
+      if (leaderboardError && leaderboardError.code !== 'PGRST116') {
+        console.error('Error fetching leaderboard data:', leaderboardError);
       }
+
+      // Merge with localStorage - use the higher value for level
+      const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '1');
+      const localHighest = parseInt(localStorage.getItem('adaptivePosnerHighest') || '1');
+      const localBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
+
+      const serverCurrentLevel = progressData?.current_level || 1;
+      const serverHighestLevel = Math.max(progressData?.highest_level || 1, leaderboardData?.highest_level || 1);
+      const serverBestScore = leaderboardData?.best_score || 0;
+
+      // Use the maximum values
+      const maxCurrentLevel = Math.max(localLevel, serverCurrentLevel);
+      const maxHighestLevel = Math.max(localHighest, serverHighestLevel);
+      const maxBestScore = Math.max(localBestScore, serverBestScore);
+
+      // Update both localStorage and state
+      localStorage.setItem('adaptivePosnerLevel', String(maxCurrentLevel));
+      localStorage.setItem('adaptivePosnerHighest', String(maxHighestLevel));
+      localStorage.setItem('adaptivePosnerBestScore', String(maxBestScore));
+      setSavedAdaptiveLevel(maxCurrentLevel);
+      setHighestLevel(maxHighestLevel);
+      setLevel(maxCurrentLevel);
+
+      console.log(`✅ Loaded progress from server:`);
+      console.log(`   Current Level: Local=${localLevel}, Server=${serverCurrentLevel}, Using=${maxCurrentLevel}`);
+      console.log(`   Highest Level: Local=${localHighest}, Server=${serverHighestLevel}, Using=${maxHighestLevel}`);
+      console.log(`   Best Score: Local=${localBestScore}, Server=${serverBestScore}, Using=${maxBestScore}`);
     } catch (error) {
       console.error('Error loading user progress:', error);
     }
@@ -315,13 +332,14 @@ const CognitiveTaskGame = () => {
       console.log('📊 LOADING LEADERBOARD FROM DATABASE...');
       console.log('📊 User logged in:', !!user, user?.email);
       console.log('📊 User ID:', user?.id);
-      console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC');
+      console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC, average_answer_time ASC');
 
       const { data, error, count } = await supabase
         .from('leaderboard')
         .select('*', { count: 'exact' })
         .order('highest_level', { ascending: false })
-        .order('best_score', { ascending: false });
+        .order('best_score', { ascending: false })
+        .order('average_answer_time', { ascending: true, nullsFirst: false });
 
       console.log('📊 Query executed');
       console.log('📊 Count returned:', count);
@@ -371,11 +389,12 @@ const CognitiveTaskGame = () => {
     }
   }, [user]);
 
-  const updateLeaderboard = useCallback(async (newLevel, newScore) => {
+  const updateLeaderboard = useCallback(async (newLevel, newScore, currentResponseTimes = []) => {
     console.log('═'.repeat(80));
     console.log('🔥🔥🔥 updateLeaderboard CALLED 🔥🔥🔥');
     console.log('🔥 newLevel:', newLevel);
     console.log('🔥 newScore:', newScore);
+    console.log('🔥 responseTimes count:', currentResponseTimes.length);
     console.log('🔥 isSupabaseConfigured():', isSupabaseConfigured());
     console.log('🔥 user:', user?.email);
     console.log('🔥 mode:', mode);
@@ -463,11 +482,20 @@ const CognitiveTaskGame = () => {
 
       console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}`);
 
+      // Calculate average response time (in milliseconds)
+      let averageAnswerTime = null;
+      if (currentResponseTimes.length > 0) {
+        const sum = currentResponseTimes.reduce((acc, time) => acc + time, 0);
+        averageAnswerTime = Math.round(sum / currentResponseTimes.length);
+        console.log(`⏱️ Average answer time: ${averageAnswerTime}ms (from ${currentResponseTimes.length} correct answers)`);
+      }
+
       const dataToSave = {
         user_id: user.id,
         username: user.user_metadata?.username || user.email,
         highest_level: highestLevel,
         best_score: bestScore,
+        average_answer_time: averageAnswerTime,
         updated_at: new Date().toISOString()
       };
 
@@ -512,6 +540,70 @@ const CognitiveTaskGame = () => {
       alert(`CRITICAL ERROR: Failed to save to leaderboard!\n\n${error.message}\n\nCheck browser console for details.`);
     }
   }, [user, mode]);
+
+  // Save user progress to server
+  const saveProgressToServer = useCallback(async (currentLevel, currentHighest, currentScore) => {
+    if (!isSupabaseConfigured() || !user) {
+      console.log('⚠️ Skipping server progress save - not configured or not logged in');
+      return;
+    }
+
+    try {
+      console.log('💾 Saving progress to server:', { currentLevel, currentHighest, currentScore });
+
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: user.id,
+          current_level: currentLevel,
+          highest_level: currentHighest,
+          current_score: currentScore,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('❌ Error saving progress to server:', error);
+      } else {
+        console.log('✅ Progress saved to server successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error saving progress to server:', error);
+    }
+  }, [user]);
+
+  // Load user progress from server
+  const loadProgressFromServer = useCallback(async () => {
+    if (!isSupabaseConfigured() || !user) {
+      console.log('⚠️ Skipping server progress load - not configured or not logged in');
+      return null;
+    }
+
+    try {
+      console.log('📥 Loading progress from server for user:', user.id);
+
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Error loading progress from server:', error);
+        return null;
+      }
+
+      if (data) {
+        console.log('✅ Progress loaded from server:', data);
+        return data;
+      } else {
+        console.log('ℹ️ No progress found on server');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error loading progress from server:', error);
+      return null;
+    }
+  }, [user]);
 
   // Play success sound on perfect score
   useEffect(() => {
@@ -559,6 +651,9 @@ const CognitiveTaskGame = () => {
       console.log(`🎯 New best score saved: ${currentScore} (previous: ${currentBestScore})`);
     }
 
+    // Save to server
+    saveProgressToServer(newLevel, highestLevel, currentScore);
+
     // Update leaderboard if in adaptive mode
     if (mode === 'adaptive') {
       console.log(`📤 Calling updateLeaderboard from saveProgress`);
@@ -571,12 +666,12 @@ const CognitiveTaskGame = () => {
         console.trace();
       }
 
-      updateLeaderboard(newLevel, currentScore);
+      updateLeaderboard(newLevel, currentScore, responseTimes);
     } else {
       console.log(`⚠️ Not calling updateLeaderboard - mode is ${mode}, not adaptive`);
     }
     console.log('═'.repeat(80));
-  }, [highestLevel, mode, updateLeaderboard, user]);
+  }, [highestLevel, mode, updateLeaderboard, user, responseTimes, saveProgressToServer]);
 
   // Reset progress
   const resetProgress = () => {
@@ -1222,6 +1317,7 @@ const CognitiveTaskGame = () => {
     setCurrentTask(0);
     setTaskHistory([]);
     setUsedPairs(new Set()); // Clear used pairs for new session
+    setResponseTimes([]); // Clear response times for new session
     console.log('🔄 Used pairs cleared - all words/numbers available again');
     prepareNextTask();
   };
@@ -1343,6 +1439,7 @@ const CognitiveTaskGame = () => {
       }
 
       setGameState('showWords');
+      setTrialStartTime(performance.now()); // Capture start time for response time tracking
 
       // Clear any existing timeout
       if (timeoutRef.current) {
@@ -1393,6 +1490,13 @@ const CognitiveTaskGame = () => {
     setUserAnswered(true);
     const correct = userSaysYes === isActualRelation;
     setFeedback(correct ? 'correct' : 'wrong');
+
+    // Track response time for correct answers
+    if (correct && trialStartTime !== null) {
+      const responseTime = performance.now() - trialStartTime;
+      setResponseTimes(prev => [...prev, responseTime]);
+      console.log(`⏱️ Response time: ${responseTime.toFixed(2)}ms`);
+    }
 
     // Play feedback sound
     if (soundEnabled) {
@@ -1447,7 +1551,7 @@ const CognitiveTaskGame = () => {
         handleGameEnd();
       }
     }, 700);
-  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease, soundEnabled]);
+  }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease, soundEnabled, trialStartTime]);
 
   // Auto-continue timer for showRelation state
   useEffect(() => {
@@ -1640,16 +1744,16 @@ const CognitiveTaskGame = () => {
           )}
 
           {savedAdaptiveLevel > 1 && (
-            <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-6 rounded-lg space-y-3">
-              <div className="flex justify-between items-center">
+            <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-4 sm:p-6 rounded-lg space-y-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-yellow-400">Saved Progress</h2>
-                  <p className="text-lg text-white mt-2">Current Level: <span className="font-bold text-green-400">{savedAdaptiveLevel}</span></p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-yellow-400">Saved Progress</h2>
+                  <p className="text-base sm:text-lg text-white mt-2">Current Level: <span className="font-bold text-green-400">{savedAdaptiveLevel}</span></p>
                   <p className="text-sm text-gray-300">Highest Level Reached: <span className="font-bold">{highestLevel}</span></p>
                 </div>
                 <button
                   onClick={resetProgress}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                 >
                   Reset Progress
                 </button>
