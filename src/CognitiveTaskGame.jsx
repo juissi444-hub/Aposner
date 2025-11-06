@@ -25,6 +25,13 @@ const CognitiveTaskGame = () => {
       }
       .first-place-glow {
         animation: gloriously-shine 2s ease-in-out infinite;
+        margin: 2px; /* Prevent glow from being cut off */
+      }
+      /* Mobile-specific adjustments */
+      @media (max-width: 640px) {
+        .first-place-glow {
+          margin: 4px; /* Extra margin on mobile to prevent overflow */
+        }
       }
     `;
     document.head.appendChild(style);
@@ -539,8 +546,13 @@ const CognitiveTaskGame = () => {
       console.log('═'.repeat(80));
     } catch (error) {
       console.error('❌ Error loading leaderboard:', error);
-      if (retryCount === 0 || retryCount >= 3) {
-        alert(`Failed to load leaderboard: ${error.message}\n\nCheck browser console for details.`);
+      // Don't show alert on mobile - it blocks the UI
+      // Only log to console for debugging
+      if (retryCount >= 3) {
+        console.error('❌ Failed to load leaderboard after 3 retries');
+        console.error('❌ Error:', error.message);
+        // Show a non-blocking error state instead of alert
+        setLeaderboard([]);
       }
     }
   }, [user]);
@@ -2923,7 +2935,7 @@ const CognitiveTaskGame = () => {
             {leaderboard.length === 0 && <div className="mb-3 sm:mb-4"></div>}
 
             {/* Scrollable content area */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 px-1">
               <div className="space-y-2">
               {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
