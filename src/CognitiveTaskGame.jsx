@@ -4019,7 +4019,7 @@ const CognitiveTaskGame = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Player Distribution Analysis</h2>
-            <p className="text-center text-sm text-gray-400 mb-6">Normal distribution curve with standard deviation markers (IQ-style)</p>
+            <p className="text-center text-sm text-gray-400 mb-6">Actual player data distribution with statistical markers</p>
 
             {/* Bell curve visualization */}
             <div className="flex-1 overflow-y-auto mb-6">
@@ -4042,27 +4042,33 @@ const CognitiveTaskGame = () => {
 
                 const bestPlayer = sortedPlayers[0];
 
-                // Adaptive range - ALWAYS show full bell curve with both tails
+                // Adaptive range - use actual data range with padding
                 const minDataLevel = Math.min(...levels);
                 const maxDataLevel = Math.max(...levels);
 
-                // Calculate theoretical bell curve range (mean ± 3.5 standard deviations for full tails)
-                const theoreticalMin = mean - 3.5 * stdDev;
-                const theoreticalMax = mean + 3.5 * stdDev;
-
-                // ALWAYS show the FULL theoretical range, not just data range
-                // This guarantees both tails are visible
-                // Make the max level adaptive to the highest level reached
-                // Show at least to the theoretical max OR the actual max data level + padding, whichever is larger
-                const minLevel = Math.floor(theoreticalMin); // Allow full left tail, no artificial minimum
-                const adaptiveMax = Math.max(Math.ceil(theoreticalMax), maxDataLevel + 2);
-                const maxLevel = adaptiveMax;
+                // Use actual data range with some padding on both sides
+                const minLevel = Math.floor(minDataLevel - 2);
+                const maxLevel = Math.ceil(maxDataLevel + 2);
                 const range = maxLevel - minLevel;
 
-                // Generate normal distribution curve points
-                const normalDistribution = (x, mu, sigma) => {
-                  return (1 / (sigma * Math.sqrt(2 * Math.PI))) *
-                         Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
+                // Create histogram from actual player data
+                const levelCounts = {};
+                for (let level = minLevel; level <= maxLevel; level++) {
+                  levelCounts[level] = 0;
+                }
+
+                // Count players at each level (rounded to nearest integer)
+                levels.forEach(level => {
+                  const rounded = Math.round(level);
+                  if (levelCounts[rounded] !== undefined) {
+                    levelCounts[rounded]++;
+                  }
+                });
+
+                // Apply Gaussian smoothing to the histogram for a smooth curve
+                const smoothingWindow = Math.max(1, stdDev * 0.3); // Adaptive smoothing based on stdDev
+                const gaussianWeight = (distance, sigma) => {
+                  return Math.exp(-0.5 * Math.pow(distance / sigma, 2));
                 };
 
                 // Make graph wider to show full distribution - always wide enough for full curve
@@ -4075,11 +4081,23 @@ const CognitiveTaskGame = () => {
                 const chartWidth = graphWidth - 2 * padding;
                 const chartHeight = graphHeight - 2 * padding;
 
-                // Generate curve points (more points for smoother curve)
+                // Generate smoothed curve points from actual data
                 const curvePoints = [];
                 const step = range / 200; // More points for smoother curve
                 for (let x = minLevel; x <= maxLevel; x += step) {
-                  const y = normalDistribution(x, mean, stdDev);
+                  // Apply Gaussian kernel smoothing
+                  let smoothedCount = 0;
+                  let totalWeight = 0;
+
+                  // Sum weighted counts from nearby levels
+                  for (let level = minLevel; level <= maxLevel; level++) {
+                    const distance = Math.abs(x - level);
+                    const weight = gaussianWeight(distance, smoothingWindow);
+                    smoothedCount += (levelCounts[level] || 0) * weight;
+                    totalWeight += weight;
+                  }
+
+                  const y = totalWeight > 0 ? smoothedCount / totalWeight : 0;
                   curvePoints.push({ x, y });
                 }
 
@@ -4134,9 +4152,9 @@ const CognitiveTaskGame = () => {
                       </div>
                     </div>
 
-                    {/* Normal Distribution Graph */}
+                    {/* Actual Data Distribution Graph */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                      <h3 className="text-center text-lg font-bold mb-4">Normal Distribution Curve</h3>
+                      <h3 className="text-center text-lg font-bold mb-4">Actual Player Distribution Curve</h3>
                       <div className="overflow-x-auto overflow-y-hidden pb-4">
                         <div className="flex justify-center" style={{minWidth: '100%'}}>
                           <svg width={graphWidth} height={graphHeight} className="overflow-visible">
@@ -4331,7 +4349,7 @@ const CognitiveTaskGame = () => {
                       <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-4 text-xs sm:text-sm">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-4 rounded" style={{background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.7), rgba(251, 191, 36, 0.1))'}}></div>
-                          <span className="text-gray-300">Bell Curve</span>
+                          <span className="text-gray-300">Distribution Curve</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-1 h-6 rounded" style={{background: 'linear-gradient(to bottom, #fbbf24, #d97706)', boxShadow: '0 0 8px rgba(251, 191, 36, 0.6)'}}></div>
