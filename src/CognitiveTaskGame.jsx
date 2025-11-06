@@ -748,18 +748,29 @@ const CognitiveTaskGame = () => {
   }, []);
 
   // Leaderboard functions with retry logic for mobile reliability
-  const loadLeaderboard = useCallback(async (retryCount = 0) => {
+  const loadLeaderboard = useCallback(async (retryCount = 0, startTime = Date.now()) => {
     if (!isSupabaseConfigured()) {
       console.error('❌ Supabase not configured - cannot load leaderboard');
       if (retryCount === 0) {
         alert('Supabase is not configured. Please check your environment variables.');
       }
+      setLeaderboardLoading(false);
       return;
     }
 
     // Set loading state on first attempt
     if (retryCount === 0) {
       setLeaderboardLoading(true);
+    }
+
+    // Maximum total time: 30 seconds - prevent infinite loading
+    const maxTotalTime = 30000; // 30 seconds
+    const elapsed = Date.now() - startTime;
+    if (elapsed > maxTotalTime) {
+      console.error(`❌ Leaderboard loading timeout after ${elapsed}ms - giving up`);
+      setLeaderboard([]);
+      setLeaderboardLoading(false);
+      return;
     }
 
     try {
@@ -772,16 +783,16 @@ const CognitiveTaskGame = () => {
 
       // On mobile, use longer timeout and more retries
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const maxRetries = isMobile ? 5 : 3; // More retries on mobile
-      const baseDelay = isMobile ? 300 : 200; // Longer delays on mobile
+      const maxRetries = isMobile ? 3 : 2; // Reduced retries to prevent long waits
+      const baseDelay = isMobile ? 500 : 300; // Longer delays on mobile
 
       // Try with average_answer_time first, fall back if column doesn't exist
       let data, error, count;
       try {
         console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC, average_answer_time ASC');
 
-        // Create a timeout promise for mobile
-        const timeoutMs = isMobile ? 10000 : 5000; // 10s on mobile, 5s on desktop
+        // Create a timeout promise for mobile - reduced from 10s to 8s
+        const timeoutMs = isMobile ? 8000 : 5000; // 8s on mobile, 5s on desktop
         const queryPromise = supabase
           .from('leaderboard')
           .select('*', { count: 'exact' })
@@ -804,7 +815,7 @@ const CognitiveTaskGame = () => {
         // If it's a timeout or column error, try without average_answer_time
         try {
           console.log('📊 Trying simpler query without average_answer_time...');
-          const timeoutMs = isMobile ? 10000 : 5000;
+          const timeoutMs = isMobile ? 8000 : 5000;
           const queryPromise = supabase
             .from('leaderboard')
             .select('*', { count: 'exact' })
@@ -843,10 +854,14 @@ const CognitiveTaskGame = () => {
         if (retryCount < maxRetries) {
           const delay = Math.pow(2, retryCount) * baseDelay;
           console.log(`⏱️ Retrying leaderboard load in ${delay}ms... (${retryCount + 1}/${maxRetries})`);
-          setTimeout(() => loadLeaderboard(retryCount + 1), delay);
+          setTimeout(() => loadLeaderboard(retryCount + 1, startTime), delay);
           return;
         }
-        throw error;
+        // All retries exhausted, stop loading
+        console.error('❌ All retries exhausted, stopping');
+        setLeaderboard([]);
+        setLeaderboardLoading(false);
+        return;
       }
 
       console.log('✅ Leaderboard query successful');
@@ -885,14 +900,14 @@ const CognitiveTaskGame = () => {
 
       // Determine max retries based on device
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const maxRetries = isMobile ? 5 : 3;
-      const baseDelay = isMobile ? 300 : 200;
+      const maxRetries = isMobile ? 3 : 2;
+      const baseDelay = isMobile ? 500 : 300;
 
       // Retry with exponential backoff
       if (retryCount < maxRetries) {
         const delay = Math.pow(2, retryCount) * baseDelay;
         console.log(`⏱️ Retrying after error in ${delay}ms... (attempt ${retryCount + 2}/${maxRetries + 1})`);
-        setTimeout(() => loadLeaderboard(retryCount + 1), delay);
+        setTimeout(() => loadLeaderboard(retryCount + 1, startTime), delay);
         return;
       }
 
@@ -4709,6 +4724,16 @@ const CognitiveTaskGame = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                   <p className="text-center text-gray-400">Loading leaderboard...</p>
                   <p className="text-center text-gray-500 text-sm mt-2">This may take a moment on mobile</p>
+                  <button
+                    onClick={() => {
+                      console.log('❌ User cancelled leaderboard loading');
+                      setLeaderboardLoading(false);
+                      setLeaderboard([]);
+                    }}
+                    className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+                  >
+                    Cancel
+                  </button>
                 </div>
               ) : leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
