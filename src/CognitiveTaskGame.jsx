@@ -65,30 +65,49 @@ const CognitiveTaskGame = () => {
     }
 
     // Check for existing session
-    if (isSupabaseConfigured()) {
-      supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const initAuth = async () => {
+      if (isSupabaseConfigured()) {
+        console.log('🔐 Checking for existing session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('Error getting session:', error);
+          return;
+        }
+
         if (session?.user) {
+          console.log('✅ Session found for user:', session.user.email);
           setUser(session.user);
           // Load user progress from Supabase
           await loadUserProgress(session.user.id);
+        } else {
+          console.log('❌ No active session found');
         }
-      });
 
-      // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        setUser(session?.user || null);
-        if (session?.user) {
-          // Close auth modal when user logs in
-          setShowAuth(false);
-          // Load user progress when user logs in
-          await loadUserProgress(session.user.id);
-        }
-        console.log('Auth state changed:', event, session?.user ? 'User logged in' : 'No user');
-      });
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('🔄 Auth state changed:', event);
+          setUser(session?.user || null);
+          if (session?.user) {
+            console.log('✅ User logged in:', session.user.email);
+            // Close auth modal when user logs in
+            setShowAuth(false);
+            // Load user progress when user logs in
+            await loadUserProgress(session.user.id);
+          } else {
+            console.log('❌ User logged out');
+          }
+        });
 
-      return () => subscription.unsubscribe();
-    }
-  }, []);
+        return () => {
+          console.log('🔌 Unsubscribing from auth changes');
+          subscription.unsubscribe();
+        };
+      }
+    };
+
+    initAuth();
+  }, [loadUserProgress]);
 
   // Toggle sound setting
   const toggleSound = () => {
@@ -169,17 +188,21 @@ const CognitiveTaskGame = () => {
   };
 
   // Load user progress from Supabase
-  const loadUserProgress = async (userId) => {
+  const loadUserProgress = useCallback(async (userId) => {
     if (!isSupabaseConfigured()) return;
 
     try {
+      console.log('Loading user progress for user:', userId);
       const { data, error } = await supabase
         .from('leaderboard')
         .select('highest_level, best_score')
         .eq('user_id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user progress:', error);
+        throw error;
+      }
 
       if (data) {
         // Merge with localStorage - use the higher value for level
@@ -200,12 +223,14 @@ const CognitiveTaskGame = () => {
         setHighestLevel(maxLevel);
         setLevel(maxLevel);
 
-        console.log(`Loaded progress: Level (Local=${localLevel}, Supabase=${supabaseLevel}, Using=${maxLevel}), Score (Local=${localBestScore}, Supabase=${supabaseBestScore}, Using=${maxBestScore})`);
+        console.log(`✅ Loaded progress: Level (Local=${localLevel}, Supabase=${supabaseLevel}, Using=${maxLevel}), Score (Local=${localBestScore}, Supabase=${supabaseBestScore}, Using=${maxBestScore})`);
+      } else {
+        console.log('No progress data found for user, using defaults');
       }
     } catch (error) {
       console.error('Error loading user progress:', error);
     }
-  };
+  }, []);
 
   // Leaderboard functions
   const loadLeaderboard = useCallback(async () => {
