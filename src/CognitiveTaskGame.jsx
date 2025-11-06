@@ -1635,25 +1635,27 @@ const CognitiveTaskGame = () => {
       }
 
       const percentage = (score / numTasks) * 100;
+      const requiredScore = Math.ceil(numTasks * 0.9); // 90% of tasks (27 for 30 tasks)
       console.log(`📊 Level completion check: ${score}/${numTasks} = ${percentage.toFixed(1)}%`);
-      console.log(`📊 Level up threshold: 90% (27/30 or better)`);
-      console.log(`📊 Calculation: ${score} / ${numTasks} * 100 = ${percentage}`);
-      console.log(`📊 Is ${percentage} >= 90? ${percentage >= 90}`);
+      console.log(`📊 Level up threshold: 90% (${requiredScore}/${numTasks} or better)`);
+      console.log(`📊 Required score: ${requiredScore}`);
+      console.log(`📊 Actual score: ${score}`);
+      console.log(`📊 Is ${score} >= ${requiredScore}? ${score >= requiredScore}`);
 
-      if (score >= 27) {
-        console.log(`✅✅✅ SCORE IS ${score} >= 27 - SHOULD LEVEL UP!`);
+      if (score >= requiredScore) {
+        console.log(`✅✅✅ SCORE IS ${score} >= ${requiredScore} - SHOULD LEVEL UP!`);
       } else {
-        console.log(`❌❌❌ SCORE IS ${score} < 27 - CANNOT LEVEL UP`);
+        console.log(`❌❌❌ SCORE IS ${score} < ${requiredScore} - CANNOT LEVEL UP`);
       }
 
-      if (percentage >= 90) {
+      if (score >= requiredScore) {
         console.log(`✅ LEVEL UP! Score ${score}/${numTasks} (${percentage.toFixed(1)}%) >= 90%`);
         // Check if perfect score (100%)
         if (score === numTasks) {
-          console.log(`🎉 Perfect score! 30/30 = 100%`);
+          console.log(`🎉 Perfect score! ${score}/${numTasks} = 100%`);
           setGameState('perfectScore');
         } else {
-          console.log(`⬆️ Level up! Score ${score}/${numTasks} >= 27/30`);
+          console.log(`⬆️ Level up! Score ${score}/${numTasks} >= ${requiredScore}/${numTasks}`);
           setGameState('levelUp');
         }
         // Progress to next level
