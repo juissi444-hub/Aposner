@@ -4046,9 +4046,14 @@ const CognitiveTaskGame = () => {
                 const minDataLevel = Math.min(...levels);
                 const maxDataLevel = Math.max(...levels);
 
-                // Use actual data range with some padding on both sides
-                const minLevel = Math.floor(minDataLevel - 2);
-                const maxLevel = Math.ceil(maxDataLevel + 2);
+                // Extend range to show full distribution tails (mean ± 3.5σ)
+                // This ensures left and right tails are fully visible
+                const theoreticalMin = mean - 3.5 * stdDev;
+                const theoreticalMax = mean + 3.5 * stdDev;
+
+                // Use the wider of: theoretical range or actual data range
+                const minLevel = Math.floor(Math.min(theoreticalMin, minDataLevel - 2));
+                const maxLevel = Math.ceil(Math.max(theoreticalMax, maxDataLevel + 2));
                 const range = maxLevel - minLevel;
 
                 // Create histogram from actual player data
