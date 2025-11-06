@@ -9,12 +9,15 @@ const CognitiveTaskGame = () => {
   const levelDownAudioRef = useRef(null);
   const successAudioRef = useRef(null);
   const timeoutRef = useRef(null);
+  const autoContinueTimerRef = useRef(null);
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
   const [savedAdaptiveLevel, setSavedAdaptiveLevel] = useState(1);
   const [highestLevel, setHighestLevel] = useState(1);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [autoContinueEnabled, setAutoContinueEnabled] = useState(false);
+  const [autoContinueDelay, setAutoContinueDelay] = useState(3); // 1-20 seconds
   const [numTasks, setNumTasks] = useState(20);
   const [currentTask, setCurrentTask] = useState(0);
   const [currentRelation, setCurrentRelation] = useState('');
@@ -49,6 +52,8 @@ const CognitiveTaskGame = () => {
     const savedLevel = localStorage.getItem('adaptivePosnerLevel');
     const savedHighest = localStorage.getItem('adaptivePosnerHighest');
     const savedSound = localStorage.getItem('adaptivePosnerSound');
+    const savedAutoContinue = localStorage.getItem('adaptivePosnerAutoContinue');
+    const savedAutoContinueDelay = localStorage.getItem('adaptivePosnerAutoContinueDelay');
 
     if (savedLevel) {
       const levelNum = parseInt(savedLevel);
@@ -62,6 +67,17 @@ const CognitiveTaskGame = () => {
 
     if (savedSound !== null) {
       setSoundEnabled(savedSound === 'true');
+    }
+
+    if (savedAutoContinue !== null) {
+      setAutoContinueEnabled(savedAutoContinue === 'true');
+    }
+
+    if (savedAutoContinueDelay) {
+      const delay = parseInt(savedAutoContinueDelay);
+      if (delay >= 1 && delay <= 20) {
+        setAutoContinueDelay(delay);
+      }
     }
   }, []);
 
@@ -124,6 +140,22 @@ const CognitiveTaskGame = () => {
     const newSoundState = !soundEnabled;
     setSoundEnabled(newSoundState);
     localStorage.setItem('adaptivePosnerSound', String(newSoundState));
+  };
+
+  // Toggle auto-continue setting
+  const toggleAutoContinue = () => {
+    const newState = !autoContinueEnabled;
+    setAutoContinueEnabled(newState);
+    localStorage.setItem('adaptivePosnerAutoContinue', String(newState));
+  };
+
+  // Update auto-continue delay
+  const updateAutoContinueDelay = (delay) => {
+    const delayNum = parseInt(delay);
+    if (delayNum >= 1 && delayNum <= 20) {
+      setAutoContinueDelay(delayNum);
+      localStorage.setItem('adaptivePosnerAutoContinueDelay', String(delayNum));
+    }
   };
 
   // Stop all currently playing sounds
@@ -1157,6 +1189,32 @@ const CognitiveTaskGame = () => {
     }, 700);
   }, [gameState, isActualRelation, currentTask, numTasks, currentRelation, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease, soundEnabled]);
 
+  // Auto-continue timer for showRelation state
+  useEffect(() => {
+    // Clear any existing timer
+    if (autoContinueTimerRef.current) {
+      clearTimeout(autoContinueTimerRef.current);
+      autoContinueTimerRef.current = null;
+    }
+
+    // Start auto-continue timer if enabled and in showRelation state
+    if (autoContinueEnabled && gameState === 'showRelation') {
+      console.log(`⏱️ Auto-continue timer started: ${autoContinueDelay} seconds`);
+      autoContinueTimerRef.current = setTimeout(() => {
+        console.log('⏱️ Auto-continue triggered');
+        handleSpacePress();
+      }, autoContinueDelay * 1000);
+    }
+
+    // Cleanup function
+    return () => {
+      if (autoContinueTimerRef.current) {
+        clearTimeout(autoContinueTimerRef.current);
+        autoContinueTimerRef.current = null;
+      }
+    };
+  }, [gameState, autoContinueEnabled, autoContinueDelay, handleSpacePress]);
+
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Escape' && gameState !== 'menu') {
@@ -1306,6 +1364,52 @@ const CognitiveTaskGame = () => {
                   }`}
                 />
               </button>
+            </div>
+          </div>
+
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Auto Continue</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-medium">Enable Auto Continue</p>
+                  <p className="text-sm text-gray-400">Automatically advance to next trial after delay</p>
+                </div>
+                <button
+                  onClick={toggleAutoContinue}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    autoContinueEnabled ? 'bg-green-600' : 'bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                      autoContinueEnabled ? 'translate-x-7' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {autoContinueEnabled && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Delay: {autoContinueDelay} second{autoContinueDelay !== 1 ? 's' : ''}</label>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={autoContinueDelay}
+                    onChange={(e) => updateAutoContinueDelay(e.target.value)}
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>1s</span>
+                    <span>10s</span>
+                    <span>20s</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Works in both Adaptive and Manual modes</p>
+                </div>
+              )}
             </div>
           </div>
 
