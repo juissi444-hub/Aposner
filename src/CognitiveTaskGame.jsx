@@ -445,8 +445,12 @@ const CognitiveTaskGame = () => {
         } else if (validLevel === currentData.highest_level) {
           // Same level - keep the highest level, update best score if higher
           console.log(`✅ Same level ${validLevel}, comparing scores: new=${validScore}, old=${currentData.best_score}`);
+          console.log(`✅ Score types: new is ${typeof validScore}, old is ${typeof currentData.best_score}`);
+          const oldScore = currentData.best_score || 0;
+          const maxScore = Math.max(validScore, oldScore);
+          console.log(`✅ Math.max(${validScore}, ${oldScore}) = ${maxScore}`);
           highestLevel = currentData.highest_level;
-          bestScore = Math.max(validScore, currentData.best_score || 0);
+          bestScore = maxScore;
         } else {
           // Playing a lower level - don't update
           console.log(`⚠️ Lower level ${validLevel} < ${currentData.highest_level}, skipping update`);
@@ -535,6 +539,7 @@ const CognitiveTaskGame = () => {
     console.log(`💾 mode: ${mode}`);
     console.log(`💾 currentScore type: ${typeof currentScore}`);
     console.log(`💾 currentScore === 0: ${currentScore === 0}`);
+    console.log(`💾 Percentage this represents: ${Math.round((currentScore / 30) * 100)}%`);
 
     localStorage.setItem('adaptivePosnerLevel', String(newLevel));
     setSavedAdaptiveLevel(newLevel);
@@ -1373,6 +1378,12 @@ const CognitiveTaskGame = () => {
         stopAllSounds();
         // Save current progress before returning to menu
         if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore') {
+          console.log(`🔴 ESC PRESSED - Current state:`);
+          console.log(`🔴 Mode: ${mode}`);
+          console.log(`🔴 Level: ${level}`);
+          console.log(`🔴 Score: ${score}`);
+          console.log(`🔴 GameState: ${gameState}`);
+          console.log(`🔴 This represents: ${Math.round((score / 30) * 100)}% completion`);
           console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
           saveProgress(level, score);
         }
@@ -1703,6 +1714,12 @@ const CognitiveTaskGame = () => {
                 stopAllSounds();
                 // Save progress before returning to menu
                 if (mode === 'adaptive') {
+                  console.log(`🔴 BACK TO MENU clicked - Current state:`);
+                  console.log(`🔴 Mode: ${mode}`);
+                  console.log(`🔴 Level: ${level}`);
+                  console.log(`🔴 Score: ${score}`);
+                  console.log(`🔴 GameState: ${gameState}`);
+                  console.log(`🔴 This represents: ${Math.round((score / 30) * 100)}% completion`);
                   console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
                   saveProgress(level, score);
                 }
