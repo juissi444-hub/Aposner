@@ -4270,23 +4270,23 @@ const CognitiveTaskGame = () => {
                         </div>
 
                         {/* Mobile layout */}
-                        <div className="block sm:hidden px-3 py-3 space-y-2">
+                        <div className={`block sm:hidden ${index === 0 ? 'px-4 py-5' : 'px-3 py-3'} ${index === 0 ? 'space-y-3' : 'space-y-2'}`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-xl">
+                              <span className={`font-bold ${index === 0 ? 'text-4xl' : 'text-xl'}`}>
                                 {index === 0 && '🥇'}
                                 {index === 1 && '🥈'}
                                 {index === 2 && '🥉'}
                                 {index > 2 && `#${index + 1}`}
                               </span>
-                              <span className="font-medium text-sm flex items-center gap-1">
+                              <span className={`font-medium ${index === 0 ? 'text-lg' : 'text-sm'} flex items-center gap-1`}>
                                 {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
                                 {entry.username}
                               </span>
                             </div>
-                            <span className="text-xs font-semibold text-yellow-400">{getOrdinalSuffix(percentile)} percentile</span>
+                            <span className={`${index === 0 ? 'text-sm' : 'text-xs'} font-semibold text-yellow-400`}>{getOrdinalSuffix(percentile)} percentile</span>
                           </div>
-                          <div className="text-sm font-semibold">
+                          <div className={`${index === 0 ? 'text-base' : 'text-sm'} font-semibold`}>
                             <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-1">- {levelProgress}%</span>
                           </div>
