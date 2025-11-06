@@ -3,6 +3,9 @@ import { Play, Eye, EyeOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const CognitiveTaskGame = () => {
+  // Performance optimization: Memoize expensive computations
+  const memoizedRelationTypes = useRef(null);
+
   // Add keyframe animation for 1st place glow
   useEffect(() => {
     const style = document.createElement('style');
@@ -28,6 +31,9 @@ const CognitiveTaskGame = () => {
         margin: 6px; /* Prevent glow from being cut off */
         transform: scale(1.15); /* Make 1st place significantly bigger */
         font-size: 1.15em; /* Larger text */
+        will-change: transform, box-shadow; /* Performance optimization */
+        transform: translateZ(0); /* GPU acceleration */
+        backface-visibility: hidden; /* Prevent flickering */
       }
       /* Mobile-specific adjustments */
       @media (max-width: 640px) {
@@ -2247,6 +2253,134 @@ const CognitiveTaskGame = () => {
       ['haiku', 'syllables'], ['limerick', 'five-lines'], ['ballad', 'narrative'], ['ode', 'tribute'], ['elegy', 'lament'],
       ['epic', 'heroic-tale'], ['lyric', 'emotion'], ['pastoral', 'rural'], ['satire', 'criticism'], ['tragedy', 'downfall'],
       ['comedy', 'humor'], ['farce', 'absurdity'], ['melodrama', 'exaggeration'], ['romance', 'love-story'], ['mystery', 'puzzle']
+    ],
+    'intensifier': [
+      // Word to stronger/more intense version
+      ['hot', 'scorching'], ['cold', 'frigid'], ['warm', 'sweltering'], ['cool', 'icy'], ['wet', 'drenched'],
+      ['dry', 'parched'], ['hungry', 'starving'], ['thirsty', 'parched'], ['tired', 'exhausted'], ['sleepy', 'drowsy'],
+      ['angry', 'furious'], ['happy', 'ecstatic'], ['sad', 'devastated'], ['scared', 'terrified'], ['surprised', 'astonished'],
+      ['worried', 'anxious'], ['nervous', 'panicked'], ['excited', 'thrilled'], ['bored', 'apathetic'], ['interested', 'fascinated'],
+      ['good', 'excellent'], ['bad', 'terrible'], ['nice', 'wonderful'], ['mean', 'cruel'], ['kind', 'compassionate'],
+      ['smart', 'brilliant'], ['dumb', 'idiotic'], ['strong', 'mighty'], ['weak', 'feeble'], ['brave', 'heroic'],
+      ['cowardly', 'craven'], ['proud', 'arrogant'], ['humble', 'meek'], ['loud', 'deafening'], ['quiet', 'silent'],
+      ['fast', 'lightning-fast'], ['slow', 'sluggish'], ['big', 'gigantic'], ['small', 'minuscule'], ['tall', 'towering'],
+      ['short', 'tiny'], ['wide', 'vast'], ['narrow', 'cramped'], ['thick', 'dense'], ['thin', 'skeletal'],
+      ['heavy', 'ponderous'], ['light', 'weightless'], ['bright', 'brilliant'], ['dark', 'pitch-black'], ['clean', 'pristine'],
+      ['dirty', 'filthy'], ['new', 'brand-new'], ['old', 'ancient'], ['young', 'youthful'], ['beautiful', 'gorgeous'],
+      ['ugly', 'hideous'], ['rich', 'wealthy'], ['poor', 'destitute'], ['expensive', 'exorbitant'], ['cheap', 'dirt-cheap'],
+      ['difficult', 'impossible'], ['easy', 'effortless'], ['hard', 'grueling'], ['soft', 'plush'], ['rough', 'coarse'],
+      ['smooth', 'silky'], ['sharp', 'razor-sharp'], ['dull', 'blunt'], ['clear', 'crystal-clear'], ['cloudy', 'murky'],
+      ['busy', 'swamped'], ['lazy', 'slothful'], ['active', 'energetic'], ['still', 'motionless'], ['noisy', 'cacophonous'],
+      ['peaceful', 'serene'], ['violent', 'savage'], ['gentle', 'tender'], ['harsh', 'brutal'], ['mild', 'moderate'],
+      ['extreme', 'radical'], ['normal', 'ordinary'], ['strange', 'bizarre'], ['common', 'ubiquitous'], ['rare', 'unique'],
+      ['frequent', 'constant'], ['occasional', 'sporadic'], ['permanent', 'eternal'], ['temporary', 'fleeting'], ['stable', 'immutable'],
+      ['unstable', 'volatile'], ['solid', 'impenetrable'], ['fragile', 'delicate'], ['flexible', 'elastic'], ['rigid', 'inflexible'],
+      ['full', 'overflowing'], ['empty', 'barren'], ['crowded', 'packed'], ['spacious', 'vast'], ['tight', 'constricting']
+    ],
+    'analogy': [
+      // A:B :: C:D pattern (simplified to just C:D, assuming A:B is known)
+      ['king', 'queen'], ['prince', 'princess'], ['duke', 'duchess'], ['lord', 'lady'], ['sir', 'madam'],
+      ['man', 'woman'], ['boy', 'girl'], ['father', 'mother'], ['son', 'daughter'], ['brother', 'sister'],
+      ['uncle', 'aunt'], ['nephew', 'niece'], ['husband', 'wife'], ['groom', 'bride'], ['bachelor', 'bachelorette'],
+      ['actor', 'actress'], ['waiter', 'waitress'], ['steward', 'stewardess'], ['host', 'hostess'], ['hero', 'heroine'],
+      ['lion', 'lioness'], ['tiger', 'tigress'], ['bull', 'cow'], ['stallion', 'mare'], ['rooster', 'hen'],
+      ['ram', 'ewe'], ['buck', 'doe'], ['gander', 'goose'], ['drake', 'duck'], ['peacock', 'peahen'],
+      ['dog', 'puppy'], ['cat', 'kitten'], ['cow', 'calf'], ['horse', 'foal'], ['pig', 'piglet'],
+      ['sheep', 'lamb'], ['goat', 'kid'], ['deer', 'fawn'], ['bear', 'cub'], ['lion', 'cub'],
+      ['bird', 'chick'], ['duck', 'duckling'], ['goose', 'gosling'], ['swan', 'cygnet'], ['frog', 'tadpole'],
+      ['fish', 'fry'], ['butterfly', 'caterpillar'], ['chicken', 'egg'], ['plant', 'seed'], ['tree', 'sapling'],
+      ['doctor', 'patient'], ['teacher', 'student'], ['lawyer', 'client'], ['chef', 'customer'], ['pilot', 'passenger'],
+      ['author', 'reader'], ['artist', 'viewer'], ['musician', 'listener'], ['actor', 'audience'], ['preacher', 'congregation'],
+      ['captain', 'crew'], ['general', 'soldier'], ['manager', 'employee'], ['boss', 'worker'], ['leader', 'follower'],
+      ['shepherd', 'flock'], ['conductor', 'orchestra'], ['director', 'cast'], ['coach', 'team'], ['trainer', 'athlete'],
+      ['hammer', 'nail'], ['saw', 'wood'], ['needle', 'thread'], ['pen', 'paper'], ['brush', 'paint'],
+      ['key', 'lock'], ['plug', 'socket'], ['button', 'buttonhole'], ['zipper', 'fabric'], ['buckle', 'belt'],
+      ['wheel', 'axle'], ['pedal', 'bicycle'], ['sail', 'boat'], ['oar', 'rowboat'], ['propeller', 'airplane'],
+      ['rudder', 'ship'], ['steering-wheel', 'car'], ['handle', 'door'], ['knob', 'cabinet'], ['lever', 'machine'],
+      ['cup', 'coffee'], ['glass', 'water'], ['bowl', 'soup'], ['plate', 'food'], ['spoon', 'cereal'],
+      ['fork', 'pasta'], ['knife', 'meat'], ['chopsticks', 'rice'], ['straw', 'milkshake'], ['bottle', 'wine']
+    ],
+    'sequence': [
+      // Temporal/logical ordering - what comes next
+      ['infant', 'toddler'], ['toddler', 'child'], ['child', 'teenager'], ['teenager', 'adult'], ['adult', 'senior'],
+      ['egg', 'larva'], ['larva', 'pupa'], ['pupa', 'adult'], ['seed', 'sprout'], ['sprout', 'seedling'],
+      ['seedling', 'plant'], ['bud', 'flower'], ['flower', 'fruit'], ['dawn', 'morning'], ['morning', 'noon'],
+      ['noon', 'afternoon'], ['afternoon', 'evening'], ['evening', 'night'], ['night', 'dawn'], ['spring', 'summer'],
+      ['summer', 'autumn'], ['autumn', 'winter'], ['winter', 'spring'], ['new-moon', 'crescent'], ['crescent', 'quarter'],
+      ['quarter', 'gibbous'], ['gibbous', 'full-moon'], ['sunday', 'monday'], ['monday', 'tuesday'], ['tuesday', 'wednesday'],
+      ['wednesday', 'thursday'], ['thursday', 'friday'], ['friday', 'saturday'], ['saturday', 'sunday'], ['january', 'february'],
+      ['february', 'march'], ['march', 'april'], ['april', 'may'], ['may', 'june'], ['june', 'july'],
+      ['july', 'august'], ['august', 'september'], ['september', 'october'], ['october', 'november'], ['november', 'december'],
+      ['first', 'second'], ['second', 'third'], ['third', 'fourth'], ['fourth', 'fifth'], ['fifth', 'sixth'],
+      ['bronze', 'silver'], ['silver', 'gold'], ['good', 'better'], ['better', 'best'], ['bad', 'worse'],
+      ['crawl', 'walk'], ['walk', 'run'], ['whisper', 'talk'], ['talk', 'shout'], ['trickle', 'flow'],
+      ['flow', 'gush'], ['spark', 'flame'], ['flame', 'blaze'], ['drizzle', 'rain'], ['rain', 'downpour'],
+      ['breeze', 'wind'], ['wind', 'gale'], ['tremor', 'earthquake'], ['wave', 'tsunami'], ['crack', 'crevice'],
+      ['crevice', 'chasm'], ['pebble', 'stone'], ['stone', 'boulder'], ['stream', 'river'], ['river', 'ocean'],
+      ['droplet', 'puddle'], ['puddle', 'pond'], ['pond', 'lake'], ['hill', 'mountain'], ['village', 'town'],
+      ['town', 'city'], ['city', 'metropolis'], ['house', 'mansion'], ['cabin', 'house'], ['hut', 'cabin'],
+      ['introduction', 'body'], ['body', 'conclusion'], ['beginning', 'middle'], ['middle', 'end'], ['alpha', 'beta'],
+      ['beta', 'gamma'], ['past', 'present'], ['present', 'future'], ['yesterday', 'today'], ['today', 'tomorrow'],
+      ['prehistory', 'ancient'], ['ancient', 'medieval'], ['medieval', 'modern'], ['modern', 'contemporary'], ['birth', 'life']
+    ],
+    'figurative': [
+      // Literal meaning to figurative/idiomatic meaning
+      ['break-ice', 'start-conversation'], ['spill-beans', 'reveal-secret'], ['piece-cake', 'very-easy'], ['cost-arm-leg', 'very-expensive'],
+      ['hit-sack', 'go-sleep'], ['under-weather', 'feel-sick'], ['break-leg', 'good-luck'], ['bite-bullet', 'face-difficulty'],
+      ['beat-bush', 'avoid-point'], ['let-cat-out', 'reveal-secret'], ['cry-milk', 'regret-past'], ['add-fuel', 'worsen-situation'],
+      ['back-wall', 'desperate-situation'], ['ball-court', 'your-decision'], ['bark-tree', 'wrong-approach'], ['best-worlds', 'ideal-combination'],
+      ['bite-dust', 'fail-badly'], ['blessing-disguise', 'hidden-benefit'], ['blow-steam', 'release-anger'], ['break-bank', 'very-costly'],
+      ['burn-bridges', 'destroy-relationships'], ['burn-candle', 'overwork'], ['bury-hatchet', 'make-peace'], ['call-shots', 'make-decisions'],
+      ['catch-drift', 'understand-meaning'], ['cut-chase', 'get-point'], ['devil-advocate', 'opposing-argument'], ['drop-hat', 'immediately'],
+      ['face-music', 'accept-consequences'], ['fish-water', 'uncomfortable'], ['get-ball-rolling', 'start-project'], ['give-benefit-doubt', 'trust-despite-uncertainty'],
+      ['go-extra-mile', 'exceed-expectations'], ['hang-there', 'persevere'], ['hit-nail-head', 'exactly-right'], ['jump-gun', 'act-prematurely'],
+      ['keep-chin-up', 'stay-positive'], ['kill-birds', 'achieve-multiple'], ['let-sleeping-dogs', 'avoid-trouble'], ['make-long-short', 'summarize'],
+      ['miss-boat', 'lose-opportunity'], ['no-brainer', 'obvious-choice'], ['on-cloud-nine', 'extremely-happy'], ['once-blue-moon', 'very-rarely'],
+      ['piece-mind', 'honest-opinion'], ['pull-leg', 'joke-tease'], ['pull-yourself-together', 'regain-composure'], ['rain-cats-dogs', 'heavy-rain'],
+      ['read-between-lines', 'understand-hidden'], ['rock-hard-place', 'difficult-choice'], ['see-eye-eye', 'agree-completely'], ['steal-thunder', 'take-credit'],
+      ['take-grain-salt', 'skeptical'], ['the-last-straw', 'final-provocation'], ['throw-towel', 'give-up'], ['twist-arm', 'persuade-forcefully'],
+      ['up-air', 'undecided'], ['weather-storm', 'survive-difficulty'], ['whole-nine-yards', 'everything-possible'], ['your-guess-good', 'equally-uncertain'],
+      ['bite-tongue', 'remain-silent'], ['burn-midnight-oil', 'work-late'], ['cross-bridge', 'deal-later'], ['cut-corners', 'do-inadequately'],
+      ['draw-line', 'set-limit'], ['get-cold-feet', 'become-nervous'], ['give-cold-shoulder', 'ignore-deliberately'], ['go-grain', 'contradict-normal'],
+      ['have-heart-mouth', 'very-anxious'], ['hold-horses', 'wait-patiently'], ['in-hot-water', 'in-trouble'], ['jump-bandwagon', 'follow-trend'],
+      ['keep-cards-close', 'be-secretive'], ['leave-no-stone', 'try-everything'], ['make-ends-meet', 'survive-financially'], ['on-same-page', 'mutual-understanding'],
+      ['open-worms', 'create-problems'], ['over-moon', 'extremely-happy'], ['play-safe', 'avoid-risk'], ['put-foot-down', 'be-firm'],
+      ['raining-pours', 'multiple-problems'], ['ring-bell', 'sound-familiar'], ['rock-boat', 'cause-trouble'], ['run-mill', 'ordinary'],
+      ['saved-bell', 'rescued-last-minute'], ['sell-ice-eskimo', 'persuasive'], ['sit-fence', 'remain-neutral'], ['speak-devil', 'person-appears'],
+      ['steal-show', 'get-attention'], ['straight-horse-mouth', 'reliable-source'], ['take-rain-check', 'postpone'], ['the-ball-your-court', 'your-turn'],
+      ['throw-book', 'punish-severely'], ['turn-blind-eye', 'ignore-deliberately'], ['walk-eggshells', 'be-careful'], ['wild-goose-chase', 'futile-pursuit']
+    ],
+    'homophone': [
+      // Same sound, different meaning and spelling
+      ['to', 'too'], ['to', 'two'], ['too', 'two'], ['their', 'there'], ['their', 'they\'re'], ['there', 'they\'re'],
+      ['your', 'you\'re'], ['its', 'it\'s'], ['whose', 'who\'s'], ['were', 'we\'re'], ['hear', 'here'],
+      ['see', 'sea'], ['be', 'bee'], ['buy', 'by'], ['buy', 'bye'], ['by', 'bye'],
+      ['no', 'know'], ['new', 'knew'], ['one', 'won'], ['son', 'sun'], ['for', 'four'],
+      ['eight', 'ate'], ['pair', 'pear'], ['bare', 'bear'], ['brake', 'break'], ['flower', 'flour'],
+      ['hour', 'our'], ['meat', 'meet'], ['peace', 'piece'], ['plain', 'plane'], ['rain', 'reign'],
+      ['right', 'write'], ['road', 'rode'], ['sail', 'sale'], ['tail', 'tale'], ['wait', 'weight'],
+      ['weak', 'week'], ['wear', 'where'], ['wood', 'would'], ['ad', 'add'], ['ale', 'ail'],
+      ['allowed', 'aloud'], ['altar', 'alter'], ['ball', 'bawl'], ['band', 'banned'], ['billed', 'build'],
+      ['blew', 'blue'], ['boar', 'bore'], ['board', 'bored'], ['bold', 'bowled'], ['cell', 'sell'],
+      ['cent', 'scent'], ['cent', 'sent'], ['scent', 'sent'], ['cereal', 'serial'], ['chews', 'choose'],
+      ['chord', 'cord'], ['coarse', 'course'], ['crews', 'cruise'], ['dear', 'deer'], ['dew', 'do'],
+      ['dew', 'due'], ['do', 'due'], ['die', 'dye'], ['fair', 'fare'], ['feat', 'feet'],
+      ['fir', 'fur'], ['flea', 'flee'], ['flew', 'flu'], ['flew', 'flue'], ['flu', 'flue'],
+      ['foul', 'fowl'], ['gait', 'gate'], ['genes', 'jeans'], ['grate', 'great'], ['groan', 'grown'],
+      ['guest', 'guessed'], ['hail', 'hale'], ['hair', 'hare'], ['hall', 'haul'], ['heal', 'heel'],
+      ['heard', 'herd'], ['hi', 'high'], ['him', 'hymn'], ['hoarse', 'horse'], ['hole', 'whole'],
+      ['idle', 'idol'], ['in', 'inn'], ['knight', 'night'], ['knot', 'not'], ['lain', 'lane'],
+      ['leased', 'least'], ['loan', 'lone'], ['made', 'maid'], ['mail', 'male'], ['main', 'mane'],
+      ['maze', 'maize'], ['miner', 'minor'], ['mist', 'missed'], ['moose', 'mousse'], ['none', 'nun'],
+      ['oar', 'or'], ['ore', 'oar'], ['pail', 'pale'], ['pain', 'pane'], ['passed', 'past'],
+      ['pause', 'paws'], ['peek', 'peak'], ['peel', 'peal'], ['pier', 'peer'], ['pole', 'poll'],
+      ['poor', 'pour'], ['pray', 'prey'], ['principal', 'principle'], ['profit', 'prophet'], ['raise', 'rays'],
+      ['rap', 'wrap'], ['read', 'red'], ['real', 'reel'], ['role', 'roll'], ['root', 'route'],
+      ['rose', 'rows'], ['scene', 'seen'], ['seam', 'seem'], ['sew', 'so'], ['shone', 'shown'],
+      ['soar', 'sore'], ['sole', 'soul'], ['some', 'sum'], ['stair', 'stare'], ['stake', 'steak'],
+      ['stationary', 'stationery'], ['steal', 'steel'], ['suite', 'sweet'], ['than', 'then'], ['threw', 'through'],
+      ['throne', 'thrown'], ['tide', 'tied'], ['toe', 'tow'], ['vain', 'vein'], ['vary', 'very'],
+      ['wade', 'weighed'], ['waist', 'waste'], ['way', 'weigh'], ['weather', 'whether'], ['which', 'witch']
     ]
   };
 
