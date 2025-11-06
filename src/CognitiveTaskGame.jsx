@@ -758,31 +758,42 @@ const CognitiveTaskGame = () => {
     }
   }, [user, mode]);
 
-  // Save user progress to server
+  // Save user progress to server (for both logged-in and anonymous users)
   const saveProgressToServer = useCallback(async (currentLevel, currentHighest, currentScore) => {
-    if (!isSupabaseConfigured() || !user) {
-      console.log('⚠️ Skipping server progress save - not configured or not logged in');
+    if (!isSupabaseConfigured()) {
       return;
     }
 
-    try {
-      console.log('💾 Saving progress to server:', { currentLevel, currentHighest, currentScore });
+    // Get user ID (logged-in or anonymous)
+    let userId;
+    if (user) {
+      userId = user.id;
+    } else {
+      // Anonymous user - get or create ID
+      let anonId = localStorage.getItem('aposner-anonymous-id');
+      if (!anonId) {
+        anonId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('aposner-anonymous-id', anonId);
+      }
+      userId = anonId;
+    }
 
+    try {
       const { error } = await supabase
         .from('user_progress')
         .upsert({
-          user_id: user.id,
+          user_id: userId,
           current_level: currentLevel,
           highest_level: currentHighest,
-          current_score: currentScore,
+          best_score: currentScore,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
       if (error) {
-        console.warn('⚠️ Could not save progress to server (user_progress table may not exist yet):', error.message);
-        console.warn('⚠️ Progress is still saved in localStorage');
-      } else {
-        console.log('✅ Progress saved to server successfully');
+        // Silently fail for anonymous users - they still have localStorage
+        if (user) {
+          console.warn('⚠️ Could not save progress to server:', error.message);
+        }
       }
     } catch (error) {
       console.warn('⚠️ Error saving progress to server:', error.message);
