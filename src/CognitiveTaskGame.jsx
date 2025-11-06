@@ -2887,6 +2887,29 @@ const CognitiveTaskGame = () => {
             </a>
           </div>
 
+          {/* About Us Section */}
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-bold text-yellow-400">About Us</h2>
+            <p className="text-gray-200 leading-relaxed">
+              We are a team of like-minded people who share the same goal of helping people to increase their intelligence.
+            </p>
+            <div className="bg-black bg-opacity-30 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-400 mb-2">Contact Us</h3>
+              <p className="text-gray-300 text-sm mb-3">
+                Have questions or feedback? We'd love to hear from you!
+              </p>
+              <a
+                href="mailto:stimlus44@gmail.com"
+                className="inline-flex items-center gap-2 text-green-400 hover:text-green-300 font-medium transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                stimlus44@gmail.com
+              </a>
+            </div>
+          </div>
+
           {isSupabaseConfigured() && (
             <div className="bg-gray-800 p-4 rounded-lg">
               {user ? (
