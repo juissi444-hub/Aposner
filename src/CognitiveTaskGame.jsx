@@ -26,11 +26,14 @@ const CognitiveTaskGame = () => {
       .first-place-glow {
         animation: gloriously-shine 2s ease-in-out infinite;
         margin: 2px; /* Prevent glow from being cut off */
+        transform: scale(1.08); /* Make 1st place noticeably bigger */
+        font-size: 1.1em; /* Slightly larger text */
       }
       /* Mobile-specific adjustments */
       @media (max-width: 640px) {
         .first-place-glow {
           margin: 4px; /* Extra margin on mobile to prevent overflow */
+          transform: scale(1.06); /* Slightly less scale on mobile */
         }
       }
     `;
@@ -1629,11 +1632,11 @@ const CognitiveTaskGame = () => {
       ['twenty', 'XXI'], ['XXI', '22'], ['22', 'twenty-three'], ['thirty', '31'], ['31', 'XXXII'],
       ['forty', 'XLI'], ['XLI', '42'], ['fifty', 'LI'], ['LI', 'fifty-two'], ['sixty', 'LXI'],
       ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92'],
-      // Extended Roman numerals (beyond 100)
+      // Extended Roman numerals (100-500 only)
       ['C', 'CI'], ['CI', 'CII'], ['CII', 'CIII'], ['CX', 'CXI'], ['CXX', 'CXXI'],
       ['CL', 'CLI'], ['CC', 'CCI'], ['CCL', 'CCLI'], ['CCC', 'CCCI'], ['CD', 'CDI'],
-      ['D', 'DI'], ['DC', 'DCI'], ['CM', 'CMI'], ['100', '101'], ['150', '151'],
-      ['200', '201'], ['250', '251'], ['300', '301'], ['400', '401'], ['500', '501'],
+      ['D', 'DI'], ['100', '101'], ['150', '151'],
+      ['200', '201'], ['250', '251'], ['300', '301'], ['400', '401'], ['450', '451'],
       // Large number sequences
       ['one hundred', 'one hundred one'], ['two hundred', 'two hundred one'],
       ['three hundred', 'three hundred one'], ['four hundred', 'four hundred one'],
