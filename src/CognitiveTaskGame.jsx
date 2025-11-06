@@ -3110,13 +3110,13 @@ const CognitiveTaskGame = () => {
                 const variance = levels.reduce((sum, l) => sum + Math.pow(l - mean, 2), 0) / levels.length;
                 const stdDev = Math.sqrt(variance);
 
-                // Group players by level
-                const levelCounts = {};
-                let maxCount = 0;
-                levels.forEach(level => {
-                  levelCounts[level] = (levelCounts[level] || 0) + 1;
-                  maxCount = Math.max(maxCount, levelCounts[level]);
+                // Sort players by level and score (best first)
+                const sortedPlayers = [...leaderboard].sort((a, b) => {
+                  if (b.highest_level !== a.highest_level) return b.highest_level - a.highest_level;
+                  return b.best_score - a.best_score;
                 });
+
+                const bestPlayer = sortedPlayers[0];
 
                 // Adaptive range - always show full bell curve (mean ± 3σ) plus actual data
                 const minDataLevel = Math.min(...levels);
@@ -3225,6 +3225,18 @@ const CognitiveTaskGame = () => {
                               <stop offset="0%" style={{stopColor: '#3b82f6', stopOpacity: 0.9}} />
                               <stop offset="100%" style={{stopColor: '#60a5fa', stopOpacity: 0.6}} />
                             </linearGradient>
+                            <linearGradient id="bestPlayerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" style={{stopColor: '#fbbf24', stopOpacity: 1}} />
+                              <stop offset="50%" style={{stopColor: '#f59e0b', stopOpacity: 0.9}} />
+                              <stop offset="100%" style={{stopColor: '#d97706', stopOpacity: 0.8}} />
+                            </linearGradient>
+                            <filter id="bestPlayerGlow">
+                              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                              <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                              </feMerge>
+                            </filter>
                           </defs>
 
                           {/* Grid lines */}
@@ -3287,25 +3299,58 @@ const CognitiveTaskGame = () => {
                             );
                           })}
 
-                          {/* Actual data bars */}
-                          {Object.entries(levelCounts).map(([level, count]) => {
-                            const lvl = Number(level);
-                            if (lvl < minLevel || lvl > maxLevel) return null;
-                            const x = padding + ((lvl - minLevel) / range) * chartWidth;
-                            const barWidth = Math.max(chartWidth / (range * 2), 4);
-                            const barHeight = (count / maxCount) * chartHeight;
-                            const isUserLevel = user && leaderboard.some(e => e.user_id === user.id && e.highest_level === lvl);
+                          {/* Individual player columns */}
+                          {sortedPlayers.map((player, index) => {
+                            const playerLevel = player.highest_level || 0;
+                            if (playerLevel < minLevel || playerLevel > maxLevel) return null;
+
+                            // Calculate x position based on level
+                            const x = padding + ((playerLevel - minLevel) / range) * chartWidth;
+
+                            // Calculate column width (thin columns for individual players)
+                            const columnWidth = Math.max(chartWidth / (leaderboard.length * 1.5), 2);
+
+                            // Calculate height based on position (taller for better players)
+                            const maxBarHeight = chartHeight * 0.8;
+                            const minBarHeight = chartHeight * 0.2;
+                            const heightPercentile = (sortedPlayers.length - index) / sortedPlayers.length;
+                            const barHeight = minBarHeight + (maxBarHeight - minBarHeight) * heightPercentile;
+
+                            // Determine if this is the best player, current user, or other
+                            const isBestPlayer = player.user_id === bestPlayer.user_id;
+                            const isCurrentUser = user && player.user_id === user.id;
+
+                            // Offset columns slightly to spread them out at same level
+                            const playersAtLevel = sortedPlayers.filter(p => p.highest_level === playerLevel);
+                            const indexAtLevel = playersAtLevel.findIndex(p => p.user_id === player.user_id);
+                            const offsetX = (indexAtLevel - playersAtLevel.length / 2) * columnWidth * 1.2;
+
                             return (
-                              <rect
-                                key={level}
-                                x={x - barWidth / 2}
-                                y={graphHeight - padding - barHeight}
-                                width={barWidth}
-                                height={barHeight}
-                                fill={isUserLevel ? 'url(#userBarGradient)' : 'url(#barGradient)'}
-                                stroke={isUserLevel ? '#3b82f6' : '#8b5cf6'}
-                                strokeWidth="1"
-                              />
+                              <g key={player.user_id}>
+                                <rect
+                                  x={x + offsetX - columnWidth / 2}
+                                  y={graphHeight - padding - barHeight}
+                                  width={columnWidth}
+                                  height={barHeight}
+                                  fill={isBestPlayer ? 'url(#bestPlayerGradient)' : (isCurrentUser ? 'url(#userBarGradient)' : 'url(#barGradient)')}
+                                  stroke={isBestPlayer ? '#fbbf24' : (isCurrentUser ? '#3b82f6' : '#8b5cf6')}
+                                  strokeWidth={isBestPlayer ? '2' : '1'}
+                                  filter={isBestPlayer ? 'url(#bestPlayerGlow)' : 'none'}
+                                  opacity={isBestPlayer ? 1 : 0.85}
+                                />
+                                {isBestPlayer && (
+                                  <text
+                                    x={x + offsetX}
+                                    y={graphHeight - padding - barHeight - 5}
+                                    textAnchor="middle"
+                                    fill="#fbbf24"
+                                    fontSize="14"
+                                    fontWeight="bold"
+                                  >
+                                    👑
+                                  </text>
+                                )}
+                              </g>
                             );
                           })}
 
@@ -3346,7 +3391,7 @@ const CognitiveTaskGame = () => {
                             fontSize="12"
                             transform={`rotate(-90, ${padding - 30}, ${graphHeight / 2})`}
                           >
-                            Frequency
+                            Player Rank
                           </text>
 
                           {/* X-axis label */}
@@ -3369,15 +3414,19 @@ const CognitiveTaskGame = () => {
                           <span className="text-gray-300">Bell Curve</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-purple-500 opacity-70 border border-purple-400"></div>
-                          <span className="text-gray-300">Player Data</span>
+                          <div className="w-1 h-6 rounded" style={{background: 'linear-gradient(to bottom, #fbbf24, #d97706)', boxShadow: '0 0 8px rgba(251, 191, 36, 0.6)'}}></div>
+                          <span className="text-gray-300">👑 Best Player</span>
                         </div>
                         {user && (
                           <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-blue-500 opacity-80 border border-blue-400"></div>
+                            <div className="w-1 h-6 rounded bg-blue-500 opacity-80 border border-blue-400"></div>
                             <span className="text-gray-300">You</span>
                           </div>
                         )}
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-6 rounded bg-purple-500 opacity-70 border border-purple-400"></div>
+                          <span className="text-gray-300">Other Players</span>
+                        </div>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-0.5 bg-yellow-500"></div>
                           <span className="text-gray-300">Mean (μ)</span>
