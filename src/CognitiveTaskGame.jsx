@@ -228,6 +228,11 @@ const CognitiveTaskGame = () => {
           console.log('✅ User ID:', session.user.id);
           setUser(session.user);
           setShowAuth(false);
+
+          // Migrate anonymous data if exists
+          const username = session.user.user_metadata?.username || session.user.email;
+          migrateAnonymousToAccount(session.user.id, username);
+
           loadUserProgress(session.user.id);
         } else {
           console.log('❌ No active session found');
@@ -258,6 +263,13 @@ const CognitiveTaskGame = () => {
         console.log('✅ User session active:', session.user.email);
         setUser(session.user);
         setShowAuth(false);
+
+        // Migrate anonymous data if exists (for login events)
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          const username = session.user.user_metadata?.username || session.user.email;
+          migrateAnonymousToAccount(session.user.id, username);
+        }
+
         loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out');
@@ -343,6 +355,9 @@ const CognitiveTaskGame = () => {
             throw insertError;
           }
           console.log('✅ Leaderboard entry created - starting at level 0');
+
+          // Migrate anonymous data if exists
+          await migrateAnonymousToAccount(data.user.id, username);
         }
 
         setShowAuth(false);
@@ -364,6 +379,117 @@ const CognitiveTaskGame = () => {
       setAuthError(error.message);
     }
   };
+
+  // Migrate anonymous user data to authenticated account
+  const migrateAnonymousToAccount = useCallback(async (userId, username) => {
+    if (!isSupabaseConfigured()) return;
+
+    const anonId = localStorage.getItem('aposner-anonymous-id');
+    if (!anonId) {
+      console.log('📝 No anonymous ID found - skipping migration');
+      return;
+    }
+
+    try {
+      console.log('🔄 Migrating anonymous data to account...');
+      console.log('🔄 Anonymous ID:', anonId);
+      console.log('🔄 User ID:', userId);
+
+      // Get anonymous user's leaderboard data
+      const { data: anonData, error: anonError } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('user_id', anonId)
+        .single();
+
+      if (anonError && anonError.code !== 'PGRST116') {
+        console.error('❌ Error fetching anonymous data:', anonError);
+        return;
+      }
+
+      if (!anonData) {
+        console.log('📝 No anonymous leaderboard data found - clearing ID');
+        localStorage.removeItem('aposner-anonymous-id');
+        return;
+      }
+
+      console.log('📥 Found anonymous data:', anonData);
+
+      // Get user's existing leaderboard data (if any)
+      const { data: userData, error: userError } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (userError && userError.code !== 'PGRST116') {
+        console.error('❌ Error fetching user data:', userError);
+        return;
+      }
+
+      console.log('📥 Existing user data:', userData);
+
+      // Merge data - keep maximum values
+      const mergedData = {
+        user_id: userId,
+        username: username,
+        highest_level: Math.max(
+          anonData.highest_level || 0,
+          userData?.highest_level || 0
+        ),
+        best_score: Math.max(
+          anonData.best_score || 0,
+          userData?.best_score || 0
+        ),
+        // Keep the better average answer time (lower is better)
+        average_answer_time: (() => {
+          const anonTime = anonData.average_answer_time;
+          const userTime = userData?.average_answer_time;
+          if (anonTime && userTime) return Math.min(anonTime, userTime);
+          return anonTime || userTime || null;
+        })(),
+        is_anonymous: false,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('💾 Merged data to save:', mergedData);
+
+      // Update user's leaderboard entry
+      const { error: upsertError } = await supabase
+        .from('leaderboard')
+        .upsert(mergedData, { onConflict: 'user_id' });
+
+      if (upsertError) {
+        console.error('❌ Error upserting merged data:', upsertError);
+        return;
+      }
+
+      console.log('✅ User data updated with merged values');
+
+      // Delete anonymous entry
+      const { error: deleteError } = await supabase
+        .from('leaderboard')
+        .delete()
+        .eq('user_id', anonId);
+
+      if (deleteError) {
+        console.error('❌ Error deleting anonymous entry:', deleteError);
+        // Continue anyway - the important part (data migration) is done
+      } else {
+        console.log('✅ Anonymous entry deleted');
+      }
+
+      // Clear anonymous ID from localStorage
+      localStorage.removeItem('aposner-anonymous-id');
+      console.log('✅ Anonymous ID cleared from localStorage');
+      console.log('✅ Migration complete!');
+
+      // Refresh leaderboard to show updated data
+      fetchLeaderboard();
+    } catch (error) {
+      console.error('❌ Migration failed:', error);
+    }
+  }, []);
 
   const handleLogout = async () => {
     if (!isSupabaseConfigured()) return;
@@ -2977,7 +3103,7 @@ const CognitiveTaskGame = () => {
               <input
                 type="range"
                 min="1"
-                max="27"
+                max="50"
                 value={level}
                 onChange={(e) => setLevel(parseInt(e.target.value))}
                 className="w-full"
@@ -3536,8 +3662,11 @@ const CognitiveTaskGame = () => {
 
                 // ALWAYS show the FULL theoretical range, not just data range
                 // This guarantees both tails are visible
+                // Make the max level adaptive to the highest level reached
+                // Show at least to the theoretical max OR the actual max data level + padding, whichever is larger
                 const minLevel = Math.max(1, Math.floor(theoreticalMin));
-                const maxLevel = Math.min(27, Math.ceil(theoreticalMax));
+                const adaptiveMax = Math.max(Math.ceil(theoreticalMax), maxDataLevel + 2);
+                const maxLevel = adaptiveMax;
                 const range = maxLevel - minLevel;
 
                 // Generate normal distribution curve points
@@ -3610,7 +3739,7 @@ const CognitiveTaskGame = () => {
                         <div className="text-xs sm:text-sm text-gray-400">Std Dev (σ)</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl sm:text-2xl font-bold text-purple-400">{maxLevel}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-purple-400">{maxDataLevel}</div>
                         <div className="text-xs sm:text-sm text-gray-400">Highest Level Reached</div>
                       </div>
                     </div>
