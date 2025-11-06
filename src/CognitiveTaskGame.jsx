@@ -3089,9 +3089,13 @@ const CognitiveTaskGame = () => {
                   maxCount = Math.max(maxCount, levelCounts[level]);
                 });
 
-                // Determine range for graph (mean ± 3 standard deviations, clamped to 1-27)
-                const minLevel = Math.max(1, Math.floor(mean - 3 * stdDev));
-                const maxLevel = Math.min(27, Math.ceil(mean + 3 * stdDev));
+                // Adaptive range - expand if data is sparse, contract if dense
+                const dataRange = Math.max(...levels) - Math.min(...levels);
+                const suggestedRange = Math.max(dataRange, stdDev * 6); // At least 6 standard deviations
+
+                // Determine range for graph (adaptive to data, always showing full distribution)
+                const minLevel = Math.max(1, Math.floor(mean - suggestedRange / 2));
+                const maxLevel = Math.min(27, Math.ceil(mean + suggestedRange / 2));
                 const range = maxLevel - minLevel;
 
                 // Generate normal distribution curve points
@@ -3100,16 +3104,17 @@ const CognitiveTaskGame = () => {
                          Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
                 };
 
-                // Graph dimensions
-                const graphWidth = 800;
-                const graphHeight = 300;
-                const padding = 40;
+                // Adaptive graph dimensions based on screen size
+                const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+                const graphWidth = isMobile ? Math.min(window.innerWidth - 40, 600) : 900;
+                const graphHeight = isMobile ? 250 : 350;
+                const padding = isMobile ? 30 : 50;
                 const chartWidth = graphWidth - 2 * padding;
                 const chartHeight = graphHeight - 2 * padding;
 
-                // Generate curve points
+                // Generate curve points (more points for smoother curve)
                 const curvePoints = [];
-                const step = range / 100;
+                const step = range / 200; // More points for smoother curve
                 for (let x = minLevel; x <= maxLevel; x += step) {
                   const y = normalDistribution(x, mean, stdDev);
                   curvePoints.push({ x, y });
@@ -3123,10 +3128,15 @@ const CognitiveTaskGame = () => {
                   return { x: scaledX, y: scaledY };
                 });
 
-                // Create SVG path
+                // Create SVG path for curve outline
                 const pathData = scaledPoints.map((p, i) =>
                   `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
                 ).join(' ');
+
+                // Create filled path (close the shape at the bottom)
+                const filledPathData = `M ${padding} ${graphHeight - padding} ` +
+                  scaledPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                  ` L ${graphWidth - padding} ${graphHeight - padding} Z`;
 
                 // Calculate standard deviation positions
                 const sdMarkers = [
@@ -3164,8 +3174,25 @@ const CognitiveTaskGame = () => {
                     {/* Normal Distribution Graph */}
                     <div className="bg-gray-700 p-4 rounded-lg">
                       <h3 className="text-center text-lg font-bold mb-4">Normal Distribution Curve</h3>
-                      <div className="flex justify-center overflow-x-auto">
-                        <svg width={graphWidth} height={graphHeight} className="overflow-visible min-w-[600px]">
+                      <div className="flex justify-center overflow-x-auto pb-4">
+                        <svg width={graphWidth} height={graphHeight} className="overflow-visible" style={{minWidth: isMobile ? '100%' : '600px'}}>
+                          {/* Gradient definitions */}
+                          <defs>
+                            <linearGradient id="bellGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" style={{stopColor: '#ef4444', stopOpacity: 0.7}} />
+                              <stop offset="50%" style={{stopColor: '#f97316', stopOpacity: 0.4}} />
+                              <stop offset="100%" style={{stopColor: '#fbbf24', stopOpacity: 0.1}} />
+                            </linearGradient>
+                            <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" style={{stopColor: '#8b5cf6', stopOpacity: 0.8}} />
+                              <stop offset="100%" style={{stopColor: '#a78bfa', stopOpacity: 0.5}} />
+                            </linearGradient>
+                            <linearGradient id="userBarGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" style={{stopColor: '#3b82f6', stopOpacity: 0.9}} />
+                              <stop offset="100%" style={{stopColor: '#60a5fa', stopOpacity: 0.6}} />
+                            </linearGradient>
+                          </defs>
+
                           {/* Grid lines */}
                           {[0, 0.25, 0.5, 0.75, 1].map((fraction, i) => (
                             <line
@@ -3176,8 +3203,16 @@ const CognitiveTaskGame = () => {
                               y2={graphHeight - padding - chartHeight * fraction}
                               stroke="#374151"
                               strokeWidth="1"
+                              strokeOpacity="0.5"
                             />
                           ))}
+
+                          {/* Filled normal distribution curve */}
+                          <path
+                            d={filledPathData}
+                            fill="url(#bellGradient)"
+                            fillOpacity="0.8"
+                          />
 
                           {/* Standard deviation markers */}
                           {sdMarkers.map((marker, i) => {
@@ -3193,23 +3228,24 @@ const CognitiveTaskGame = () => {
                                   stroke={marker.label === 'μ' ? '#fbbf24' : '#6b7280'}
                                   strokeWidth={marker.label === 'μ' ? '3' : '2'}
                                   strokeDasharray={marker.label === 'μ' ? '0' : '5,5'}
+                                  strokeOpacity={marker.label === 'μ' ? '1' : '0.6'}
                                 />
                                 <text
                                   x={x}
                                   y={graphHeight - padding + 20}
                                   textAnchor="middle"
                                   fill={marker.label === 'μ' ? '#fbbf24' : '#9ca3af'}
-                                  fontSize="12"
+                                  fontSize={isMobile ? '10' : '12'}
                                   fontWeight="bold"
                                 >
                                   {marker.label}
                                 </text>
                                 <text
                                   x={x}
-                                  y={graphHeight - padding + 35}
+                                  y={graphHeight - padding + (isMobile ? 32 : 35)}
                                   textAnchor="middle"
                                   fill="#9ca3af"
-                                  fontSize="10"
+                                  fontSize={isMobile ? '8' : '10'}
                                 >
                                   L{marker.value.toFixed(1)}
                                 </text>
@@ -3222,7 +3258,7 @@ const CognitiveTaskGame = () => {
                             const lvl = Number(level);
                             if (lvl < minLevel || lvl > maxLevel) return null;
                             const x = padding + ((lvl - minLevel) / range) * chartWidth;
-                            const barWidth = chartWidth / (range * 2);
+                            const barWidth = Math.max(chartWidth / (range * 2), 4);
                             const barHeight = (count / maxCount) * chartHeight;
                             const isUserLevel = user && leaderboard.some(e => e.user_id === user.id && e.highest_level === lvl);
                             return (
@@ -3232,18 +3268,21 @@ const CognitiveTaskGame = () => {
                                 y={graphHeight - padding - barHeight}
                                 width={barWidth}
                                 height={barHeight}
-                                fill={isUserLevel ? '#3b82f6' : '#8b5cf6'}
-                                fillOpacity="0.6"
+                                fill={isUserLevel ? 'url(#userBarGradient)' : 'url(#barGradient)'}
+                                stroke={isUserLevel ? '#3b82f6' : '#8b5cf6'}
+                                strokeWidth="1"
                               />
                             );
                           })}
 
-                          {/* Normal distribution curve */}
+                          {/* Normal distribution curve outline */}
                           <path
                             d={pathData}
                             fill="none"
-                            stroke="#ef4444"
+                            stroke="#dc2626"
                             strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                           />
 
                           {/* Axes */}
@@ -3290,28 +3329,28 @@ const CognitiveTaskGame = () => {
                       </div>
 
                       {/* Legend */}
-                      <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm">
+                      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-4 text-xs sm:text-sm">
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-purple-500 opacity-60"></div>
-                          <span className="text-gray-300">Actual Data</span>
+                          <div className="w-6 h-4 rounded" style={{background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.7), rgba(251, 191, 36, 0.1))'}}></div>
+                          <span className="text-gray-300">Bell Curve</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-1 bg-red-500"></div>
-                          <span className="text-gray-300">Normal Curve</span>
+                          <div className="w-4 h-4 bg-purple-500 opacity-70 border border-purple-400"></div>
+                          <span className="text-gray-300">Player Data</span>
                         </div>
                         {user && (
                           <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-blue-500 opacity-60"></div>
-                            <span className="text-gray-300">Your Level</span>
+                            <div className="w-4 h-4 bg-blue-500 opacity-80 border border-blue-400"></div>
+                            <span className="text-gray-300">You</span>
                           </div>
                         )}
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-1 bg-yellow-500"></div>
+                          <div className="w-6 h-0.5 bg-yellow-500"></div>
                           <span className="text-gray-300">Mean (μ)</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-1 border-t-2 border-dashed border-gray-500"></div>
-                          <span className="text-gray-300">Std Dev (σ)</span>
+                          <div className="w-6 h-0.5 border-t-2 border-dashed border-gray-400"></div>
+                          <span className="text-gray-300">±σ</span>
                         </div>
                       </div>
                     </div>
