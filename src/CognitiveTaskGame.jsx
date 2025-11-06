@@ -207,64 +207,120 @@ const CognitiveTaskGame = () => {
 
   // Separate effect for authentication
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
+    console.log('═══════════════════════════════════════');
+    console.log('🔄 [AUTH] Effect initializing...');
+    console.log('Browser:', navigator.userAgent.includes('Chrome') ? 'CHROME' : 'OTHER');
 
-    console.log('🔄 Auth effect initializing...');
+    if (!isSupabaseConfigured()) {
+      console.error('❌ [AUTH] Supabase not configured - skipping');
+      return;
+    }
+    console.log('✅ [AUTH] Supabase configured');
+
     let mounted = true;
 
-    // Restore session on mount - simple and fast
+    // Restore session on mount with detailed debugging
     const restoreSession = async () => {
+      console.log('───────────────────────────────────────');
+      console.log('🔍 [AUTH] Starting session restore...');
+
+      // Check localStorage manually first
       try {
-        console.log('🔍 Restoring session...');
+        const storedSession = window.localStorage.getItem('aposner-auth-token');
+        console.log('📦 [AUTH] localStorage check:');
+        console.log('  - Key exists:', !!storedSession);
+        console.log('  - Value length:', storedSession?.length || 0);
+        if (storedSession) {
+          console.log('  - Value preview:', storedSession.substring(0, 100));
+        }
+      } catch (e) {
+        console.error('❌ [AUTH] localStorage check failed:', e);
+      }
+
+      try {
+        console.log('🌐 [AUTH] Calling supabase.auth.getSession()...');
+        const startTime = Date.now();
+
         const { data: { session }, error } = await supabase.auth.getSession();
 
+        const duration = Date.now() - startTime;
+        console.log(`⏱️ [AUTH] getSession took ${duration}ms`);
+
         if (error) {
-          console.error('❌ Session error:', error);
+          console.error('❌ [AUTH] getSession error:', error);
+          console.error('Error details:', {
+            message: error.message,
+            status: error.status,
+            name: error.name
+          });
           setUser(null);
           return;
         }
 
+        console.log('[AUTH] getSession result:');
+        console.log('  - Session exists:', !!session);
+        console.log('  - User exists:', !!session?.user);
         if (session?.user) {
-          console.log('✅ Session restored:', session.user.email);
+          console.log('  - User email:', session.user.email);
+          console.log('  - User ID:', session.user.id);
+        }
+
+        if (session?.user) {
+          console.log('✅ [AUTH] Session restored successfully:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
-          console.log('ℹ️ No session');
+          console.log('ℹ️ [AUTH] No session found - user not logged in');
           setUser(null);
         }
       } catch (error) {
-        console.error('❌ Exception:', error);
+        console.error('❌ [AUTH] Exception during restore:', error);
+        console.error('Exception type:', error.name);
+        console.error('Exception message:', error.message);
         setUser(null);
       }
+      console.log('───────────────────────────────────────');
     };
 
     // Immediately try to restore session
     restoreSession();
 
-    // Listen for auth changes - simple
+    // Listen for auth changes - with debugging
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔄 Auth event:', event);
+      console.log('═══════════════════════════════════════');
+      console.log('🔄 [AUTH EVENT]:', event);
+      console.log('Browser:', navigator.userAgent.includes('Chrome') ? 'CHROME' : 'OTHER');
+      console.log('Mounted:', mounted);
+      console.log('Session exists:', !!session);
+      console.log('User exists:', !!session?.user);
+      if (session?.user) {
+        console.log('User email:', session.user.email);
+      }
 
-      if (!mounted) return;
+      if (!mounted) {
+        console.log('⚠️ [AUTH EVENT] Component unmounted - ignoring');
+        return;
+      }
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log('✅ Signed in:', session.user.email);
+        console.log('✅ [AUTH EVENT] SIGNED_IN - setting user');
         setUser(session.user);
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
         loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        console.log('👋 Signed out');
+        console.log('👋 [AUTH EVENT] SIGNED_OUT - clearing user');
         setUser(null);
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        console.log('🔄 Token refreshed');
+        console.log('🔄 [AUTH EVENT] TOKEN_REFRESHED - updating user');
         setUser(session.user);
       } else if (event === 'USER_UPDATED' && session?.user) {
-        console.log('🔄 User updated');
+        console.log('🔄 [AUTH EVENT] USER_UPDATED - updating user');
         setUser(session.user);
       }
+      console.log('═══════════════════════════════════════');
     });
 
     return () => {
@@ -596,33 +652,56 @@ const CognitiveTaskGame = () => {
     }
   }, []);
 
-  // Leaderboard loading - simple and fast
+  // Leaderboard loading - with detailed debugging
   const loadLeaderboard = useCallback(async () => {
+    console.log('═══════════════════════════════════════');
+    console.log('📊 [LEADERBOARD] Starting load...');
+    console.log('Browser:', navigator.userAgent.includes('Chrome') ? 'CHROME' : 'OTHER');
+    console.log('User logged in:', !!user);
+
     if (!isSupabaseConfigured()) {
-      console.error('❌ Supabase not configured');
+      console.error('❌ [LEADERBOARD] Supabase not configured!');
       return;
     }
-
-    console.log('📊 Loading leaderboard...');
+    console.log('✅ [LEADERBOARD] Supabase configured');
 
     try {
+      console.log('🌐 [LEADERBOARD] Making network request to Supabase...');
+      const startTime = Date.now();
+
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
+      const duration = Date.now() - startTime;
+      console.log(`⏱️ [LEADERBOARD] Request took ${duration}ms`);
+
       if (error) {
-        console.error('❌ Leaderboard error:', error);
+        console.error('❌ [LEADERBOARD] Supabase error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         setLeaderboard([]);
       } else {
-        console.log(`✅ Loaded ${data?.length || 0} entries`);
+        console.log(`✅ [LEADERBOARD] Success! Loaded ${data?.length || 0} entries`);
+        if (data && data.length > 0) {
+          console.log('First entry:', data[0]);
+        }
         setLeaderboard(data || []);
       }
     } catch (error) {
-      console.error('❌ Exception:', error);
+      console.error('❌ [LEADERBOARD] Exception caught:', error);
+      console.error('Exception type:', error.name);
+      console.error('Exception message:', error.message);
+      console.error('Full error:', error);
       setLeaderboard([]);
     }
+    console.log('═══════════════════════════════════════');
   }, [user]);
 
   // Auto-load leaderboard when modal opens
