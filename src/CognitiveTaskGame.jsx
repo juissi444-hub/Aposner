@@ -95,18 +95,18 @@ const CognitiveTaskGame = () => {
   }, [gameState, soundEnabled]);
 
   // Save progress to localStorage
-  const saveProgress = useCallback((newLevel) => {
+  const saveProgress = useCallback((newLevel, completionPercent = 0) => {
     localStorage.setItem('adaptivePosnerLevel', String(newLevel));
     setSavedAdaptiveLevel(newLevel);
 
-    // Update highest level if needed
-    if (newLevel > highestLevel) {
+    // Update highest level if needed, or update completion % for same level
+    if (newLevel > highestLevel || (newLevel === highestLevel && completionPercent > 0)) {
       localStorage.setItem('adaptivePosnerHighest', String(newLevel));
       setHighestLevel(newLevel);
 
       // Add to leaderboard if player has a name
       if (playerName) {
-        addToLeaderboard(playerName, newLevel);
+        addToLeaderboard(playerName, newLevel, completionPercent);
       }
     }
   }, [highestLevel, playerName, addToLeaderboard]);
@@ -121,18 +121,26 @@ const CognitiveTaskGame = () => {
   };
 
   // Add entry to leaderboard
-  const addToLeaderboard = useCallback((name, level) => {
+  const addToLeaderboard = useCallback((name, level, completionPercent) => {
     if (!name || !level) return;
+
+    // Remove old entries from the same player
+    const filteredLeaderboard = leaderboard.filter(entry => entry.name !== name.trim());
 
     const newEntry = {
       name: name.trim(),
       level: level,
+      completionPercent: completionPercent || 0,
       date: new Date().toISOString()
     };
 
-    const updatedLeaderboard = [...leaderboard, newEntry]
-      .sort((a, b) => b.level - a.level) // Sort by level descending
-      .slice(0, 10); // Keep only top 10
+    const updatedLeaderboard = [...filteredLeaderboard, newEntry]
+      .sort((a, b) => {
+        // Sort by level first (descending)
+        if (b.level !== a.level) return b.level - a.level;
+        // Then by completion percentage (descending)
+        return b.completionPercent - a.completionPercent;
+      });
 
     setLeaderboard(updatedLeaderboard);
     localStorage.setItem('adaptivePosnerLeaderboard', JSON.stringify(updatedLeaderboard));
@@ -423,9 +431,11 @@ const CognitiveTaskGame = () => {
         }
         // Progress to next level
         setTimeout(() => {
+          const currentPercentage = Math.round((score / numTasks) * 100);
           setLevel(prev => {
             const newLevel = prev + 1;
-            saveProgress(newLevel);
+            // Save the completion % for the level just completed
+            saveProgress(level, currentPercentage);
             return newLevel;
           });
           setScore(0);
@@ -445,7 +455,7 @@ const CognitiveTaskGame = () => {
         setGameState('menu');
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, level]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -953,20 +963,35 @@ const CognitiveTaskGame = () => {
                 <p className="text-center text-gray-500 py-8">No entries yet. Be the first!</p>
               ) : (
                 <div className="space-y-2">
-                  {leaderboard.map((entry, index) => (
-                    <div
-                      key={`${entry.name}-${entry.date}`}
-                      className={`flex justify-between items-center p-3 rounded ${
-                        index === 0 ? 'bg-yellow-600' : index === 1 ? 'bg-gray-600' : index === 2 ? 'bg-orange-600' : 'bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-xl w-8">{index + 1}.</span>
-                        <span className="font-medium">{entry.name}</span>
+                  {leaderboard.map((entry, index) => {
+                    // Calculate percentile
+                    const percentile = Math.round((1 - index / leaderboard.length) * 100);
+
+                    // Determine border style for top 3
+                    let borderClass = 'border-2 border-gray-600';
+                    if (index === 0) borderClass = 'border-4 border-yellow-400';
+                    else if (index === 1) borderClass = 'border-4 border-gray-400';
+                    else if (index === 2) borderClass = 'border-4 border-orange-500';
+
+                    return (
+                      <div
+                        key={`${entry.name}-${entry.date}`}
+                        className={`flex justify-between items-center p-3 rounded bg-gray-700 ${borderClass}`}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <span className="font-bold text-xl w-8">{index + 1}.</span>
+                          <div className="flex-1">
+                            <div className="font-medium">{entry.name}</div>
+                            <div className="text-xs text-gray-400">{percentile}th percentile</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">Level {entry.level}</div>
+                          <div className="text-sm text-gray-300">{entry.completionPercent || 0}% completed</div>
+                        </div>
                       </div>
-                      <span className="text-lg font-bold">Level {entry.level}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
