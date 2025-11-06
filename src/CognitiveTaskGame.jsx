@@ -104,18 +104,24 @@ const CognitiveTaskGame = () => {
       return 750 - (lvl - 6) * 50;
     }
 
-    // Levels 16-19: 275ms down to 200ms (decreasing by 25ms per level)
-    if (lvl <= 19) {
-      return 275 - (lvl - 16) * 25;
-    }
+    // Levels 16-27: Explicit timings (final level is 27)
+    const levelTimings = {
+      16: 275,
+      17: 250,
+      18: 225,
+      19: 200,
+      20: 187.5,
+      21: 175,
+      22: 162.5,
+      23: 150,
+      24: 137.5,
+      25: 125,
+      26: 112.5,
+      27: 100
+    };
 
-    // Levels 20-26: 187.5ms down to 112.5ms (decreasing by 12.5ms per level)
-    if (lvl <= 26) {
-      return 187.5 - (lvl - 20) * 12.5;
-    }
-
-    // Level 27+: Final level at 100ms
-    return 100;
+    // Return explicit timing for levels 16-27, or 100ms for any level beyond 27
+    return levelTimings[lvl] || 100;
   };
 
   // Keep gameStateRef in sync with gameState
