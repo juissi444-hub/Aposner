@@ -25,15 +25,16 @@ const CognitiveTaskGame = () => {
       }
       .first-place-glow {
         animation: gloriously-shine 2s ease-in-out infinite;
-        margin: 2px; /* Prevent glow from being cut off */
-        transform: scale(1.08); /* Make 1st place noticeably bigger */
-        font-size: 1.1em; /* Slightly larger text */
+        margin: 6px; /* Prevent glow from being cut off */
+        transform: scale(1.15); /* Make 1st place significantly bigger */
+        font-size: 1.15em; /* Larger text */
       }
       /* Mobile-specific adjustments */
       @media (max-width: 640px) {
         .first-place-glow {
-          margin: 4px; /* Extra margin on mobile to prevent overflow */
-          transform: scale(1.06); /* Slightly less scale on mobile */
+          margin: 8px; /* Extra margin on mobile to prevent overflow */
+          transform: scale(1.12); /* Slightly less scale on mobile */
+          font-size: 1.12em;
         }
       }
     `;
