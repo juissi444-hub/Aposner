@@ -351,18 +351,6 @@ const CognitiveTaskGame = () => {
     }
   };
 
-  // Load leaderboard when modal opens
-  useEffect(() => {
-    if (showLeaderboard && isSupabaseConfigured()) {
-      console.log('📊 Leaderboard modal opened - loading data...');
-      loadLeaderboard().then(() => {
-        console.log('✅ Leaderboard loaded via useEffect');
-      }).catch(error => {
-        console.error('❌ Error loading leaderboard via useEffect:', error);
-      });
-    }
-  }, [showLeaderboard, loadLeaderboard]);
-
   const handleLogout = async () => {
     if (!isSupabaseConfigured()) return;
     await supabase.auth.signOut();
