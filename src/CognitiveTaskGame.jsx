@@ -398,14 +398,14 @@ const CognitiveTaskGame = () => {
     }
 
     // Validate and correct data before attempting to save
-    // If level is 0 or negative, set to 1 (minimum level)
-    let validLevel = newLevel;
+    // Ensure integer values and handle edge cases
+    let validLevel = Math.floor(Number(newLevel) || 1);
     if (validLevel <= 0) {
       console.warn('⚠️ Level <= 0 detected, adjusting to level 1. Original:', newLevel);
       validLevel = 1;
     }
 
-    let validScore = newScore;
+    let validScore = Math.floor(Number(newScore) || 0);
     if (validScore < 0) {
       console.warn('⚠️ Negative score detected, adjusting to 0. Original:', newScore);
       validScore = 0;
@@ -466,8 +466,8 @@ const CognitiveTaskGame = () => {
       const dataToSave = {
         user_id: user.id,
         username: user.user_metadata?.username || user.email,
-        highest_level: highestLevel,
-        best_score: bestScore,
+        highest_level: Math.floor(highestLevel),
+        best_score: Math.floor(bestScore),
         updated_at: new Date().toISOString()
       };
 
@@ -533,45 +533,49 @@ const CognitiveTaskGame = () => {
 
   // Save progress to localStorage
   const saveProgress = useCallback((newLevel, currentScore = 0) => {
+    // Ensure integer values to prevent floating-point errors
+    const levelInt = Math.floor(Number(newLevel) || 1);
+    const scoreInt = Math.floor(Number(currentScore) || 0);
+
     console.log('═'.repeat(80));
     console.log(`💾 💾 💾 saveProgress called 💾 💾 💾`);
-    console.log(`💾 newLevel: ${newLevel}`);
-    console.log(`💾 currentScore: ${currentScore}`);
+    console.log(`💾 newLevel: ${newLevel} → ${levelInt}`);
+    console.log(`💾 currentScore: ${currentScore} → ${scoreInt}`);
     console.log(`💾 mode: ${mode}`);
-    console.log(`💾 currentScore type: ${typeof currentScore}`);
+    console.log(`💾 currentScore type: ${typeof currentScore} → ${typeof scoreInt}`);
     console.log(`💾 currentScore === 0: ${currentScore === 0}`);
-    console.log(`💾 Percentage this represents: ${Math.round((currentScore / 30) * 100)}%`);
+    console.log(`💾 Percentage this represents: ${Math.round((scoreInt / 30) * 100)}%`);
 
-    localStorage.setItem('adaptivePosnerLevel', String(newLevel));
-    setSavedAdaptiveLevel(newLevel);
+    localStorage.setItem('adaptivePosnerLevel', String(levelInt));
+    setSavedAdaptiveLevel(levelInt);
 
     // Update highest level if needed
-    if (newLevel > highestLevel) {
-      localStorage.setItem('adaptivePosnerHighest', String(newLevel));
-      setHighestLevel(newLevel);
-      console.log(`📈 New highest level: ${newLevel}`);
+    if (levelInt > highestLevel) {
+      localStorage.setItem('adaptivePosnerHighest', String(levelInt));
+      setHighestLevel(levelInt);
+      console.log(`📈 New highest level: ${levelInt}`);
     }
 
     // Save best score to localStorage
     const currentBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
-    if (currentScore > currentBestScore) {
-      localStorage.setItem('adaptivePosnerBestScore', String(currentScore));
-      console.log(`🎯 New best score saved: ${currentScore} (previous: ${currentBestScore})`);
+    if (scoreInt > currentBestScore) {
+      localStorage.setItem('adaptivePosnerBestScore', String(scoreInt));
+      console.log(`🎯 New best score saved: ${scoreInt} (previous: ${currentBestScore})`);
     }
 
     // Update leaderboard if in adaptive mode
     if (mode === 'adaptive') {
       console.log(`📤 Calling updateLeaderboard from saveProgress`);
-      console.log(`📤 Passing: level=${newLevel}, score=${currentScore}`);
+      console.log(`📤 Passing: level=${levelInt}, score=${scoreInt}`);
       console.log(`📤 User status:`, user ? `Logged in as ${user.email}` : 'NOT LOGGED IN');
 
-      if (currentScore === 0) {
+      if (scoreInt === 0) {
         console.warn(`⚠️⚠️⚠️ WARNING: About to save score=0 to leaderboard!`);
         console.warn(`⚠️ This may overwrite a better score. Stack trace:`);
         console.trace();
       }
 
-      updateLeaderboard(newLevel, currentScore);
+      updateLeaderboard(levelInt, scoreInt);
     } else {
       console.log(`⚠️ Not calling updateLeaderboard - mode is ${mode}, not adaptive`);
     }
