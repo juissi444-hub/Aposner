@@ -266,38 +266,52 @@ const CognitiveTaskGame = () => {
     try {
       console.log('Loading user progress for user:', userId);
 
-      // Load from user_progress table (current progress)
-      const { data: progressData, error: progressError } = await supabase
-        .from('user_progress')
-        .select('current_level, highest_level, current_score')
-        .eq('user_id', userId)
-        .single();
-
-      // Load from leaderboard table (best achievements)
-      const { data: leaderboardData, error: leaderboardError } = await supabase
-        .from('leaderboard')
-        .select('highest_level, best_score')
-        .eq('user_id', userId)
-        .single();
-
-      if (progressError && progressError.code !== 'PGRST116') {
-        console.error('Error fetching user progress:', progressError);
-      }
-
-      if (leaderboardError && leaderboardError.code !== 'PGRST116') {
-        console.error('Error fetching leaderboard data:', leaderboardError);
-      }
-
-      // Merge with localStorage - use the higher value for level
+      // Get current local values first (these are the fallback)
       const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '1');
       const localHighest = parseInt(localStorage.getItem('adaptivePosnerHighest') || '1');
       const localBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
 
-      const serverCurrentLevel = progressData?.current_level || 1;
-      const serverHighestLevel = Math.max(progressData?.highest_level || 1, leaderboardData?.highest_level || 1);
-      const serverBestScore = leaderboardData?.best_score || 0;
+      let serverCurrentLevel = 1;
+      let serverHighestLevel = 1;
+      let serverBestScore = 0;
 
-      // Use the maximum values
+      // Try to load from user_progress table (current progress)
+      try {
+        const { data: progressData, error: progressError } = await supabase
+          .from('user_progress')
+          .select('current_level, highest_level, current_score')
+          .eq('user_id', userId)
+          .single();
+
+        if (progressError && progressError.code !== 'PGRST116') {
+          console.warn('⚠️ user_progress table query failed (table may not exist yet):', progressError.message);
+        } else if (progressData) {
+          serverCurrentLevel = progressData.current_level || 1;
+          serverHighestLevel = progressData.highest_level || 1;
+        }
+      } catch (err) {
+        console.warn('⚠️ Error loading user_progress:', err.message);
+      }
+
+      // Try to load from leaderboard table (best achievements)
+      try {
+        const { data: leaderboardData, error: leaderboardError } = await supabase
+          .from('leaderboard')
+          .select('highest_level, best_score')
+          .eq('user_id', userId)
+          .single();
+
+        if (leaderboardError && leaderboardError.code !== 'PGRST116') {
+          console.warn('⚠️ leaderboard table query failed:', leaderboardError.message);
+        } else if (leaderboardData) {
+          serverHighestLevel = Math.max(serverHighestLevel, leaderboardData.highest_level || 1);
+          serverBestScore = leaderboardData.best_score || 0;
+        }
+      } catch (err) {
+        console.warn('⚠️ Error loading leaderboard:', err.message);
+      }
+
+      // Use the maximum values (localStorage wins if server has nothing)
       const maxCurrentLevel = Math.max(localLevel, serverCurrentLevel);
       const maxHighestLevel = Math.max(localHighest, serverHighestLevel);
       const maxBestScore = Math.max(localBestScore, serverBestScore);
@@ -316,6 +330,8 @@ const CognitiveTaskGame = () => {
       console.log(`   Best Score: Local=${localBestScore}, Server=${serverBestScore}, Using=${maxBestScore}`);
     } catch (error) {
       console.error('Error loading user progress:', error);
+      // Even if server fails, keep localStorage values
+      console.log('✅ Keeping localStorage values due to server error');
     }
   }, []);
 
@@ -332,14 +348,32 @@ const CognitiveTaskGame = () => {
       console.log('📊 LOADING LEADERBOARD FROM DATABASE...');
       console.log('📊 User logged in:', !!user, user?.email);
       console.log('📊 User ID:', user?.id);
-      console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC, average_answer_time ASC');
 
-      const { data, error, count } = await supabase
-        .from('leaderboard')
-        .select('*', { count: 'exact' })
-        .order('highest_level', { ascending: false })
-        .order('best_score', { ascending: false })
-        .order('average_answer_time', { ascending: true, nullsFirst: false });
+      // Try with average_answer_time first, fall back if column doesn't exist
+      let data, error, count;
+      try {
+        console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC, average_answer_time ASC');
+        const result = await supabase
+          .from('leaderboard')
+          .select('*', { count: 'exact' })
+          .order('highest_level', { ascending: false })
+          .order('best_score', { ascending: false })
+          .order('average_answer_time', { ascending: true, nullsFirst: false });
+        data = result.data;
+        error = result.error;
+        count = result.count;
+      } catch (err) {
+        // If average_answer_time column doesn't exist, try without it
+        console.warn('⚠️ Query with average_answer_time failed, trying without it...');
+        const result = await supabase
+          .from('leaderboard')
+          .select('*', { count: 'exact' })
+          .order('highest_level', { ascending: false })
+          .order('best_score', { ascending: false });
+        data = result.data;
+        error = result.error;
+        count = result.count;
+      }
 
       console.log('📊 Query executed');
       console.log('📊 Count returned:', count);
@@ -490,14 +524,19 @@ const CognitiveTaskGame = () => {
         console.log(`⏱️ Average answer time: ${averageAnswerTime}ms (from ${currentResponseTimes.length} correct answers)`);
       }
 
+      // Prepare data to save - include average_answer_time if we have it
       const dataToSave = {
         user_id: user.id,
         username: user.user_metadata?.username || user.email,
         highest_level: highestLevel,
         best_score: bestScore,
-        average_answer_time: averageAnswerTime,
         updated_at: new Date().toISOString()
       };
+
+      // Only include average_answer_time if we have valid data
+      if (averageAnswerTime !== null) {
+        dataToSave.average_answer_time = averageAnswerTime;
+      }
 
       console.log(`💾 Data being saved:`, dataToSave);
 
@@ -562,12 +601,14 @@ const CognitiveTaskGame = () => {
         }, { onConflict: 'user_id' });
 
       if (error) {
-        console.error('❌ Error saving progress to server:', error);
+        console.warn('⚠️ Could not save progress to server (user_progress table may not exist yet):', error.message);
+        console.warn('⚠️ Progress is still saved in localStorage');
       } else {
         console.log('✅ Progress saved to server successfully');
       }
     } catch (error) {
-      console.error('❌ Error saving progress to server:', error);
+      console.warn('⚠️ Error saving progress to server:', error.message);
+      console.warn('⚠️ Progress is still saved in localStorage');
     }
   }, [user]);
 
