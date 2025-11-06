@@ -215,204 +215,59 @@ const CognitiveTaskGame = () => {
     console.log('📱 Is mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     let mounted = true;
 
-    // Function to restore session with retry logic (for mobile reliability)
-    const restoreSession = async (retryCount = 0) => {
+    // Restore session on mount - simplified
+    const restoreSession = async () => {
       try {
-        console.log(`🔍 Attempting to restore session (attempt ${retryCount + 1})...`);
+        console.log('🔍 Restoring session...');
 
-        // Check if localStorage is accessible
-        try {
-          const testKey = 'aposner-storage-test';
-          localStorage.setItem(testKey, '1');
-          localStorage.removeItem(testKey);
-          console.log('✅ localStorage is accessible');
-
-          // Check if we have the auth token in storage
-          const authToken = localStorage.getItem('aposner-auth-token');
-          if (authToken) {
-            console.log('✅ Auth token found in localStorage');
-          } else {
-            console.warn('⚠️ No auth token in localStorage');
-          }
-        } catch (e) {
-          console.warn('⚠️ localStorage appears to be blocked or full:', e.message);
-        }
-
-        // Add a small delay on first attempt for mobile to ensure storage is ready
-        if (retryCount === 0) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        // First, try to get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('❌ Error getting session:', error);
-          console.error('❌ Error name:', error.name);
-          console.error('❌ Error message:', error.message);
-          console.error('❌ Error details:', JSON.stringify(error, null, 2));
-
-          // Retry up to 7 times with exponential backoff (more retries for mobile)
-          if (retryCount < 7 && mounted) {
-            const delay = Math.pow(2, retryCount) * 200; // 200ms, 400ms, 800ms, 1600ms, 3200ms, 6400ms, 12800ms
-            console.log(`⏱️ Retrying in ${delay}ms...`);
-            setTimeout(() => restoreSession(retryCount + 1), delay);
-          }
+          console.error('❌ Session restore error:', error.message);
+          setUser(null);
           return;
         }
 
-        if (!mounted) return;
-
         if (session?.user) {
-          const expiresAt = session.expires_at ? new Date(session.expires_at * 1000) : null;
-          const now = new Date();
-
-          console.log('✅ Session found for user:', session.user.email);
-          console.log('✅ User ID:', session.user.id);
-          console.log('✅ Session expires at:', expiresAt?.toLocaleString() || 'unknown');
-          console.log('✅ Time until expiry:', expiresAt ? `${Math.round((expiresAt.getTime() - now.getTime()) / 1000)}s` : 'unknown');
-
-          // Check if session is expired or about to expire (within 5 minutes for safety)
-          if (expiresAt && expiresAt.getTime() - now.getTime() < 300000) {
-            console.log('⚠️ Session is expired or expiring soon (within 5min), attempting refresh...');
-            try {
-              const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-              if (refreshError) {
-                console.error('❌ Failed to refresh session:', refreshError);
-                console.error('❌ Refresh error details:', JSON.stringify(refreshError, null, 2));
-
-                // Don't set user to null immediately, keep the session if possible
-                if (expiresAt.getTime() > now.getTime()) {
-                  console.log('⚠️ Refresh failed but session not expired yet, keeping session');
-                  setUser(session.user);
-                  setShowAuth(false);
-                  loadUserProgress(session.user.id);
-                } else {
-                  setUser(null);
-                }
-                return;
-              }
-              if (refreshData?.session?.user) {
-                console.log('✅ Session refreshed successfully!');
-                setUser(refreshData.session.user);
-                setShowAuth(false);
-                loadUserProgress(refreshData.session.user.id);
-                return;
-              }
-            } catch (refreshErr) {
-              console.error('❌ Exception during session refresh:', refreshErr);
-              console.error('❌ Refresh exception details:', JSON.stringify(refreshErr, null, 2));
-
-              // Don't set user to null if session is still valid
-              if (expiresAt.getTime() > now.getTime()) {
-                console.log('⚠️ Refresh failed but session not expired yet, keeping session');
-                setUser(session.user);
-                setShowAuth(false);
-                loadUserProgress(session.user.id);
-              } else {
-                setUser(null);
-              }
-              return;
-            }
-          }
-
-          // Session is valid, use it
-          console.log('✅ Session is valid, restoring user state');
+          console.log('✅ Session restored:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
-          console.log('ℹ️ No active session found - user needs to log in');
-
-          // On mobile, retry a few more times as storage might be slow
-          if (retryCount < 3) {
-            const delay = 500 * (retryCount + 1);
-            console.log(`⏱️ No session yet, retrying in ${delay}ms...`);
-            setTimeout(() => restoreSession(retryCount + 1), delay);
-          } else {
-            setUser(null);
-          }
+          console.log('ℹ️ No session found');
+          setUser(null);
         }
       } catch (error) {
         console.error('❌ Exception restoring session:', error);
-        console.error('❌ Exception stack:', error.stack);
-        console.error('❌ Exception details:', JSON.stringify(error, null, 2));
-
-        if (retryCount < 7 && mounted) {
-          const delay = Math.pow(2, retryCount) * 200;
-          console.log(`⏱️ Exception caught, retrying in ${delay}ms...`);
-          setTimeout(() => restoreSession(retryCount + 1), delay);
-        } else {
-          console.error('❌ Failed to restore session after 7 attempts');
-          setUser(null);
-        }
+        setUser(null);
       }
     };
 
     // Immediately try to restore session
     restoreSession();
 
-    // Listen for auth changes
+    // Listen for auth changes - simplified
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔄 Auth state changed:', event);
-      console.log('🔄 Session present:', !!session);
-      console.log('🔄 User present:', !!session?.user);
+      console.log('🔄 Auth:', event);
 
       if (!mounted) return;
 
-      if (event === 'INITIAL_SESSION') {
-        console.log('📱 INITIAL_SESSION event - session being restored');
-        if (session?.user) {
-          console.log('✅ Initial session found for:', session.user.email);
-          setUser(session.user);
-          setShowAuth(false);
-          loadUserProgress(session.user.id);
-        } else {
-          console.log('ℹ️ INITIAL_SESSION but no user - waiting for session restoration');
-          // Don't set user to null here - let restoreSession handle it
-        }
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('🔄 TOKEN_REFRESHED - session refreshed automatically');
-        if (session?.user) {
-          console.log('✅ Token refreshed for:', session.user.email);
-          setUser(session.user);
-          setShowAuth(false);
-        } else {
-          console.warn('⚠️ TOKEN_REFRESHED but no user in session');
-        }
-      } else if (event === 'SIGNED_IN') {
-        console.log('✅ SIGNED_IN - user logged in');
-        if (session?.user) {
-          console.log('✅ User signed in:', session.user.email);
-          setUser(session.user);
-          setShowAuth(false);
-          const username = session.user.user_metadata?.username || session.user.email;
-          migrateAnonymousToAccount(session.user.id, username);
-          loadUserProgress(session.user.id);
-        }
-      } else if (event === 'USER_UPDATED') {
-        console.log('🔄 USER_UPDATED - user info updated');
-        if (session?.user) {
-          console.log('✅ User updated:', session.user.email);
-          setUser(session.user);
-          const username = session.user.user_metadata?.username || session.user.email;
-          migrateAnonymousToAccount(session.user.id, username);
-          loadUserProgress(session.user.id);
-        }
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('✅ Signed in:', session.user.email);
+        setUser(session.user);
+        setShowAuth(false);
+        const username = session.user.user_metadata?.username || session.user.email;
+        migrateAnonymousToAccount(session.user.id, username);
+        loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        console.log('👋 SIGNED_OUT - user explicitly logged out');
+        console.log('👋 Signed out');
         setUser(null);
-      } else {
-        console.log(`ℹ️ Other auth event: ${event}`);
-        // Only update user if session is present
-        if (session?.user) {
-          console.log('✅ User session still active:', session.user.email);
-          setUser(session.user);
-          setShowAuth(false);
-        } else {
-          console.log('ℹ️ No session in event, not changing user state');
-          // Don't set user to null unless it's an explicit SIGNED_OUT event
-        }
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        console.log('🔄 Token refreshed');
+        setUser(session.user);
+      } else if (event === 'USER_UPDATED' && session?.user) {
+        console.log('🔄 User updated');
+        setUser(session.user);
       }
     });
 
@@ -631,23 +486,21 @@ const CognitiveTaskGame = () => {
     if (!isSupabaseConfigured()) return;
     console.log('🚪 Logging out user...');
     try {
-      const { error } = await supabase.auth.signOut();
+      // Sign out from all sessions (global scope)
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
         console.error('❌ Error signing out:', error);
-        throw error;
       }
       console.log('✅ Successfully signed out');
-      setUser(null);
-      setShowLeaderboard(false);
-      setShowAuth(false);
-      // Reload the page to clear all state
-      window.location.reload();
     } catch (error) {
       console.error('❌ Exception during sign out:', error);
-      // Force sign out locally even if server fails
+    } finally {
+      // Always clear local state and reload
       setUser(null);
       setShowLeaderboard(false);
       setShowAuth(false);
+      localStorage.removeItem('aposner-auth-token');
+      sessionStorage.removeItem('aposner-auth-token');
       window.location.reload();
     }
   };
@@ -747,181 +600,35 @@ const CognitiveTaskGame = () => {
     }
   }, []);
 
-  // Leaderboard functions with retry logic for mobile reliability
-  const loadLeaderboard = useCallback(async (retryCount = 0, startTime = Date.now()) => {
+  // Leaderboard loading - simplified for speed
+  const loadLeaderboard = useCallback(async () => {
     if (!isSupabaseConfigured()) {
-      console.error('❌ Supabase not configured - cannot load leaderboard');
-      if (retryCount === 0) {
-        alert('Supabase is not configured. Please check your environment variables.');
-      }
-      setLeaderboardLoading(false);
+      console.error('❌ Supabase not configured');
       return;
     }
 
-    // Set loading state on first attempt
-    if (retryCount === 0) {
-      setLeaderboardLoading(true);
-    }
-
-    // Maximum total time: 30 seconds - prevent infinite loading
-    const maxTotalTime = 30000; // 30 seconds
-    const elapsed = Date.now() - startTime;
-    if (elapsed > maxTotalTime) {
-      console.error(`❌ Leaderboard loading timeout after ${elapsed}ms - giving up`);
-      setLeaderboard([]);
-      setLeaderboardLoading(false);
-      return;
-    }
+    setLeaderboardLoading(true);
+    console.log('📊 Loading leaderboard...');
 
     try {
-      console.log('═'.repeat(80));
-      console.log(`📊 LOADING LEADERBOARD FROM DATABASE (attempt ${retryCount + 1})...`);
-      console.log('📊 User logged in:', !!user, user?.email);
-      console.log('📊 User ID:', user?.id);
-      console.log('📊 Is mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-      console.log('📊 Network status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
-
-      // On mobile, use longer timeout and more retries
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const maxRetries = isMobile ? 3 : 2; // Reduced retries to prevent long waits
-      const baseDelay = isMobile ? 500 : 300; // Longer delays on mobile
-
-      // Try with average_answer_time first, fall back if column doesn't exist
-      let data, error, count;
-      try {
-        console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC, average_answer_time ASC');
-
-        // Create a timeout promise for mobile - reduced from 10s to 8s
-        const timeoutMs = isMobile ? 8000 : 5000; // 8s on mobile, 5s on desktop
-        const queryPromise = supabase
-          .from('leaderboard')
-          .select('*', { count: 'exact' })
-          .order('highest_level', { ascending: false })
-          .order('best_score', { ascending: false })
-          .order('average_answer_time', { ascending: true, nullsFirst: false });
-
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Query timeout')), timeoutMs)
-        );
-
-        const result = await Promise.race([queryPromise, timeoutPromise]);
-        data = result.data;
-        error = result.error;
-        count = result.count;
-        console.log('✅ Query completed successfully');
-      } catch (err) {
-        console.warn('⚠️ Query with average_answer_time failed:', err.message);
-
-        // If it's a timeout or column error, try without average_answer_time
-        try {
-          console.log('📊 Trying simpler query without average_answer_time...');
-          const timeoutMs = isMobile ? 8000 : 5000;
-          const queryPromise = supabase
-            .from('leaderboard')
-            .select('*', { count: 'exact' })
-            .order('highest_level', { ascending: false })
-            .order('best_score', { ascending: false });
-
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Query timeout')), timeoutMs)
-          );
-
-          const result = await Promise.race([queryPromise, timeoutPromise]);
-          data = result.data;
-          error = result.error;
-          count = result.count;
-          console.log('✅ Simpler query completed successfully');
-        } catch (fallbackErr) {
-          console.error('❌ Fallback query also failed:', fallbackErr.message);
-          throw fallbackErr;
-        }
-      }
-
-      console.log('📊 Query executed');
-      console.log('📊 Count returned:', count);
-      console.log('📊 Data length:', data?.length);
-      console.log('📊 Data is array:', Array.isArray(data));
+      // Simple, fast query - no timeouts, no retries
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .order('highest_level', { ascending: false })
+        .order('best_score', { ascending: false });
 
       if (error) {
-        console.error('❌ Leaderboard query error:', error);
-        console.error('❌ Error code:', error.code);
-        console.error('❌ Error message:', error.message);
-        console.error('❌ Error details:', error.details);
-        console.error('❌ Error hint:', error.hint);
-        console.error('❌ RLS may be blocking access - check Supabase policies');
-
-        // Retry with exponential backoff
-        if (retryCount < maxRetries) {
-          const delay = Math.pow(2, retryCount) * baseDelay;
-          console.log(`⏱️ Retrying leaderboard load in ${delay}ms... (${retryCount + 1}/${maxRetries})`);
-          setTimeout(() => loadLeaderboard(retryCount + 1, startTime), delay);
-          return;
-        }
-        // All retries exhausted, stop loading
-        console.error('❌ All retries exhausted, stopping');
+        console.error('❌ Leaderboard error:', error.message);
         setLeaderboard([]);
-        setLeaderboardLoading(false);
-        return;
-      }
-
-      console.log('✅ Leaderboard query successful');
-      console.log(`✅ Returned ${data?.length || 0} entries from database`);
-      console.log('✅ NO LIMIT applied to query - should return ALL users');
-
-      if (!data || data.length === 0) {
-        console.warn('⚠️ No leaderboard entries found - check if users have played in Adaptive mode');
       } else {
-        console.log('📊 Full leaderboard data from database (ALL ENTRIES):');
-        data.forEach((entry, i) => {
-          console.log(`   Entry ${i+1}: username=${entry.username}, highest_level=${entry.highest_level}, best_score=${entry.best_score}, user_id=${entry.user_id}`);
-        });
-        console.log('📊 Complete data (JSON):', JSON.stringify(data, null, 2));
-        console.log(`📊 Total entries to display: ${data.length}`);
-
-        // Warning if only a few entries are returned
-        if (data.length <= 3) {
-          console.warn('⚠️⚠️⚠️ WARNING: Only ' + data.length + ' entries returned!');
-          console.warn('⚠️ If you expect more users in the database:');
-          console.warn('⚠️ 1. Check Supabase Table Editor to see total row count');
-          console.warn('⚠️ 2. Check RLS policies in Supabase (Table → leaderboard → RLS)');
-          console.warn('⚠️ 3. Run verify-leaderboard-data.sql in Supabase SQL Editor');
-          console.warn('⚠️ 4. Ensure "Allow public read access to leaderboard" policy exists');
-        }
+        console.log(`✅ Loaded ${data?.length || 0} leaderboard entries`);
+        setLeaderboard(data || []);
       }
-
-      setLeaderboard(data || []);
-      setLeaderboardLoading(false);
-      console.log(`📊 Leaderboard state updated with ${data?.length || 0} entries`);
-      console.log('═'.repeat(80));
     } catch (error) {
-      console.error('❌ Error loading leaderboard:', error);
-      console.error('❌ Error message:', error?.message || 'Unknown error');
-      console.error('❌ Error stack:', error?.stack);
-
-      // Determine max retries based on device
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const maxRetries = isMobile ? 3 : 2;
-      const baseDelay = isMobile ? 500 : 300;
-
-      // Retry with exponential backoff
-      if (retryCount < maxRetries) {
-        const delay = Math.pow(2, retryCount) * baseDelay;
-        console.log(`⏱️ Retrying after error in ${delay}ms... (attempt ${retryCount + 2}/${maxRetries + 1})`);
-        setTimeout(() => loadLeaderboard(retryCount + 1, startTime), delay);
-        return;
-      }
-
-      // After all retries failed
-      console.error(`❌ Failed to load leaderboard after ${maxRetries + 1} attempts`);
-      console.error('❌ Final error:', error.message);
-      console.error('❌ Possible causes:');
-      console.error('   1. Network connectivity issues');
-      console.error('   2. RLS policies blocking access');
-      console.error('   3. Supabase service unavailable');
-      console.error('   4. Query timeout (slow connection)');
-
-      // Show a non-blocking error state
+      console.error('❌ Exception loading leaderboard:', error);
       setLeaderboard([]);
+    } finally {
       setLeaderboardLoading(false);
     }
   }, [user]);
