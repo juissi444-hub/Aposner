@@ -226,8 +226,21 @@ const CognitiveTaskGame = () => {
           localStorage.setItem(testKey, '1');
           localStorage.removeItem(testKey);
           console.log('✅ localStorage is accessible');
+
+          // Check if we have the auth token in storage
+          const authToken = localStorage.getItem('aposner-auth-token');
+          if (authToken) {
+            console.log('✅ Auth token found in localStorage');
+          } else {
+            console.warn('⚠️ No auth token in localStorage');
+          }
         } catch (e) {
           console.warn('⚠️ localStorage appears to be blocked or full:', e.message);
+        }
+
+        // Add a small delay on first attempt for mobile to ensure storage is ready
+        if (retryCount === 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
 
         // First, try to get the current session
@@ -237,9 +250,11 @@ const CognitiveTaskGame = () => {
           console.error('❌ Error getting session:', error);
           console.error('❌ Error name:', error.name);
           console.error('❌ Error message:', error.message);
-          // Retry up to 5 times with exponential backoff (more retries for mobile)
-          if (retryCount < 5 && mounted) {
-            const delay = Math.pow(2, retryCount) * 150; // 150ms, 300ms, 600ms, 1200ms, 2400ms
+          console.error('❌ Error details:', JSON.stringify(error, null, 2));
+
+          // Retry up to 7 times with exponential backoff (more retries for mobile)
+          if (retryCount < 7 && mounted) {
+            const delay = Math.pow(2, retryCount) * 200; // 200ms, 400ms, 800ms, 1600ms, 3200ms, 6400ms, 12800ms
             console.log(`⏱️ Retrying in ${delay}ms...`);
             setTimeout(() => restoreSession(retryCount + 1), delay);
           }
@@ -255,15 +270,26 @@ const CognitiveTaskGame = () => {
           console.log('✅ Session found for user:', session.user.email);
           console.log('✅ User ID:', session.user.id);
           console.log('✅ Session expires at:', expiresAt?.toLocaleString() || 'unknown');
+          console.log('✅ Time until expiry:', expiresAt ? `${Math.round((expiresAt.getTime() - now.getTime()) / 1000)}s` : 'unknown');
 
-          // Check if session is expired or about to expire (within 60 seconds)
-          if (expiresAt && expiresAt.getTime() - now.getTime() < 60000) {
-            console.log('⚠️ Session is expired or expiring soon, attempting refresh...');
+          // Check if session is expired or about to expire (within 5 minutes for safety)
+          if (expiresAt && expiresAt.getTime() - now.getTime() < 300000) {
+            console.log('⚠️ Session is expired or expiring soon (within 5min), attempting refresh...');
             try {
               const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
               if (refreshError) {
                 console.error('❌ Failed to refresh session:', refreshError);
-                setUser(null);
+                console.error('❌ Refresh error details:', JSON.stringify(refreshError, null, 2));
+
+                // Don't set user to null immediately, keep the session if possible
+                if (expiresAt.getTime() > now.getTime()) {
+                  console.log('⚠️ Refresh failed but session not expired yet, keeping session');
+                  setUser(session.user);
+                  setShowAuth(false);
+                  loadUserProgress(session.user.id);
+                } else {
+                  setUser(null);
+                }
                 return;
               }
               if (refreshData?.session?.user) {
@@ -275,7 +301,17 @@ const CognitiveTaskGame = () => {
               }
             } catch (refreshErr) {
               console.error('❌ Exception during session refresh:', refreshErr);
-              setUser(null);
+              console.error('❌ Refresh exception details:', JSON.stringify(refreshErr, null, 2));
+
+              // Don't set user to null if session is still valid
+              if (expiresAt.getTime() > now.getTime()) {
+                console.log('⚠️ Refresh failed but session not expired yet, keeping session');
+                setUser(session.user);
+                setShowAuth(false);
+                loadUserProgress(session.user.id);
+              } else {
+                setUser(null);
+              }
               return;
             }
           }
@@ -287,15 +323,27 @@ const CognitiveTaskGame = () => {
           loadUserProgress(session.user.id);
         } else {
           console.log('ℹ️ No active session found - user needs to log in');
-          setUser(null);
+
+          // On mobile, retry a few more times as storage might be slow
+          if (retryCount < 3) {
+            const delay = 500 * (retryCount + 1);
+            console.log(`⏱️ No session yet, retrying in ${delay}ms...`);
+            setTimeout(() => restoreSession(retryCount + 1), delay);
+          } else {
+            setUser(null);
+          }
         }
       } catch (error) {
         console.error('❌ Exception restoring session:', error);
         console.error('❌ Exception stack:', error.stack);
-        if (retryCount < 5 && mounted) {
-          setTimeout(() => restoreSession(retryCount + 1), Math.pow(2, retryCount) * 150);
+        console.error('❌ Exception details:', JSON.stringify(error, null, 2));
+
+        if (retryCount < 7 && mounted) {
+          const delay = Math.pow(2, retryCount) * 200;
+          console.log(`⏱️ Exception caught, retrying in ${delay}ms...`);
+          setTimeout(() => restoreSession(retryCount + 1), delay);
         } else {
-          console.error('❌ Failed to restore session after 5 attempts');
+          console.error('❌ Failed to restore session after 7 attempts');
           setUser(null);
         }
       }
@@ -307,6 +355,8 @@ const CognitiveTaskGame = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔄 Auth state changed:', event);
+      console.log('🔄 Session present:', !!session);
+      console.log('🔄 User present:', !!session?.user);
 
       if (!mounted) return;
 
@@ -317,6 +367,9 @@ const CognitiveTaskGame = () => {
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
+        } else {
+          console.log('ℹ️ INITIAL_SESSION but no user - waiting for session restoration');
+          // Don't set user to null here - let restoreSession handle it
         }
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('🔄 TOKEN_REFRESHED - session refreshed automatically');
@@ -324,6 +377,8 @@ const CognitiveTaskGame = () => {
           console.log('✅ Token refreshed for:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
+        } else {
+          console.warn('⚠️ TOKEN_REFRESHED but no user in session');
         }
       } else if (event === 'SIGNED_IN') {
         console.log('✅ SIGNED_IN - user logged in');
@@ -345,13 +400,19 @@ const CognitiveTaskGame = () => {
           loadUserProgress(session.user.id);
         }
       } else if (event === 'SIGNED_OUT') {
-        console.log('👋 SIGNED_OUT - user logged out');
+        console.log('👋 SIGNED_OUT - user explicitly logged out');
         setUser(null);
-      } else if (session?.user) {
-        // Fallback for any other event with a valid session
-        console.log('✅ User session active:', session.user.email);
-        setUser(session.user);
-        setShowAuth(false);
+      } else {
+        console.log(`ℹ️ Other auth event: ${event}`);
+        // Only update user if session is present
+        if (session?.user) {
+          console.log('✅ User session still active:', session.user.email);
+          setUser(session.user);
+          setShowAuth(false);
+        } else {
+          console.log('ℹ️ No session in event, not changing user state');
+          // Don't set user to null unless it's an explicit SIGNED_OUT event
+        }
       }
     });
 
