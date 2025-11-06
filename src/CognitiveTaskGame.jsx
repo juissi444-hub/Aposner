@@ -229,6 +229,7 @@ const CognitiveTaskGame = () => {
           console.warn('⚠️ localStorage appears to be blocked or full:', e.message);
         }
 
+        // First, try to get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
@@ -247,14 +248,44 @@ const CognitiveTaskGame = () => {
         if (!mounted) return;
 
         if (session?.user) {
-          console.log('✅ Session restored for user:', session.user.email);
+          const expiresAt = session.expires_at ? new Date(session.expires_at * 1000) : null;
+          const now = new Date();
+
+          console.log('✅ Session found for user:', session.user.email);
           console.log('✅ User ID:', session.user.id);
-          console.log('✅ Session expires at:', new Date(session.expires_at * 1000).toLocaleString());
+          console.log('✅ Session expires at:', expiresAt?.toLocaleString() || 'unknown');
+
+          // Check if session is expired or about to expire (within 60 seconds)
+          if (expiresAt && expiresAt.getTime() - now.getTime() < 60000) {
+            console.log('⚠️ Session is expired or expiring soon, attempting refresh...');
+            try {
+              const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshError) {
+                console.error('❌ Failed to refresh session:', refreshError);
+                setUser(null);
+                return;
+              }
+              if (refreshData?.session?.user) {
+                console.log('✅ Session refreshed successfully!');
+                setUser(refreshData.session.user);
+                setShowAuth(false);
+                loadUserProgress(refreshData.session.user.id);
+                return;
+              }
+            } catch (refreshErr) {
+              console.error('❌ Exception during session refresh:', refreshErr);
+              setUser(null);
+              return;
+            }
+          }
+
+          // Session is valid, use it
+          console.log('✅ Session is valid, restoring user state');
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
-          console.log('❌ No active session found');
+          console.log('ℹ️ No active session found - user needs to log in');
           setUser(null);
         }
       } catch (error) {
@@ -262,6 +293,9 @@ const CognitiveTaskGame = () => {
         console.error('❌ Exception stack:', error.stack);
         if (retryCount < 5 && mounted) {
           setTimeout(() => restoreSession(retryCount + 1), Math.pow(2, retryCount) * 150);
+        } else {
+          console.error('❌ Failed to restore session after 5 attempts');
+          setUser(null);
         }
       }
     };
@@ -277,23 +311,46 @@ const CognitiveTaskGame = () => {
 
       if (event === 'INITIAL_SESSION') {
         console.log('📱 INITIAL_SESSION event - session being restored');
-      }
-
-      if (session?.user) {
+        if (session?.user) {
+          console.log('✅ Initial session found for:', session.user.email);
+          setUser(session.user);
+          setShowAuth(false);
+          loadUserProgress(session.user.id);
+        }
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 TOKEN_REFRESHED - session refreshed automatically');
+        if (session?.user) {
+          console.log('✅ Token refreshed for:', session.user.email);
+          setUser(session.user);
+          setShowAuth(false);
+        }
+      } else if (event === 'SIGNED_IN') {
+        console.log('✅ SIGNED_IN - user logged in');
+        if (session?.user) {
+          console.log('✅ User signed in:', session.user.email);
+          setUser(session.user);
+          setShowAuth(false);
+          const username = session.user.user_metadata?.username || session.user.email;
+          migrateAnonymousToAccount(session.user.id, username);
+          loadUserProgress(session.user.id);
+        }
+      } else if (event === 'USER_UPDATED') {
+        console.log('🔄 USER_UPDATED - user info updated');
+        if (session?.user) {
+          console.log('✅ User updated:', session.user.email);
+          setUser(session.user);
+          const username = session.user.user_metadata?.username || session.user.email;
+          migrateAnonymousToAccount(session.user.id, username);
+          loadUserProgress(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log('👋 SIGNED_OUT - user logged out');
+        setUser(null);
+      } else if (session?.user) {
+        // Fallback for any other event with a valid session
         console.log('✅ User session active:', session.user.email);
         setUser(session.user);
         setShowAuth(false);
-
-        // Migrate anonymous data if exists (for login events)
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-          const username = session.user.user_metadata?.username || session.user.email;
-          migrateAnonymousToAccount(session.user.id, username);
-        }
-
-        loadUserProgress(session.user.id);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('👋 User signed out');
-        setUser(null);
       }
     });
 
@@ -3527,14 +3584,31 @@ const CognitiveTaskGame = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <div className="flex flex-col gap-3">
                   <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
-                  <button
-                    onClick={() => setShowAuth(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
-                  >
-                    Login / Sign Up
-                  </button>
+                  <div className="flex gap-2 flex-col sm:flex-row">
+                    <button
+                      onClick={async () => {
+                        console.log('🎯 VIEW LEADERBOARD BUTTON CLICKED (not logged in)');
+                        setShowLeaderboard(true);
+                        try {
+                          await loadLeaderboard();
+                          console.log('✅ Leaderboard data loaded successfully');
+                        } catch (error) {
+                          console.error('❌ Error loading leaderboard:', error);
+                        }
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
+                    >
+                      View Leaderboard
+                    </button>
+                    <button
+                      onClick={() => setShowAuth(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
+                    >
+                      Login / Sign Up
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
