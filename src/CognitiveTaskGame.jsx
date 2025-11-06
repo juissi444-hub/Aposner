@@ -46,6 +46,7 @@ const CognitiveTaskGame = () => {
   const [user, setUser] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showBellCurve, setShowBellCurve] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -57,19 +58,23 @@ const CognitiveTaskGame = () => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
 
-    // Level 6 starts at 750ms (1000 - 250)
-    // Levels 6-17: decrease by 50ms per level until 200ms
-    if (lvl <= 17) {
+    // Levels 6-15: 750ms down to 300ms (decreasing by 50ms per level)
+    if (lvl <= 15) {
       return 750 - (lvl - 6) * 50;
     }
 
-    // Levels 18-19: decrease by 25ms per level
+    // Levels 16-19: 275ms down to 200ms (decreasing by 25ms per level)
     if (lvl <= 19) {
-      return 200 - (lvl - 17) * 25;
+      return 275 - (lvl - 16) * 25;
     }
 
-    // Level 20+: decrease by 12.5ms per level until 50ms minimum
-    return Math.max(50, 150 - (lvl - 19) * 12.5);
+    // Levels 20-26: 187.5ms down to 112.5ms (decreasing by 12.5ms per level)
+    if (lvl <= 26) {
+      return 187.5 - (lvl - 20) * 12.5;
+    }
+
+    // Level 27+: Final level at 100ms
+    return 100;
   };
 
   // Keep gameStateRef in sync with gameState
@@ -413,17 +418,19 @@ const CognitiveTaskGame = () => {
     }
   }, []);
 
-  // Leaderboard functions
-  const loadLeaderboard = useCallback(async () => {
+  // Leaderboard functions with retry logic for mobile reliability
+  const loadLeaderboard = useCallback(async (retryCount = 0) => {
     if (!isSupabaseConfigured()) {
       console.error('❌ Supabase not configured - cannot load leaderboard');
-      alert('Supabase is not configured. Please check your environment variables.');
+      if (retryCount === 0) {
+        alert('Supabase is not configured. Please check your environment variables.');
+      }
       return;
     }
 
     try {
       console.log('═'.repeat(80));
-      console.log('📊 LOADING LEADERBOARD FROM DATABASE...');
+      console.log(`📊 LOADING LEADERBOARD FROM DATABASE (attempt ${retryCount + 1})...`);
       console.log('📊 User logged in:', !!user, user?.email);
       console.log('📊 User ID:', user?.id);
 
@@ -464,6 +471,14 @@ const CognitiveTaskGame = () => {
         console.error('❌ Error details:', error.details);
         console.error('❌ Error hint:', error.hint);
         console.error('❌ RLS may be blocking access - check Supabase policies');
+
+        // Retry up to 3 times with exponential backoff (for mobile reliability)
+        if (retryCount < 3) {
+          const delay = Math.pow(2, retryCount) * 200; // 200ms, 400ms, 800ms
+          console.log(`⏱️ Retrying leaderboard load in ${delay}ms...`);
+          setTimeout(() => loadLeaderboard(retryCount + 1), delay);
+          return;
+        }
         throw error;
       }
 
@@ -497,7 +512,9 @@ const CognitiveTaskGame = () => {
       console.log('═'.repeat(80));
     } catch (error) {
       console.error('❌ Error loading leaderboard:', error);
-      alert(`Failed to load leaderboard: ${error.message}\n\nCheck browser console for details.`);
+      if (retryCount === 0 || retryCount >= 3) {
+        alert(`Failed to load leaderboard: ${error.message}\n\nCheck browser console for details.`);
+      }
     }
   }, [user]);
 
@@ -2970,13 +2987,160 @@ const CognitiveTaskGame = () => {
               </div>
             </div>
 
-            {/* Close button - fixed at bottom */}
-            <button
-              onClick={() => setShowLeaderboard(false)}
-              className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0"
-            >
-              Close
-            </button>
+            {/* Buttons - fixed at bottom */}
+            <div className="flex gap-3 mt-4 flex-shrink-0">
+              <button
+                onClick={() => {
+                  setShowBellCurve(true);
+                  setShowLeaderboard(false);
+                }}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                Bell Curve
+              </button>
+              <button
+                onClick={() => setShowLeaderboard(false)}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bell Curve Modal */}
+      {showBellCurve && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Player Distribution</h2>
+            <p className="text-center text-sm text-gray-400 mb-6">Bell curve showing player count by level achieved</p>
+
+            {/* Bell curve visualization */}
+            <div className="flex-1 overflow-y-auto mb-6">
+              {(() => {
+                // Group players by highest level
+                const levelCounts = {};
+                let maxCount = 0;
+
+                leaderboard.forEach(entry => {
+                  const level = entry.highest_level || 0;
+                  levelCounts[level] = (levelCounts[level] || 0) + 1;
+                  maxCount = Math.max(maxCount, levelCounts[level]);
+                });
+
+                // Get all levels from min to max
+                const levels = Object.keys(levelCounts).map(Number).sort((a, b) => a - b);
+                const minLevel = levels.length > 0 ? levels[0] : 0;
+                const maxLevel = levels.length > 0 ? levels[levels.length - 1] : 27;
+
+                // Create array for all levels in range
+                const allLevels = [];
+                for (let i = minLevel; i <= maxLevel; i++) {
+                  allLevels.push(i);
+                }
+
+                return (
+                  <div className="space-y-2">
+                    {leaderboard.length === 0 ? (
+                      <p className="text-center text-gray-400">No data to display</p>
+                    ) : (
+                      <>
+                        {/* Stats summary */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 bg-gray-700 p-4 rounded-lg">
+                          <div className="text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-blue-400">{leaderboard.length}</div>
+                            <div className="text-xs sm:text-sm text-gray-400">Total Players</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-green-400">{maxLevel}</div>
+                            <div className="text-xs sm:text-sm text-gray-400">Highest Level</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-yellow-400">
+                              {(leaderboard.reduce((sum, e) => sum + (e.highest_level || 0), 0) / leaderboard.length).toFixed(1)}
+                            </div>
+                            <div className="text-xs sm:text-sm text-gray-400">Avg Level</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-purple-400">{maxCount}</div>
+                            <div className="text-xs sm:text-sm text-gray-400">Most Common</div>
+                          </div>
+                        </div>
+
+                        {/* Bell curve bars */}
+                        <div className="space-y-1">
+                          {allLevels.map(level => {
+                            const count = levelCounts[level] || 0;
+                            const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                            const isUserLevel = user && leaderboard.some(e => e.user_id === user.id && e.highest_level === level);
+
+                            return (
+                              <div key={level} className="flex items-center gap-2">
+                                <div className="w-12 text-right text-sm font-mono text-gray-400">
+                                  L{level}
+                                </div>
+                                <div className="flex-1 bg-gray-700 rounded-full h-8 overflow-hidden relative">
+                                  {count > 0 && (
+                                    <div
+                                      className={`h-full rounded-full transition-all duration-300 ${
+                                        isUserLevel
+                                          ? 'bg-gradient-to-r from-blue-500 to-blue-600'
+                                          : 'bg-gradient-to-r from-purple-500 to-pink-500'
+                                      }`}
+                                      style={{ width: `${Math.max(percentage, 5)}%` }}
+                                    >
+                                      <div className="h-full flex items-center justify-end pr-2">
+                                        <span className="text-xs font-bold text-white">
+                                          {count} {count === 1 ? 'player' : 'players'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="flex justify-center gap-6 mt-6 text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                            <span className="text-gray-300">Other Players</span>
+                          </div>
+                          {user && (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 rounded bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                              <span className="text-gray-300">Your Level</span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowBellCurve(false);
+                  setShowLeaderboard(true);
+                }}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                Back to Leaderboard
+              </button>
+              <button
+                onClick={() => setShowBellCurve(false)}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
