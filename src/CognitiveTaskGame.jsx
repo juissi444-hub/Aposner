@@ -101,7 +101,6 @@ const CognitiveTaskGame = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [usernameError, setUsernameError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
@@ -312,57 +311,12 @@ const CognitiveTaskGame = () => {
     });
   }, []);
 
-  // Username validation function
-  const validateUsername = (username) => {
-    if (!username) {
-      return '';
-    }
-
-    if (username.length < 1) {
-      return 'Username must be at least 1 character';
-    }
-
-    if (username.length > 20) {
-      return 'Username must be 20 characters or less';
-    }
-
-    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-      return 'Username can only contain letters, numbers, hyphens, and underscores';
-    }
-
-    if (/\s/.test(username)) {
-      return 'Username cannot contain spaces';
-    }
-
-    return '';
-  };
-
-  // Handle username change with validation
-  const handleUsernameChange = (value) => {
-    setUsername(value);
-    if (authMode === 'signup' && value) {
-      setUsernameError(validateUsername(value));
-    } else {
-      setUsernameError('');
-    }
-  };
-
   // Authentication functions
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!isSupabaseConfigured()) return;
 
     setAuthError('');
-
-    // Validate username on signup
-    if (authMode === 'signup') {
-      const validationError = validateUsername(username);
-      if (validationError) {
-        setUsernameError(validationError);
-        setAuthError('Please fix the username errors before signing up');
-        return;
-      }
-    }
 
     try {
       if (authMode === 'signup') {
@@ -4386,30 +4340,11 @@ const CognitiveTaskGame = () => {
             <form onSubmit={handleAuth} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Username</label>
-                {authMode === 'signup' && usernameError && (
-                  <div className="mb-2 text-red-400 text-sm">
-                    <p className="font-semibold">Username requirements:</p>
-                    <ul className="list-disc list-inside mt-1">
-                      <li>1-20 characters</li>
-                      <li>Only letters, numbers, hyphens (-), and underscores (_)</li>
-                      <li>No spaces</li>
-                    </ul>
-                    <p className="mt-1 text-red-300">❌ {usernameError}</p>
-                  </div>
-                )}
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  className={`w-full px-4 py-2 bg-gray-700 border ${
-                    authMode === 'signup' && usernameError
-                      ? 'border-red-500'
-                      : 'border-gray-600'
-                  } rounded-lg focus:outline-none focus:ring-2 ${
-                    authMode === 'signup' && usernameError
-                      ? 'focus:ring-red-500'
-                      : 'focus:ring-blue-500'
-                  } text-white`}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                   required
                 />
               </div>
@@ -4447,7 +4382,6 @@ const CognitiveTaskGame = () => {
                 onClick={() => {
                   setAuthMode(authMode === 'login' ? 'signup' : 'login');
                   setAuthError('');
-                  setUsernameError('');
                   setShowPassword(false);
                 }}
                 className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg"
@@ -4496,6 +4430,7 @@ const CognitiveTaskGame = () => {
                 <div className="flex flex-col items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                   <p className="text-center text-gray-400">Loading leaderboard...</p>
+                  <p className="text-center text-gray-500 text-sm mt-2">This may take a moment on mobile</p>
                   <button
                     onClick={() => {
                       console.log('❌ User cancelled leaderboard loading');
@@ -4735,8 +4670,8 @@ const CognitiveTaskGame = () => {
                 // Wide enough to show full range comfortably - at least 50px per level
                 const minGraphWidth = Math.max((range + 1) * 50, isMobile ? 600 : 1200);
                 const graphWidth = minGraphWidth;
-                const graphHeight = isMobile ? 360 : 400; // Increased height to show all labels
-                const padding = isMobile ? 40 : 50;
+                const graphHeight = isMobile ? 300 : 350; // Increased mobile height to show labels
+                const padding = isMobile ? 30 : 50;
                 const chartWidth = graphWidth - 2 * padding;
                 const chartHeight = graphHeight - 2 * padding;
 
@@ -4848,13 +4783,13 @@ const CognitiveTaskGame = () => {
                         <p className="text-center text-xs text-gray-400 mb-2">← Scroll horizontally to see full curve →</p>
                       )}
                       <div className="overflow-x-auto overflow-y-hidden pb-12 -mx-2 px-2">
-                        <svg width={graphWidth} height={graphHeight} className="mx-auto block" style={{shapeRendering: 'geometricPrecision'}}>
+                        <svg width={graphWidth} height={graphHeight} className="mx-auto block">
                             {/* Gradient definitions */}
                             <defs>
                             <linearGradient id="bellGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" style={{stopColor: '#f87171', stopOpacity: 0.8}} />
-                              <stop offset="50%" style={{stopColor: '#fb923c', stopOpacity: 0.5}} />
-                              <stop offset="100%" style={{stopColor: '#fcd34d', stopOpacity: 0.2}} />
+                              <stop offset="0%" style={{stopColor: '#ef4444', stopOpacity: 0.7}} />
+                              <stop offset="50%" style={{stopColor: '#f97316', stopOpacity: 0.4}} />
+                              <stop offset="100%" style={{stopColor: '#fbbf24', stopOpacity: 0.1}} />
                             </linearGradient>
                             <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                               <stop offset="0%" style={{stopColor: '#8b5cf6', stopOpacity: 0.8}} />
@@ -4876,14 +4811,6 @@ const CognitiveTaskGame = () => {
                                 <feMergeNode in="SourceGraphic"/>
                               </feMerge>
                             </filter>
-                            <filter id="curveShadow">
-                              <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.4"/>
-                            </filter>
-                            <filter id="crispEdges">
-                              <feComponentTransfer>
-                                <feFuncA type="discrete" tableValues="0 1"/>
-                              </feComponentTransfer>
-                            </filter>
                           </defs>
 
                           {/* Grid lines */}
@@ -4904,10 +4831,7 @@ const CognitiveTaskGame = () => {
                           <path
                             d={filledPathData}
                             fill="url(#bellGradient)"
-                            fillOpacity="0.85"
-                            stroke="#fb923c"
-                            strokeWidth="0.5"
-                            strokeOpacity="0.6"
+                            fillOpacity="0.8"
                           />
 
                           {/* Standard deviation markers */}
@@ -5009,12 +4933,10 @@ const CognitiveTaskGame = () => {
                           <path
                             d={pathData}
                             fill="none"
-                            stroke="#ef4444"
-                            strokeWidth="4"
+                            stroke="#dc2626"
+                            strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            filter="url(#curveShadow)"
-                            style={{vectorEffect: 'non-scaling-stroke'}}
                           />
 
                           {/* Theoretical normal distribution curve for comparison */}
@@ -5022,13 +4944,11 @@ const CognitiveTaskGame = () => {
                             d={theoreticalPathData}
                             fill="none"
                             stroke="#10b981"
-                            strokeWidth="3"
+                            strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeDasharray="8,4"
-                            opacity="0.9"
-                            filter="url(#curveShadow)"
-                            style={{vectorEffect: 'non-scaling-stroke'}}
+                            strokeDasharray="5,5"
+                            opacity="0.8"
                           />
 
                           {/* Axes */}
@@ -5038,8 +4958,7 @@ const CognitiveTaskGame = () => {
                             x2={graphWidth - padding}
                             y2={graphHeight - padding}
                             stroke="#9ca3af"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
+                            strokeWidth="2"
                           />
                           <line
                             x1={padding}
@@ -5047,8 +4966,7 @@ const CognitiveTaskGame = () => {
                             x2={padding}
                             y2={graphHeight - padding}
                             stroke="#9ca3af"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
+                            strokeWidth="2"
                           />
 
                           {/* X-axis label */}
