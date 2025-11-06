@@ -3065,111 +3065,266 @@ const CognitiveTaskGame = () => {
       {showBellCurve && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Player Distribution</h2>
-            <p className="text-center text-sm text-gray-400 mb-6">Bell curve showing player count by level achieved</p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Player Distribution Analysis</h2>
+            <p className="text-center text-sm text-gray-400 mb-6">Normal distribution curve with standard deviation markers (IQ-style)</p>
 
             {/* Bell curve visualization */}
             <div className="flex-1 overflow-y-auto mb-6">
               {(() => {
-                // Group players by highest level
+                if (leaderboard.length === 0) {
+                  return <p className="text-center text-gray-400">No data to display</p>;
+                }
+
+                // Calculate mean and standard deviation
+                const levels = leaderboard.map(e => e.highest_level || 0);
+                const mean = levels.reduce((sum, l) => sum + l, 0) / levels.length;
+                const variance = levels.reduce((sum, l) => sum + Math.pow(l - mean, 2), 0) / levels.length;
+                const stdDev = Math.sqrt(variance);
+
+                // Group players by level
                 const levelCounts = {};
                 let maxCount = 0;
-
-                leaderboard.forEach(entry => {
-                  const level = entry.highest_level || 0;
+                levels.forEach(level => {
                   levelCounts[level] = (levelCounts[level] || 0) + 1;
                   maxCount = Math.max(maxCount, levelCounts[level]);
                 });
 
-                // Get all levels from min to max
-                const levels = Object.keys(levelCounts).map(Number).sort((a, b) => a - b);
-                const minLevel = levels.length > 0 ? levels[0] : 0;
-                const maxLevel = levels.length > 0 ? levels[levels.length - 1] : 27;
+                // Determine range for graph (mean ± 3 standard deviations, clamped to 1-27)
+                const minLevel = Math.max(1, Math.floor(mean - 3 * stdDev));
+                const maxLevel = Math.min(27, Math.ceil(mean + 3 * stdDev));
+                const range = maxLevel - minLevel;
 
-                // Create array for all levels in range
-                const allLevels = [];
-                for (let i = minLevel; i <= maxLevel; i++) {
-                  allLevels.push(i);
+                // Generate normal distribution curve points
+                const normalDistribution = (x, mu, sigma) => {
+                  return (1 / (sigma * Math.sqrt(2 * Math.PI))) *
+                         Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
+                };
+
+                // Graph dimensions
+                const graphWidth = 800;
+                const graphHeight = 300;
+                const padding = 40;
+                const chartWidth = graphWidth - 2 * padding;
+                const chartHeight = graphHeight - 2 * padding;
+
+                // Generate curve points
+                const curvePoints = [];
+                const step = range / 100;
+                for (let x = minLevel; x <= maxLevel; x += step) {
+                  const y = normalDistribution(x, mean, stdDev);
+                  curvePoints.push({ x, y });
                 }
 
+                // Normalize curve to graph height
+                const maxY = Math.max(...curvePoints.map(p => p.y));
+                const scaledPoints = curvePoints.map(p => {
+                  const scaledX = padding + ((p.x - minLevel) / range) * chartWidth;
+                  const scaledY = graphHeight - padding - (p.y / maxY) * chartHeight;
+                  return { x: scaledX, y: scaledY };
+                });
+
+                // Create SVG path
+                const pathData = scaledPoints.map((p, i) =>
+                  `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+                ).join(' ');
+
+                // Calculate standard deviation positions
+                const sdMarkers = [
+                  { value: mean - 3 * stdDev, label: '-3σ', percent: '0.1%' },
+                  { value: mean - 2 * stdDev, label: '-2σ', percent: '2.1%' },
+                  { value: mean - 1 * stdDev, label: '-1σ', percent: '13.6%' },
+                  { value: mean, label: 'μ', percent: '34.1%' },
+                  { value: mean + 1 * stdDev, label: '+1σ', percent: '34.1%' },
+                  { value: mean + 2 * stdDev, label: '+2σ', percent: '13.6%' },
+                  { value: mean + 3 * stdDev, label: '+3σ', percent: '2.1%' }
+                ].filter(m => m.value >= minLevel && m.value <= maxLevel);
+
                 return (
-                  <div className="space-y-2">
-                    {leaderboard.length === 0 ? (
-                      <p className="text-center text-gray-400">No data to display</p>
-                    ) : (
-                      <>
-                        {/* Stats summary */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 bg-gray-700 p-4 rounded-lg">
-                          <div className="text-center">
-                            <div className="text-xl sm:text-2xl font-bold text-blue-400">{leaderboard.length}</div>
-                            <div className="text-xs sm:text-sm text-gray-400">Total Players</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xl sm:text-2xl font-bold text-green-400">{maxLevel}</div>
-                            <div className="text-xs sm:text-sm text-gray-400">Highest Level</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xl sm:text-2xl font-bold text-yellow-400">
-                              {(leaderboard.reduce((sum, e) => sum + (e.highest_level || 0), 0) / leaderboard.length).toFixed(1)}
-                            </div>
-                            <div className="text-xs sm:text-sm text-gray-400">Avg Level</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xl sm:text-2xl font-bold text-purple-400">{maxCount}</div>
-                            <div className="text-xs sm:text-sm text-gray-400">Most Common</div>
-                          </div>
-                        </div>
+                  <div className="space-y-4">
+                    {/* Stats summary */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-700 p-4 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-xl sm:text-2xl font-bold text-blue-400">{leaderboard.length}</div>
+                        <div className="text-xs sm:text-sm text-gray-400">Sample Size (n)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl sm:text-2xl font-bold text-yellow-400">{mean.toFixed(2)}</div>
+                        <div className="text-xs sm:text-sm text-gray-400">Mean (μ)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl sm:text-2xl font-bold text-green-400">{stdDev.toFixed(2)}</div>
+                        <div className="text-xs sm:text-sm text-gray-400">Std Dev (σ)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl sm:text-2xl font-bold text-purple-400">{maxLevel}</div>
+                        <div className="text-xs sm:text-sm text-gray-400">Highest Level</div>
+                      </div>
+                    </div>
 
-                        {/* Bell curve bars */}
-                        <div className="space-y-1">
-                          {allLevels.map(level => {
-                            const count = levelCounts[level] || 0;
-                            const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                            const isUserLevel = user && leaderboard.some(e => e.user_id === user.id && e.highest_level === level);
+                    {/* Normal Distribution Graph */}
+                    <div className="bg-gray-700 p-4 rounded-lg">
+                      <h3 className="text-center text-lg font-bold mb-4">Normal Distribution Curve</h3>
+                      <div className="flex justify-center overflow-x-auto">
+                        <svg width={graphWidth} height={graphHeight} className="overflow-visible min-w-[600px]">
+                          {/* Grid lines */}
+                          {[0, 0.25, 0.5, 0.75, 1].map((fraction, i) => (
+                            <line
+                              key={i}
+                              x1={padding}
+                              y1={graphHeight - padding - chartHeight * fraction}
+                              x2={graphWidth - padding}
+                              y2={graphHeight - padding - chartHeight * fraction}
+                              stroke="#374151"
+                              strokeWidth="1"
+                            />
+                          ))}
 
+                          {/* Standard deviation markers */}
+                          {sdMarkers.map((marker, i) => {
+                            const x = padding + ((marker.value - minLevel) / range) * chartWidth;
+                            const isUserPosition = user && Math.abs(marker.value - (leaderboard.find(e => e.user_id === user.id)?.highest_level || 0)) < 0.5;
                             return (
-                              <div key={level} className="flex items-center gap-2">
-                                <div className="w-12 text-right text-sm font-mono text-gray-400">
-                                  L{level}
-                                </div>
-                                <div className="flex-1 bg-gray-700 rounded-full h-8 overflow-hidden relative">
-                                  {count > 0 && (
-                                    <div
-                                      className={`h-full rounded-full transition-all duration-300 ${
-                                        isUserLevel
-                                          ? 'bg-gradient-to-r from-blue-500 to-blue-600'
-                                          : 'bg-gradient-to-r from-purple-500 to-pink-500'
-                                      }`}
-                                      style={{ width: `${Math.max(percentage, 5)}%` }}
-                                    >
-                                      <div className="h-full flex items-center justify-end pr-2">
-                                        <span className="text-xs font-bold text-white">
-                                          {count} {count === 1 ? 'player' : 'players'}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              <g key={i}>
+                                <line
+                                  x1={x}
+                                  y1={padding}
+                                  x2={x}
+                                  y2={graphHeight - padding}
+                                  stroke={marker.label === 'μ' ? '#fbbf24' : '#6b7280'}
+                                  strokeWidth={marker.label === 'μ' ? '3' : '2'}
+                                  strokeDasharray={marker.label === 'μ' ? '0' : '5,5'}
+                                />
+                                <text
+                                  x={x}
+                                  y={graphHeight - padding + 20}
+                                  textAnchor="middle"
+                                  fill={marker.label === 'μ' ? '#fbbf24' : '#9ca3af'}
+                                  fontSize="12"
+                                  fontWeight="bold"
+                                >
+                                  {marker.label}
+                                </text>
+                                <text
+                                  x={x}
+                                  y={graphHeight - padding + 35}
+                                  textAnchor="middle"
+                                  fill="#9ca3af"
+                                  fontSize="10"
+                                >
+                                  L{marker.value.toFixed(1)}
+                                </text>
+                              </g>
                             );
                           })}
-                        </div>
 
-                        {/* Legend */}
-                        <div className="flex justify-center gap-6 mt-6 text-sm">
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                            <span className="text-gray-300">Other Players</span>
-                          </div>
-                          {user && (
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 rounded bg-gradient-to-r from-blue-500 to-blue-600"></div>
-                              <span className="text-gray-300">Your Level</span>
-                            </div>
-                          )}
+                          {/* Actual data bars */}
+                          {Object.entries(levelCounts).map(([level, count]) => {
+                            const lvl = Number(level);
+                            if (lvl < minLevel || lvl > maxLevel) return null;
+                            const x = padding + ((lvl - minLevel) / range) * chartWidth;
+                            const barWidth = chartWidth / (range * 2);
+                            const barHeight = (count / maxCount) * chartHeight;
+                            const isUserLevel = user && leaderboard.some(e => e.user_id === user.id && e.highest_level === lvl);
+                            return (
+                              <rect
+                                key={level}
+                                x={x - barWidth / 2}
+                                y={graphHeight - padding - barHeight}
+                                width={barWidth}
+                                height={barHeight}
+                                fill={isUserLevel ? '#3b82f6' : '#8b5cf6'}
+                                fillOpacity="0.6"
+                              />
+                            );
+                          })}
+
+                          {/* Normal distribution curve */}
+                          <path
+                            d={pathData}
+                            fill="none"
+                            stroke="#ef4444"
+                            strokeWidth="3"
+                          />
+
+                          {/* Axes */}
+                          <line
+                            x1={padding}
+                            y1={graphHeight - padding}
+                            x2={graphWidth - padding}
+                            y2={graphHeight - padding}
+                            stroke="#9ca3af"
+                            strokeWidth="2"
+                          />
+                          <line
+                            x1={padding}
+                            y1={padding}
+                            x2={padding}
+                            y2={graphHeight - padding}
+                            stroke="#9ca3af"
+                            strokeWidth="2"
+                          />
+
+                          {/* Y-axis label */}
+                          <text
+                            x={padding - 30}
+                            y={graphHeight / 2}
+                            textAnchor="middle"
+                            fill="#9ca3af"
+                            fontSize="12"
+                            transform={`rotate(-90, ${padding - 30}, ${graphHeight / 2})`}
+                          >
+                            Frequency
+                          </text>
+
+                          {/* X-axis label */}
+                          <text
+                            x={graphWidth / 2}
+                            y={graphHeight - 5}
+                            textAnchor="middle"
+                            fill="#9ca3af"
+                            fontSize="12"
+                          >
+                            Level Achieved
+                          </text>
+                        </svg>
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-purple-500 opacity-60"></div>
+                          <span className="text-gray-300">Actual Data</span>
                         </div>
-                      </>
-                    )}
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-1 bg-red-500"></div>
+                          <span className="text-gray-300">Normal Curve</span>
+                        </div>
+                        {user && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 bg-blue-500 opacity-60"></div>
+                            <span className="text-gray-300">Your Level</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-1 bg-yellow-500"></div>
+                          <span className="text-gray-300">Mean (μ)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-1 border-t-2 border-dashed border-gray-500"></div>
+                          <span className="text-gray-300">Std Dev (σ)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Percentile information */}
+                    <div className="bg-gray-700 p-4 rounded-lg text-xs text-gray-300">
+                      <h4 className="font-bold mb-2 text-center">Standard Deviation Ranges</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div>μ ± 1σ: <span className="text-green-400">68.2%</span></div>
+                        <div>μ ± 2σ: <span className="text-yellow-400">95.4%</span></div>
+                        <div>μ ± 3σ: <span className="text-red-400">99.7%</span></div>
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
