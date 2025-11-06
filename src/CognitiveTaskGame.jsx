@@ -1307,32 +1307,68 @@ const CognitiveTaskGame = () => {
     ],
     'followup-numerical': Array.from({length: 200}, (_, i) => [String(i), String(i + 1)]),
     'physical-numerical': [
+      // Words
       ['one', 'two'], ['two', 'three'], ['three', 'four'], ['four', 'five'], ['five', 'six'],
       ['six', 'seven'], ['seven', 'eight'], ['eight', 'nine'], ['nine', 'ten'], ['ten', 'eleven'],
+      ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'], ['fifteen', 'sixteen'],
+      ['sixteen', 'seventeen'], ['seventeen', 'eighteen'], ['eighteen', 'nineteen'], ['nineteen', 'twenty'], ['twenty', 'twenty-one'],
+      ['twenty-one', 'twenty-two'], ['twenty-two', 'twenty-three'], ['twenty-three', 'twenty-four'], ['twenty-four', 'twenty-five'],
+      ['twenty-five', 'twenty-six'], ['twenty-six', 'twenty-seven'], ['twenty-seven', 'twenty-eight'], ['twenty-eight', 'twenty-nine'],
+      ['twenty-nine', 'thirty'], ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'],
+      // Roman numerals
       ['I', 'II'], ['II', 'III'], ['III', 'IV'], ['IV', 'V'], ['V', 'VI'],
       ['VI', 'VII'], ['VII', 'VIII'], ['VIII', 'IX'], ['IX', 'X'], ['X', 'XI'],
+      ['XI', 'XII'], ['XII', 'XIII'], ['XIII', 'XIV'], ['XIV', 'XV'], ['XV', 'XVI'],
+      ['XVI', 'XVII'], ['XVII', 'XVIII'], ['XVIII', 'XIX'], ['XIX', 'XX'], ['XX', 'XXI'],
+      ['XXI', 'XXII'], ['XXII', 'XXIII'], ['XXIII', 'XXIV'], ['XXIV', 'XXV'], ['XXV', 'XXVI'],
+      ['XXVI', 'XXVII'], ['XXVII', 'XXVIII'], ['XXVIII', 'XXIX'], ['XXIX', 'XXX'], ['XXX', 'XXXI'],
+      // Digits
       ['1', '2'], ['2', '3'], ['3', '4'], ['4', '5'], ['5', '6'],
       ['6', '7'], ['7', '8'], ['8', '9'], ['9', '10'], ['10', '11'],
-      ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'], ['fifteen', 'sixteen'],
-      ['XI', 'XII'], ['XII', 'XIII'], ['XIII', 'XIV'], ['XIV', 'XV'], ['XV', 'XVI'],
       ['11', '12'], ['12', '13'], ['13', '14'], ['14', '15'], ['15', '16'],
-      ['sixteen', 'seventeen'], ['seventeen', 'eighteen'], ['eighteen', 'nineteen'], ['nineteen', 'twenty'], ['twenty', 'twenty-one'],
-      ['XVI', 'XVII'], ['XVII', 'XVIII'], ['XVIII', 'XIX'], ['XIX', 'XX'], ['XX', 'XXI'],
-      ['16', '17'], ['17', '18'], ['18', '19'], ['19', '20'], ['20', '21']
+      ['16', '17'], ['17', '18'], ['18', '19'], ['19', '20'], ['20', '21'],
+      ['21', '22'], ['22', '23'], ['23', '24'], ['24', '25'], ['25', '26'],
+      ['26', '27'], ['27', '28'], ['28', '29'], ['29', '30'], ['30', '31'],
+      ['31', '32'], ['32', '33'], ['33', '34'], ['34', '35'], ['35', '36'],
+      ['36', '37'], ['37', '38'], ['38', '39'], ['39', '40'], ['40', '41'],
+      ['41', '42'], ['42', '43'], ['43', '44'], ['44', '45'], ['45', '46'],
+      ['46', '47'], ['47', '48'], ['48', '49'], ['49', '50'], ['50', '51'],
+      // Mixed formats
+      ['one', 'II'], ['II', 'three'], ['three', 'IV'], ['IV', 'five'], ['five', 'VI'],
+      ['VI', 'seven'], ['seven', 'VIII'], ['VIII', 'nine'], ['nine', 'X'], ['X', 'eleven'],
+      ['1', 'two'], ['two', '3'], ['3', 'four'], ['four', '5'], ['5', 'six'],
+      ['six', '7'], ['7', 'eight'], ['eight', '9'], ['9', 'ten'], ['ten', '11'],
+      ['I', '2'], ['2', 'III'], ['III', '4'], ['4', 'V'], ['V', '6'],
+      ['6', 'VII'], ['VII', '8'], ['8', 'IX'], ['IX', '10'], ['10', 'XI']
     ],
     'meaning': [
+      // Digit to word
       ['1', 'one'], ['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five'],
       ['6', 'six'], ['7', 'seven'], ['8', 'eight'], ['9', 'nine'], ['10', 'ten'],
-      ['one', 'I'], ['two', 'II'], ['three', 'III'], ['four', 'IV'], ['five', 'V'],
-      ['six', 'VI'], ['seven', 'VII'], ['eight', 'VIII'], ['nine', 'IX'], ['ten', 'X'],
-      ['I', '1'], ['II', '2'], ['III', '3'], ['IV', '4'], ['V', '5'],
-      ['VI', '6'], ['VII', '7'], ['VIII', '8'], ['IX', '9'], ['X', '10'],
       ['11', 'eleven'], ['12', 'twelve'], ['13', 'thirteen'], ['14', 'fourteen'], ['15', 'fifteen'],
       ['16', 'sixteen'], ['17', 'seventeen'], ['18', 'eighteen'], ['19', 'nineteen'], ['20', 'twenty'],
-      ['eleven', 'XI'], ['twelve', 'XII'], ['thirteen', 'XIII'], ['fourteen', 'XIV'], ['fifteen', 'XV'],
-      ['XVI', '16'], ['XVII', '17'], ['XVIII', '18'], ['XIX', '19'], ['XX', '20'],
       ['21', 'twenty-one'], ['22', 'twenty-two'], ['23', 'twenty-three'], ['24', 'twenty-four'], ['25', 'twenty-five'],
-      ['thirty', 'XXX'], ['forty', 'XL'], ['fifty', 'L'], ['XXV', '25'], ['XXVI', '26']
+      ['26', 'twenty-six'], ['27', 'twenty-seven'], ['28', 'twenty-eight'], ['29', 'twenty-nine'], ['30', 'thirty'],
+      ['31', 'thirty-one'], ['32', 'thirty-two'], ['33', 'thirty-three'], ['40', 'forty'], ['50', 'fifty'],
+      // Word to Roman
+      ['one', 'I'], ['two', 'II'], ['three', 'III'], ['four', 'IV'], ['five', 'V'],
+      ['six', 'VI'], ['seven', 'VII'], ['eight', 'VIII'], ['nine', 'IX'], ['ten', 'X'],
+      ['eleven', 'XI'], ['twelve', 'XII'], ['thirteen', 'XIII'], ['fourteen', 'XIV'], ['fifteen', 'XV'],
+      ['sixteen', 'XVI'], ['seventeen', 'XVII'], ['eighteen', 'XVIII'], ['nineteen', 'XIX'], ['twenty', 'XX'],
+      ['twenty-one', 'XXI'], ['twenty-two', 'XXII'], ['twenty-three', 'XXIII'], ['twenty-four', 'XXIV'], ['twenty-five', 'XXV'],
+      ['twenty-six', 'XXVI'], ['twenty-seven', 'XXVII'], ['twenty-eight', 'XXVIII'], ['twenty-nine', 'XXIX'], ['thirty', 'XXX'],
+      // Roman to digit
+      ['I', '1'], ['II', '2'], ['III', '3'], ['IV', '4'], ['V', '5'],
+      ['VI', '6'], ['VII', '7'], ['VIII', '8'], ['IX', '9'], ['X', '10'],
+      ['XI', '11'], ['XII', '12'], ['XIII', '13'], ['XIV', '14'], ['XV', '15'],
+      ['XVI', '16'], ['XVII', '17'], ['XVIII', '18'], ['XIX', '19'], ['XX', '20'],
+      ['XXI', '21'], ['XXII', '22'], ['XXIII', '23'], ['XXIV', '24'], ['XXV', '25'],
+      ['XXVI', '26'], ['XXVII', '27'], ['XXVIII', '28'], ['XXIX', '29'], ['XXX', '30'],
+      ['XL', '40'], ['L', '50'], ['LX', '60'], ['LXX', '70'], ['LXXX', '80'], ['XC', '90'], ['C', '100'],
+      // More combinations
+      ['forty', 'XL'], ['fifty', 'L'], ['sixty', 'LX'], ['seventy', 'LXX'], ['eighty', 'LXXX'],
+      ['ninety', 'XC'], ['hundred', 'C'], ['100', 'hundred'], ['60', 'sixty'], ['70', 'seventy'],
+      ['80', 'eighty'], ['90', 'ninety']
     ],
     'same-time': [
       // Clock emoji to digital
@@ -1356,8 +1392,16 @@ const CognitiveTaskGame = () => {
       ['9:30', 'half past nine'], ['10:30', 'half past ten'], ['11:30', 'half past eleven'], ['12:30', 'half past twelve'],
       ['1:15', 'quarter past one'], ['2:15', 'quarter past two'], ['3:15', 'quarter past three'], ['4:15', 'quarter past four'],
       ['5:15', 'quarter past five'], ['6:15', 'quarter past six'], ['7:15', 'quarter past seven'], ['8:15', 'quarter past eight'],
+      ['9:15', 'quarter past nine'], ['10:15', 'quarter past ten'], ['11:15', 'quarter past eleven'], ['12:15', 'quarter past twelve'],
       ['1:45', 'quarter to two'], ['2:45', 'quarter to three'], ['3:45', 'quarter to four'], ['4:45', 'quarter to five'],
-      ['5:45', 'quarter to six'], ['6:45', 'quarter to seven'], ['7:45', 'quarter to eight'], ['8:45', 'quarter to nine']
+      ['5:45', 'quarter to six'], ['6:45', 'quarter to seven'], ['7:45', 'quarter to eight'], ['8:45', 'quarter to nine'],
+      ['9:45', 'quarter to ten'], ['10:45', 'quarter to eleven'], ['11:45', 'quarter to twelve'], ['12:45', 'quarter to one'],
+      // More variations
+      ['1:00', '1 o\'clock'], ['2:00', '2 o\'clock'], ['3:00', '3 o\'clock'], ['4:00', '4 o\'clock'],
+      ['5:00', '5 o\'clock'], ['6:00', '6 o\'clock'], ['7:00', '7 o\'clock'], ['8:00', '8 o\'clock'],
+      ['1:30', '1:30 pm'], ['2:30', '2:30 pm'], ['3:30', '3:30 am'], ['4:30', '4:30 am'],
+      ['one o\'clock', '1 o\'clock'], ['two o\'clock', '2 o\'clock'], ['three o\'clock', '3 o\'clock'],
+      ['12:00', 'noon'], ['12:00', 'midnight'], ['00:00', 'midnight'], ['12:00', 'twelve o\'clock']
     ]
   };
 
@@ -1394,39 +1438,58 @@ const CognitiveTaskGame = () => {
       }
       return [String(num1), String(num2)];
     } else if (relationType === 'physical-numerical') {
-      // For physical numerical, use sequential numbers in different forms (looks similar but wrong)
+      // For physical numerical, use NON-consecutive numbers (looks similar but wrong)
       const formats = [
         (n) => String(n),
-        (n) => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+        (n) => {
+          const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
                 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-                'nineteen', 'twenty'][n] || String(n),
-        (n) => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-                'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'][n] || String(n)
+                'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
+                'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty', 'thirty-one', 'thirty-two',
+                'thirty-three', 'thirty-four', 'thirty-five', 'thirty-six', 'thirty-seven', 'thirty-eight', 'thirty-nine', 'forty', 'fifty'];
+          return words[n] || String(n);
+        },
+        (n) => {
+          const romans = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+                'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
+                'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX', 'XXXI'];
+          return romans[n] || String(n);
+        }
       ];
 
-      const num = Math.floor(Math.random() * 18) + 1;
-      const offset = Math.random() < 0.5 ? 2 : 3; // Skip by 2 or 3
-      const nextNum = num + offset;
+      const num = Math.floor(Math.random() * 30) + 1; // 1-30
+      const offset = Math.floor(Math.random() * 3) + 2; // Skip by 2, 3, or 4
+      const nextNum = Math.min(num + offset, 50); // Cap at 50
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
       const format2 = formats[Math.floor(Math.random() * formats.length)];
 
       return [format1(num), format2(nextNum)];
     } else if (relationType === 'meaning') {
-      // For meaning, use different numbers in different forms
+      // For meaning, use DIFFERENT numbers in different forms
       const formats = [
         (n) => String(n),
-        (n) => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+        (n) => {
+          const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
                 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-                'nineteen', 'twenty'][n] || String(n),
-        (n) => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-                'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'][n] || String(n)
+                'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
+                'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty', 'thirty-one', 'thirty-two',
+                'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred'];
+          return words[n] || String(n);
+        },
+        (n) => {
+          const romans = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+                'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
+                'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX',
+                'XL', 'L', 'LX', 'LXX', 'LXXX', 'XC', 'C'];
+          return romans[n] || String(n);
+        }
       ];
 
-      let num1 = Math.floor(Math.random() * 18) + 1;
-      let num2 = Math.floor(Math.random() * 18) + 1;
+      let num1 = Math.floor(Math.random() * 30) + 1; // 1-30
+      let num2 = Math.floor(Math.random() * 30) + 1; // 1-30
       while (num1 === num2) {
-        num2 = Math.floor(Math.random() * 18) + 1;
+        num2 = Math.floor(Math.random() * 30) + 1;
       }
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
