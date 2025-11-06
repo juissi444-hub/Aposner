@@ -23,6 +23,9 @@ const CognitiveTaskGame = () => {
   const [feedback, setFeedback] = useState(null);
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [playerName, setPlayerName] = useState('');
 
   const getTimeForLevel = (lvl) => {
     if (lvl >= 15) return Math.max(50, 150 - (lvl - 14) * 25);
@@ -36,6 +39,8 @@ const CognitiveTaskGame = () => {
     const savedLevel = localStorage.getItem('adaptivePosnerLevel');
     const savedHighest = localStorage.getItem('adaptivePosnerHighest');
     const savedSound = localStorage.getItem('adaptivePosnerSound');
+    const savedLeaderboard = localStorage.getItem('adaptivePosnerLeaderboard');
+    const savedName = localStorage.getItem('adaptivePosnerPlayerName');
 
     if (savedLevel) {
       const levelNum = parseInt(savedLevel);
@@ -49,6 +54,18 @@ const CognitiveTaskGame = () => {
 
     if (savedSound !== null) {
       setSoundEnabled(savedSound === 'true');
+    }
+
+    if (savedLeaderboard) {
+      try {
+        setLeaderboard(JSON.parse(savedLeaderboard));
+      } catch (e) {
+        console.error('Failed to parse leaderboard:', e);
+      }
+    }
+
+    if (savedName) {
+      setPlayerName(savedName);
     }
   }, []);
 
@@ -86,8 +103,13 @@ const CognitiveTaskGame = () => {
     if (newLevel > highestLevel) {
       localStorage.setItem('adaptivePosnerHighest', String(newLevel));
       setHighestLevel(newLevel);
+
+      // Add to leaderboard if player has a name
+      if (playerName) {
+        addToLeaderboard(playerName, newLevel);
+      }
     }
-  }, [highestLevel]);
+  }, [highestLevel, playerName, addToLeaderboard]);
 
   // Reset progress
   const resetProgress = () => {
@@ -96,6 +118,30 @@ const CognitiveTaskGame = () => {
     setSavedAdaptiveLevel(1);
     setHighestLevel(1);
     setLevel(1);
+  };
+
+  // Add entry to leaderboard
+  const addToLeaderboard = useCallback((name, level) => {
+    if (!name || !level) return;
+
+    const newEntry = {
+      name: name.trim(),
+      level: level,
+      date: new Date().toISOString()
+    };
+
+    const updatedLeaderboard = [...leaderboard, newEntry]
+      .sort((a, b) => b.level - a.level) // Sort by level descending
+      .slice(0, 10); // Keep only top 10
+
+    setLeaderboard(updatedLeaderboard);
+    localStorage.setItem('adaptivePosnerLeaderboard', JSON.stringify(updatedLeaderboard));
+  }, [leaderboard]);
+
+  // Save player name
+  const savePlayerName = (name) => {
+    setPlayerName(name);
+    localStorage.setItem('adaptivePosnerPlayerName', name);
   };
 
   const relationTypes = {
@@ -666,6 +712,12 @@ const CognitiveTaskGame = () => {
               <p><strong>Manual Mode:</strong> Choose your own level (1-18) and number of tasks (10-60)</p>
               <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
             </div>
+            <button
+              onClick={() => setShowLeaderboard(true)}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-lg text-md mt-4"
+            >
+              🏆 View Leaderboard
+            </button>
           </div>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
@@ -867,6 +919,65 @@ const CognitiveTaskGame = () => {
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Leaderboard Modal */}
+      {showLeaderboard && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-3xl font-bold text-center mb-4 text-yellow-400">🏆 Leaderboard</h2>
+            <p className="text-center text-gray-400 text-sm mb-4">Adaptive Mode Only</p>
+
+            {playerName && (
+              <div className="mb-4 text-center">
+                <p className="text-gray-400">Playing as: <span className="text-white font-bold">{playerName}</span></p>
+              </div>
+            )}
+
+            {!playerName && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Enter your name to track your scores:</label>
+                <input
+                  type="text"
+                  onChange={(e) => savePlayerName(e.target.value)}
+                  placeholder="Your Name"
+                  className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg"
+                  maxLength={20}
+                />
+              </div>
+            )}
+
+            <div className="bg-gray-900 rounded-lg p-4 max-h-96 overflow-y-auto">
+              {leaderboard.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No entries yet. Be the first!</p>
+              ) : (
+                <div className="space-y-2">
+                  {leaderboard.map((entry, index) => (
+                    <div
+                      key={`${entry.name}-${entry.date}`}
+                      className={`flex justify-between items-center p-3 rounded ${
+                        index === 0 ? 'bg-yellow-600' : index === 1 ? 'bg-gray-600' : index === 2 ? 'bg-orange-600' : 'bg-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-xl w-8">{index + 1}.</span>
+                        <span className="font-medium">{entry.name}</span>
+                      </div>
+                      <span className="text-lg font-bold">Level {entry.level}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowLeaderboard(false)}
+              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>
