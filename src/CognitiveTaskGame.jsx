@@ -468,10 +468,13 @@ const CognitiveTaskGame = () => {
 
       console.log(`💾 Data being saved:`, dataToSave);
 
+      // Use upsert with onConflict to specify which column to check for duplicates
       const { data: upsertData, error: updateError } = await supabase
         .from('leaderboard')
-        .upsert(dataToSave)
+        .upsert(dataToSave, { onConflict: 'user_id' })
         .select();
+
+      console.log(`💾 Upsert operation executed (INSERT if new, UPDATE if exists)`);
 
       if (updateError) {
         console.error('❌ Error upserting leaderboard:', updateError);
