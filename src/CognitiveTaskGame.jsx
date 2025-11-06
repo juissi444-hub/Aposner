@@ -165,7 +165,7 @@ const CognitiveTaskGame = () => {
               {
                 user_id: data.user.id,
                 username: username,
-                highest_level: 1,
+                highest_level: 0,
                 best_score: 0
               }
             ]);
@@ -173,7 +173,7 @@ const CognitiveTaskGame = () => {
             console.error('❌ Failed to create leaderboard entry:', insertError);
             throw insertError;
           }
-          console.log('✅ Leaderboard entry created successfully');
+          console.log('✅ Leaderboard entry created - starting at level 0');
         }
 
         setShowAuth(false);
@@ -262,6 +262,7 @@ const CognitiveTaskGame = () => {
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
+        .gt('highest_level', 0) // Only show users who have completed at least one level
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
@@ -340,15 +341,19 @@ const CognitiveTaskGame = () => {
 
       console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}`);
 
+      const dataToSave = {
+        user_id: user.id,
+        username: user.user_metadata?.username || user.email,
+        highest_level: highestLevel,
+        best_score: bestScore,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log(`💾 Data being saved:`, dataToSave);
+
       const { data: upsertData, error: updateError } = await supabase
         .from('leaderboard')
-        .upsert({
-          user_id: user.id,
-          username: user.user_metadata?.username || user.email,
-          highest_level: highestLevel,
-          best_score: bestScore,
-          updated_at: new Date().toISOString()
-        })
+        .upsert(dataToSave)
         .select();
 
       if (updateError) {
@@ -357,7 +362,7 @@ const CognitiveTaskGame = () => {
       }
 
       console.log(`✅ Leaderboard updated successfully!`);
-      console.log(`✅ Updated data:`, JSON.stringify(upsertData, null, 2));
+      console.log(`✅ Data saved to database:`, upsertData);
     } catch (error) {
       console.error('❌ Error updating leaderboard:', error);
       console.error('❌ Full error:', JSON.stringify(error, null, 2));
@@ -1243,36 +1248,6 @@ const CognitiveTaskGame = () => {
                       Leaderboard
                     </button>
                     <button
-                      onClick={async () => {
-                        console.log('🧪 TEST: Checking my leaderboard entry...');
-                        if (!user) {
-                          alert('Not logged in!');
-                          return;
-                        }
-                        try {
-                          const { data, error } = await supabase
-                            .from('leaderboard')
-                            .select('*')
-                            .eq('user_id', user.id)
-                            .single();
-
-                          if (error) {
-                            console.error('❌ Error:', error);
-                            alert(`Error: ${error.message}`);
-                          } else {
-                            console.log('✅ My leaderboard entry:', data);
-                            alert(`Your entry:\nLevel: ${data?.highest_level || 'none'}\nScore: ${data?.best_score || 0}`);
-                          }
-                        } catch (e) {
-                          console.error('❌ Exception:', e);
-                          alert(`Exception: ${e.message}`);
-                        }
-                      }}
-                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
-                    >
-                      Test DB
-                    </button>
-                    <button
                       onClick={handleLogout}
                       className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
                     >
@@ -1708,7 +1683,14 @@ const CognitiveTaskGame = () => {
                     // Calculate level completion percentage (out of 30 tasks in adaptive mode)
                     const bestScore = entry.best_score || 0;
                     const levelProgress = Math.round((bestScore / 30) * 100);
-                    console.log(`📊 User ${entry.username}: Level ${entry.highest_level}, best_score=${bestScore}, ${levelProgress}% completed, ${percentile}th percentile`);
+                    console.log(`📊 Leaderboard entry ${index + 1}:`, {
+                      username: entry.username,
+                      highest_level: entry.highest_level,
+                      best_score: entry.best_score,
+                      bestScore: bestScore,
+                      calculation: `${bestScore}/30 = ${levelProgress}%`,
+                      percentile: `${percentile}th`
+                    });
 
                     // Get styling based on rank
                     let rankStyle = '';
