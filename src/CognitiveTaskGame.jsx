@@ -481,23 +481,27 @@ const CognitiveTaskGame = () => {
         console.warn('⚠️ Error loading user_progress:', err.message);
       }
 
-      // Try to load from leaderboard table (best achievements)
-      try {
-        const { data: leaderboardData, error: leaderboardError } = await supabase
-          .from('leaderboard')
-          .select('highest_level, best_score')
-          .eq('user_id', userId)
-          .single();
+      // Try to load from leaderboard table (best achievements) - only for authenticated users
+      if (!userId.startsWith('anon_')) {
+        try {
+          const { data: leaderboardData, error: leaderboardError } = await supabase
+            .from('leaderboard')
+            .select('highest_level, best_score')
+            .eq('user_id', userId)
+            .single();
 
-        if (leaderboardError && leaderboardError.code !== 'PGRST116') {
-          console.warn('⚠️ leaderboard table query failed:', leaderboardError.message);
-        } else if (leaderboardData) {
-          serverHighestLevel = Math.max(serverHighestLevel, leaderboardData.highest_level || 0);
-          serverBestScore = leaderboardData.best_score || 0;
-          console.log('📥 Loaded from leaderboard:', { serverHighestLevel, serverBestScore });
+          if (leaderboardError && leaderboardError.code !== 'PGRST116') {
+            console.warn('⚠️ leaderboard table query failed:', leaderboardError.message);
+          } else if (leaderboardData) {
+            serverHighestLevel = Math.max(serverHighestLevel, leaderboardData.highest_level || 0);
+            serverBestScore = leaderboardData.best_score || 0;
+            console.log('📥 Loaded from leaderboard:', { serverHighestLevel, serverBestScore });
+          }
+        } catch (err) {
+          console.warn('⚠️ Error loading leaderboard:', err.message);
         }
-      } catch (err) {
-        console.warn('⚠️ Error loading leaderboard:', err.message);
+      } else {
+        console.log('⚠️ Anonymous user - skipping leaderboard query');
       }
 
       // Use the maximum values, but ensure at least 1
