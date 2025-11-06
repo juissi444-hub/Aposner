@@ -1270,6 +1270,22 @@ const CognitiveTaskGame = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [gameState, handleSpacePress, handleResponse, userAnswered, stopAllSounds]);
 
+  // Prevent body scrolling when leaderboard modal is open
+  useEffect(() => {
+    if (showLeaderboard) {
+      console.log('🔒 Locking body scroll - leaderboard open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      console.log('🔓 Unlocking body scroll - leaderboard closed');
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup: ensure scroll is restored when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showLeaderboard]);
+
   const getFeedbackColor = () => {
     if (feedback === 'correct') return 'bg-green-600';
     if (feedback === 'wrong') return 'bg-red-600';
@@ -1820,10 +1836,18 @@ const CognitiveTaskGame = () => {
                     <div className="text-right">Ranking</div>
                   </div>
                   {(() => {
-                    console.log(`🎨 RENDERING ${leaderboard.length} leaderboard entries to DOM`);
+                    console.log('═'.repeat(80));
+                    console.log(`🎨 RENDER PHASE - About to call .map() on leaderboard array`);
+                    console.log(`🎨 Leaderboard array length: ${leaderboard.length}`);
+                    console.log(`🎨 Leaderboard array is: ${Array.isArray(leaderboard) ? 'ARRAY' : 'NOT AN ARRAY'}`);
+                    console.log(`🎨 All usernames in array:`, leaderboard.map(e => e.username).join(', '));
+                    console.log(`🎨 Calling .map() NOW - should iterate ${leaderboard.length} times`);
+                    console.log('═'.repeat(80));
                     return null;
                   })()}
                   {leaderboard.map((entry, index) => {
+                    console.log(`🎨 .map() iteration #${index + 1}/${leaderboard.length}: Rendering ${entry.username}`);
+
                     // Calculate percentile: percentage of players you're better than
                     const percentile = leaderboard.length > 1
                       ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
@@ -1868,6 +1892,8 @@ const CognitiveTaskGame = () => {
                       rankStyle = 'bg-gray-700';
                     }
 
+                    console.log(`🎨 ✅ Returning JSX for entry #${index + 1}: ${entry.username} with rank style: ${rankStyle}`);
+
                     return (
                       <div
                         key={entry.user_id}
@@ -1911,6 +1937,13 @@ const CognitiveTaskGame = () => {
                       </div>
                     );
                   })}
+                  {(() => {
+                    console.log('═'.repeat(80));
+                    console.log(`🎨 ✅ .map() COMPLETED - All ${leaderboard.length} entries processed`);
+                    console.log(`🎨 React should now render ${leaderboard.length} leaderboard entry divs`);
+                    console.log('═'.repeat(80));
+                    return null;
+                  })()}
                 </>
               )}
               </div>
