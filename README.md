@@ -72,33 +72,58 @@ If you want to enable the authentication and leaderboard features, you'll need t
 
 3. In your Supabase project dashboard:
    - Go to **SQL Editor**
-   - Run the SQL script from `supabase-schema.sql` (in the project root)
-   - This creates the `leaderboard` table and sets up Row Level Security policies
+   - Click "New Query"
+   - Copy and paste the complete setup SQL below
+   - Click "Run" to execute
 
-4. Get your project credentials:
-   - Go to **Project Settings** > **API**
-   - Copy your **Project URL** and **anon/public** API key
-
-5. Create a `.env` file in the project root:
-```bash
-cp .env.example .env
-```
-
-6. Edit `.env` and add your Supabase credentials:
-```
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-7. Restart the development server to apply the changes
-
-8. **IMPORTANT: Fix RLS Policies** - Run this SQL in Supabase SQL Editor to ensure leaderboard displays all users:
+**Complete Leaderboard Setup SQL:**
 
 ```sql
--- Fix RLS Policy for Leaderboard
--- Run this in Supabase SQL Editor to enable proper RLS
+-- Complete Leaderboard Setup for Adaptive Posner
+-- Run this in your Supabase SQL Editor
 
--- First, drop all existing policies on leaderboard
+-- ============================================
+-- STEP 1: Create leaderboard table
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS leaderboard (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT NOT NULL,
+  highest_level INTEGER DEFAULT 1,
+  best_score INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  UNIQUE(user_id)
+);
+
+-- Create indexes for faster queries
+CREATE INDEX IF NOT EXISTS idx_leaderboard_user_id ON leaderboard(user_id);
+CREATE INDEX IF NOT EXISTS idx_leaderboard_highest_level ON leaderboard(highest_level DESC);
+
+-- Create function to automatically update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to call the function
+DROP TRIGGER IF EXISTS update_leaderboard_updated_at ON leaderboard;
+CREATE TRIGGER update_leaderboard_updated_at
+  BEFORE UPDATE ON leaderboard
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- STEP 2: Enable Row Level Security
+-- ============================================
+
+ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
+
+-- Drop any existing policies first
 DROP POLICY IF EXISTS "Allow public read access to leaderboard" ON leaderboard;
 DROP POLICY IF EXISTS "Allow users to insert own leaderboard entry" ON leaderboard;
 DROP POLICY IF EXISTS "Allow users to update own leaderboard entry" ON leaderboard;
@@ -106,10 +131,7 @@ DROP POLICY IF EXISTS "Enable read access for all users" ON leaderboard;
 DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON leaderboard;
 DROP POLICY IF EXISTS "Enable update for users based on user_id" ON leaderboard;
 
--- Enable RLS (in case it was disabled)
-ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
-
--- IMPORTANT: Create NEW policies with correct syntax
+-- Create NEW policies with correct syntax
 
 -- 1. Allow ANYONE (even unauthenticated) to read ALL leaderboard entries
 CREATE POLICY "leaderboard_select_all"
@@ -133,35 +155,72 @@ CREATE POLICY "leaderboard_update_own"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
--- Verify policies were created
+-- ============================================
+-- STEP 3: Verify Setup
+-- ============================================
+
+-- Check table exists
+SELECT 'Table created successfully' as status, COUNT(*) as row_count
+FROM leaderboard;
+
+-- Check RLS policies
 SELECT
   policyname,
   cmd as command,
   roles,
-  qual as using_expression
+  CASE
+    WHEN qual = 'true' THEN 'All rows visible'
+    ELSE qual::text
+  END as access_rule
 FROM pg_policies
 WHERE tablename = 'leaderboard'
 ORDER BY cmd;
 ```
+
+4. Get your project credentials:
+   - Go to **Project Settings** > **API**
+   - Copy your **Project URL** and **anon/public** API key
+
+5. Create a `.env` file in the project root:
+```bash
+cp .env.example .env
+```
+
+6. Edit `.env` and add your Supabase credentials:
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+7. Restart the development server to apply the changes
 
 **Note**: The game works without Supabase - authentication and leaderboard features simply won't be available.
 
 ### Troubleshooting Supabase Setup
 
 **Leaderboard shows only 3 users or is empty:**
-- Run the RLS fix SQL above in Supabase SQL Editor
+- Re-run the complete setup SQL above in Supabase SQL Editor (it's safe to run multiple times)
 - Check browser console (F12) for error messages
 - Verify the `leaderboard` table exists in Supabase Table Editor
 - Ensure users have played in Adaptive mode (Manual mode doesn't save to leaderboard)
 
 **Leaderboard shows 0% completion:**
-- This happens if users played before the RLS policies were fixed
+- This happens if users played before the database was set up correctly
 - Have users play again in Adaptive mode to update their scores
-- Or run `reset-leaderboard.sql` to clear all data and start fresh
+- Or reset the leaderboard with this SQL:
+  ```sql
+  DELETE FROM leaderboard;
+  ALTER SEQUENCE IF EXISTS leaderboard_id_seq RESTART WITH 1;
+  ```
 
 **Authentication errors:**
 - Disable email confirmation in Supabase: Settings → Authentication → Email Auth → Disable "Enable email confirmations"
 - The app uses format `username@adaptiveposner.local` automatically
+
+**Table already exists error:**
+- The setup SQL is safe to run multiple times
+- It uses `CREATE TABLE IF NOT EXISTS` and `DROP POLICY IF EXISTS` to prevent errors
+- If you need a fresh start, delete the table first: `DROP TABLE IF EXISTS leaderboard CASCADE;`
 
 ### Build for Production
 
