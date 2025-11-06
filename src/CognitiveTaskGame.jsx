@@ -2963,7 +2963,7 @@ const CognitiveTaskGame = () => {
               <input
                 type="range"
                 min="1"
-                max="18"
+                max="27"
                 value={level}
                 onChange={(e) => setLevel(parseInt(e.target.value))}
                 className="w-full"
