@@ -29,6 +29,7 @@ const CognitiveTaskGame = () => {
   const [feedback, setFeedback] = useState(null);
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
+  const [usedPairs, setUsedPairs] = useState(new Set()); // Track used word pairs in current session
 
   // Authentication and leaderboard states
   const [user, setUser] = useState(null);
@@ -1121,10 +1122,42 @@ const CognitiveTaskGame = () => {
 
   const getRandomPair = (relationType) => {
     const pairs = wordPairs[relationType];
-    return pairs[Math.floor(Math.random() * pairs.length)];
+
+    // Filter out already used pairs
+    const availablePairs = pairs.filter(pair => {
+      const pairKey = `${relationType}:${pair[0]}:${pair[1]}`;
+      return !usedPairs.has(pairKey);
+    });
+
+    // If all pairs have been used, reset for this relation type
+    if (availablePairs.length === 0) {
+      console.log(`⚠️ All pairs used for ${relationType}, resetting available pairs for this relation`);
+      // Remove all used pairs for this relation type only
+      const newUsedPairs = new Set(
+        Array.from(usedPairs).filter(key => !key.startsWith(`${relationType}:`))
+      );
+      setUsedPairs(newUsedPairs);
+      // Now all pairs are available again
+      const selectedPair = pairs[Math.floor(Math.random() * pairs.length)];
+      const pairKey = `${relationType}:${selectedPair[0]}:${selectedPair[1]}`;
+      setUsedPairs(prev => new Set([...prev, pairKey]));
+      console.log(`✅ Selected pair after reset: ${selectedPair[0]} - ${selectedPair[1]}`);
+      return selectedPair;
+    }
+
+    // Select a random pair from available ones
+    const selectedPair = availablePairs[Math.floor(Math.random() * availablePairs.length)];
+    const pairKey = `${relationType}:${selectedPair[0]}:${selectedPair[1]}`;
+
+    // Mark this pair as used
+    setUsedPairs(prev => new Set([...prev, pairKey]));
+
+    console.log(`✅ Selected unique pair: ${selectedPair[0]} - ${selectedPair[1]} (${availablePairs.length - 1} remaining for this type)`);
+    return selectedPair;
   };
 
   const startGame = (selectedMode) => {
+    console.log('🎮 Starting new game session');
     setMode(selectedMode);
     if (selectedMode === 'adaptive') {
       setLevel(savedAdaptiveLevel);
@@ -1134,6 +1167,8 @@ const CognitiveTaskGame = () => {
     setWrongCount(0);
     setCurrentTask(0);
     setTaskHistory([]);
+    setUsedPairs(new Set()); // Clear used pairs for new session
+    console.log('🔄 Used pairs cleared - all words/numbers available again');
     prepareNextTask();
   };
 
@@ -1164,6 +1199,8 @@ const CognitiveTaskGame = () => {
       setWrongCount(0);
       setCurrentTask(0);
       setTaskHistory([]);
+      setUsedPairs(new Set()); // Clear used pairs for new level
+      console.log('🔄 Level decreased - used pairs cleared');
       prepareNextTask();
     }, 2000);
   }, [saveProgress, stopAllSounds, score, level]);
@@ -1213,6 +1250,8 @@ const CognitiveTaskGame = () => {
           setWrongCount(0);
           setCurrentTask(0);
           setTaskHistory([]);
+          setUsedPairs(new Set()); // Clear used pairs for new level
+          console.log('🔄 New level - used pairs cleared');
           prepareNextTask();
         }, 3000);
       } else {
@@ -1387,6 +1426,8 @@ const CognitiveTaskGame = () => {
           console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
           saveProgress(level, score);
         }
+        setUsedPairs(new Set()); // Clear used pairs when returning to menu
+        console.log('🔄 Returned to menu - used pairs cleared');
         setGameState('menu');
         setFeedback(null);
       } else if (e.key === ' ' && gameState === 'showRelation') {
@@ -1723,6 +1764,8 @@ const CognitiveTaskGame = () => {
                   console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
                   saveProgress(level, score);
                 }
+                setUsedPairs(new Set()); // Clear used pairs when returning to menu
+                console.log('🔄 Returned to menu - used pairs cleared');
                 setGameState('menu');
               }}
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg order-2 sm:order-1"
