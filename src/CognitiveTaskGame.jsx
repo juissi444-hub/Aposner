@@ -210,35 +210,46 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
+    const isChrome = navigator.userAgent.includes('Chrome');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     console.log('🔄 Auth effect initializing...');
-    console.log('📱 User Agent:', navigator.userAgent);
-    console.log('📱 Is mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    console.log(`📱 Browser: ${isChrome ? 'Chrome' : 'Other'}, Mobile: ${isMobile}`);
     let mounted = true;
 
-    // Restore session on mount - simplified
+    // Restore session on mount - Chrome-compatible
     const restoreSession = async () => {
       try {
-        console.log('🔍 Restoring session...');
+        console.log(`🔍 Restoring session... [${isChrome ? 'Chrome' : 'Browser'}]`);
 
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Add timeout for Chrome
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session restore timeout')), 5000)
+        );
+
+        const sessionPromise = supabase.auth.getSession();
+
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
 
         if (error) {
-          console.error('❌ Session restore error:', error.message);
+          console.error('❌ Session restore error:', error.message, error);
           setUser(null);
           return;
         }
 
         if (session?.user) {
-          console.log('✅ Session restored:', session.user.email);
+          console.log(`✅ Session restored: ${session.user.email} [${isChrome ? 'Chrome' : 'Browser'}]`);
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
-          console.log('ℹ️ No session found');
+          console.log('ℹ️ No session found in storage');
           setUser(null);
         }
       } catch (error) {
-        console.error('❌ Exception restoring session:', error);
+        console.error('❌ Exception restoring session:', error.message || error);
+        if (error.message === 'Session restore timeout') {
+          console.error('⏱️ Chrome session restore timeout');
+        }
         setUser(null);
       }
     };
@@ -246,28 +257,36 @@ const CognitiveTaskGame = () => {
     // Immediately try to restore session
     restoreSession();
 
-    // Listen for auth changes - simplified
+    // Listen for auth changes - Chrome-compatible
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔄 Auth:', event);
+      console.log(`🔄 Auth event: ${event} [${isChrome ? 'Chrome' : 'Browser'}]`);
 
-      if (!mounted) return;
+      if (!mounted) {
+        console.log('⚠️ Component unmounted, ignoring auth event');
+        return;
+      }
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log('✅ Signed in:', session.user.email);
+        console.log(`✅ Signed in: ${session.user.email} [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(session.user);
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
         loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        console.log('👋 Signed out');
+        console.log(`👋 Signed out [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(null);
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        console.log('🔄 Token refreshed');
+        console.log(`🔄 Token refreshed [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(session.user);
       } else if (event === 'USER_UPDATED' && session?.user) {
-        console.log('🔄 User updated');
+        console.log(`🔄 User updated [${isChrome ? 'Chrome' : 'Browser'}]`);
         setUser(session.user);
+      } else if (event === 'INITIAL_SESSION') {
+        console.log(`📍 Initial session check [${isChrome ? 'Chrome' : 'Browser'}]`);
+        if (session?.user) {
+          setUser(session.user);
+        }
       }
     });
 
@@ -600,7 +619,7 @@ const CognitiveTaskGame = () => {
     }
   }, []);
 
-  // Leaderboard loading - simplified for speed
+  // Leaderboard loading - Chrome-compatible with timeout
   const loadLeaderboard = useCallback(async () => {
     if (!isSupabaseConfigured()) {
       console.error('❌ Supabase not configured');
@@ -608,25 +627,36 @@ const CognitiveTaskGame = () => {
     }
 
     setLeaderboardLoading(true);
-    console.log('📊 Loading leaderboard...');
+    const isChrome = navigator.userAgent.includes('Chrome');
+    console.log(`📊 Loading leaderboard... [${isChrome ? 'Chrome' : 'Browser'}]`);
 
     try {
-      // Simple, fast query - no timeouts, no retries
-      const { data, error } = await supabase
+      // Add timeout for Chrome (prevents infinite loading)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), 10000)
+      );
+
+      const queryPromise = supabase
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
+      // Race between query and timeout
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
       if (error) {
-        console.error('❌ Leaderboard error:', error.message);
+        console.error('❌ Leaderboard error:', error.message, error);
         setLeaderboard([]);
       } else {
         console.log(`✅ Loaded ${data?.length || 0} leaderboard entries`);
         setLeaderboard(data || []);
       }
     } catch (error) {
-      console.error('❌ Exception loading leaderboard:', error);
+      console.error('❌ Exception loading leaderboard:', error.message || error);
+      if (error.message === 'Timeout') {
+        console.error('⏱️ Chrome timeout - leaderboard took too long');
+      }
       setLeaderboard([]);
     } finally {
       setLeaderboardLoading(false);
