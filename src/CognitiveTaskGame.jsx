@@ -625,13 +625,18 @@ const CognitiveTaskGame = () => {
       validScore = 0;
     }
 
+    // Anonymous users don't save to leaderboard - only logged-in users do
+    if (isAnonymous) {
+      console.log('⚠️ Anonymous user - skipping leaderboard save (anonymous users only use localStorage)');
+      return;
+    }
+
     console.log(`📝 Saving to leaderboard: Level ${validLevel}, Score ${validScore}`);
 
     try {
       console.log(`📝 ✅ All checks passed - proceeding with leaderboard update`);
       console.log(`📝 User:`, username);
       console.log(`📝 User ID:`, userId);
-      console.log(`📝 Is Anonymous:`, isAnonymous);
 
       // Get current leaderboard entry
       const { data: currentData, error: fetchError } = await supabase
@@ -692,7 +697,7 @@ const CognitiveTaskGame = () => {
         username: username,
         highest_level: highestLevel,
         best_score: bestScore,
-        is_anonymous: isAnonymous,
+        is_anonymous: false, // Only logged-in users reach this point
         updated_at: new Date().toISOString()
       };
 
@@ -714,17 +719,8 @@ const CognitiveTaskGame = () => {
       if (updateError) {
         console.error('❌ Error upserting leaderboard:', updateError);
         console.error('❌ Error details:', JSON.stringify(updateError, null, 2));
-
-        // For anonymous users, just log the error but don't block gameplay
-        if (!isAnonymous) {
-          alert(`Failed to save to leaderboard: ${updateError.message}\n\nCheck browser console for details.`);
-          throw updateError;
-        } else {
-          console.warn('⚠️ Anonymous user save failed - check SQL policies. Anonymous users need proper RLS configuration.');
-          console.warn('⚠️ Run the SQL commands provided to enable anonymous user support.');
-          // Don't throw for anonymous users - let them continue playing
-          return;
-        }
+        alert(`Failed to save to leaderboard: ${updateError.message}\n\nCheck browser console for details.`);
+        throw updateError;
       }
 
       console.log(`✅ Leaderboard updated successfully!`);
