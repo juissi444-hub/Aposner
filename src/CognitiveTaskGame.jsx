@@ -524,7 +524,6 @@ const CognitiveTaskGame = () => {
       // Determine the values to save
       let highestLevel = validLevel;
       let bestScore = validScore;
-      let completedLevel = validLevel; // Track which level the best_score was achieved on
 
       if (currentData) {
         console.log(`📝 Comparing: new level ${validLevel} vs current ${currentData.highest_level}`);
@@ -533,7 +532,6 @@ const CognitiveTaskGame = () => {
           console.log(`✅ New highest level reached: ${validLevel} > ${currentData.highest_level}`);
           highestLevel = validLevel;
           bestScore = validScore;
-          completedLevel = validLevel; // Best score achieved on this new level
         } else if (validLevel === currentData.highest_level) {
           // Same level - keep the highest level, update best score if higher
           console.log(`✅ Same level ${validLevel}, comparing scores: new=${validScore}, old=${currentData.best_score}`);
@@ -543,8 +541,6 @@ const CognitiveTaskGame = () => {
           console.log(`✅ Math.max(${validScore}, ${oldScore}) = ${maxScore}`);
           highestLevel = currentData.highest_level;
           bestScore = maxScore;
-          // Update completed_level only if we actually improved the score
-          completedLevel = (validScore > oldScore) ? validLevel : (currentData.completed_level || validLevel);
         } else {
           // Playing a lower level - don't update
           console.log(`⚠️ Lower level ${validLevel} < ${currentData.highest_level}, skipping update`);
@@ -554,7 +550,7 @@ const CognitiveTaskGame = () => {
         console.log(`📝 No current data found, creating new entry with Level ${validLevel}, Score ${validScore}`);
       }
 
-      console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}, Completed Level ${completedLevel}`);
+      console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}`);
 
       // Calculate average response time (in milliseconds)
       let averageAnswerTime = null;
@@ -570,7 +566,6 @@ const CognitiveTaskGame = () => {
         username: user.user_metadata?.username || user.email,
         highest_level: highestLevel,
         best_score: bestScore,
-        completed_level: completedLevel,
         updated_at: new Date().toISOString()
       };
 
@@ -2559,7 +2554,7 @@ const CognitiveTaskGame = () => {
                           </div>
                           <div className="truncate font-medium">{entry.username}</div>
                           <div className="font-semibold">
-                            <span className="text-white">Level {entry.completed_level || entry.highest_level}</span>
+                            <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
                           </div>
                           <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
@@ -2580,7 +2575,7 @@ const CognitiveTaskGame = () => {
                             <span className="text-xs font-semibold text-yellow-400">{percentile}th percentile</span>
                           </div>
                           <div className="text-sm font-semibold">
-                            <span className="text-white">Level {entry.completed_level || entry.highest_level}</span>
+                            <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-1">- {levelProgress}%</span>
                           </div>
                         </div>
