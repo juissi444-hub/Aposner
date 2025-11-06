@@ -294,14 +294,21 @@ const CognitiveTaskGame = () => {
     }
 
     try {
-      console.log('📊 Loading leaderboard...');
+      console.log('═'.repeat(80));
+      console.log('📊 LOADING LEADERBOARD FROM DATABASE...');
       console.log('📊 User logged in:', !!user, user?.email);
+      console.log('📊 User ID:', user?.id);
+      console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC');
 
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('leaderboard')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
+
+      console.log('📊 Query executed');
+      console.log('📊 Count returned:', count);
+      console.log('📊 Data length:', data?.length);
 
       if (error) {
         console.error('❌ Leaderboard query error:', error);
@@ -309,25 +316,38 @@ const CognitiveTaskGame = () => {
         console.error('❌ Error message:', error.message);
         console.error('❌ Error details:', error.details);
         console.error('❌ Error hint:', error.hint);
+        console.error('❌ RLS may be blocking access - check Supabase policies');
         throw error;
       }
 
-      console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries');
-      console.log('✅ ALL users will be displayed (no limit applied)');
+      console.log('✅ Leaderboard query successful');
+      console.log(`✅ Returned ${data?.length || 0} entries from database`);
+      console.log('✅ NO LIMIT applied to query - should return ALL users');
 
       if (!data || data.length === 0) {
         console.warn('⚠️ No leaderboard entries found - check if users have played in Adaptive mode');
       } else {
         console.log('📊 Full leaderboard data from database (ALL ENTRIES):');
         data.forEach((entry, i) => {
-          console.log(`   Entry ${i+1}: username=${entry.username}, highest_level=${entry.highest_level}, best_score=${entry.best_score}`);
+          console.log(`   Entry ${i+1}: username=${entry.username}, highest_level=${entry.highest_level}, best_score=${entry.best_score}, user_id=${entry.user_id}`);
         });
         console.log('📊 Complete data (JSON):', JSON.stringify(data, null, 2));
         console.log(`📊 Total entries to display: ${data.length}`);
+
+        // Warning if only a few entries are returned
+        if (data.length <= 3) {
+          console.warn('⚠️⚠️⚠️ WARNING: Only ' + data.length + ' entries returned!');
+          console.warn('⚠️ If you expect more users in the database:');
+          console.warn('⚠️ 1. Check Supabase Table Editor to see total row count');
+          console.warn('⚠️ 2. Check RLS policies in Supabase (Table → leaderboard → RLS)');
+          console.warn('⚠️ 3. Run verify-leaderboard-data.sql in Supabase SQL Editor');
+          console.warn('⚠️ 4. Ensure "Allow public read access to leaderboard" policy exists');
+        }
       }
 
       setLeaderboard(data || []);
       console.log(`📊 Leaderboard state updated with ${data?.length || 0} entries`);
+      console.log('═'.repeat(80));
     } catch (error) {
       console.error('❌ Error loading leaderboard:', error);
       alert(`Failed to load leaderboard: ${error.message}\n\nCheck browser console for details.`);
@@ -442,7 +462,13 @@ const CognitiveTaskGame = () => {
 
   // Save progress to localStorage
   const saveProgress = useCallback((newLevel, currentScore = 0) => {
-    console.log(`💾 saveProgress called: level=${newLevel}, score=${currentScore}, mode=${mode}`);
+    console.log('═'.repeat(80));
+    console.log(`💾 💾 💾 saveProgress called 💾 💾 💾`);
+    console.log(`💾 newLevel: ${newLevel}`);
+    console.log(`💾 currentScore: ${currentScore}`);
+    console.log(`💾 mode: ${mode}`);
+    console.log(`💾 currentScore type: ${typeof currentScore}`);
+    console.log(`💾 currentScore === 0: ${currentScore === 0}`);
 
     localStorage.setItem('adaptivePosnerLevel', String(newLevel));
     setSavedAdaptiveLevel(newLevel);
@@ -464,11 +490,20 @@ const CognitiveTaskGame = () => {
     // Update leaderboard if in adaptive mode
     if (mode === 'adaptive') {
       console.log(`📤 Calling updateLeaderboard from saveProgress`);
+      console.log(`📤 Passing: level=${newLevel}, score=${currentScore}`);
       console.log(`📤 User status:`, user ? `Logged in as ${user.email}` : 'NOT LOGGED IN');
+
+      if (currentScore === 0) {
+        console.warn(`⚠️⚠️⚠️ WARNING: About to save score=0 to leaderboard!`);
+        console.warn(`⚠️ This may overwrite a better score. Stack trace:`);
+        console.trace();
+      }
+
       updateLeaderboard(newLevel, currentScore);
     } else {
       console.log(`⚠️ Not calling updateLeaderboard - mode is ${mode}, not adaptive`);
     }
+    console.log('═'.repeat(80));
   }, [highestLevel, mode, updateLeaderboard, user]);
 
   // Reset progress
@@ -1047,8 +1082,11 @@ const CognitiveTaskGame = () => {
       const completedLevel = level; // Save the level they just failed
       setLevel(prev => {
         const newLevel = Math.max(1, prev - 1);
-        // Save the level they're dropping to, with score from the failed level
-        saveProgress(newLevel, 0); // Reset score when dropping
+        console.log(`⬇️ Level decrease: ${prev} → ${newLevel}`);
+        console.log(`⬇️ NOT saving to leaderboard (level drop doesn't update leaderboard)`);
+        // Only save level locally, don't update leaderboard with score=0
+        localStorage.setItem('adaptivePosnerLevel', String(newLevel));
+        setSavedAdaptiveLevel(newLevel);
         return newLevel;
       });
       setScore(0);
@@ -1340,14 +1378,26 @@ const CognitiveTaskGame = () => {
                   <div className="space-x-2">
                     <button
                       onClick={async () => {
-                        console.log('🎯 Leaderboard button clicked');
+                        console.log('═'.repeat(80));
+                        console.log('🎯🎯🎯 LEADERBOARD BUTTON CLICKED 🎯🎯🎯');
                         console.log('📊 Supabase configured:', isSupabaseConfigured());
                         console.log('📊 User:', user?.email);
                         console.log('📊 User ID:', user?.id);
+                        console.log('📊 Current showLeaderboard state BEFORE setState:', showLeaderboard);
+
                         setShowLeaderboard(true);
-                        console.log('📊 showLeaderboard set to true');
-                        await loadLeaderboard();
-                        console.log('📊 Leaderboard data loaded');
+
+                        console.log('📊 setShowLeaderboard(true) CALLED');
+                        console.log('📊 About to load leaderboard data...');
+
+                        try {
+                          await loadLeaderboard();
+                          console.log('✅ Leaderboard data loaded successfully');
+                        } catch (error) {
+                          console.error('❌ Error loading leaderboard:', error);
+                        }
+
+                        console.log('═'.repeat(80));
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
                     >
