@@ -54,28 +54,22 @@ const CognitiveTaskGame = () => {
   const [leaderboard, setLeaderboard] = useState([]);
 
   const getTimeForLevel = (lvl) => {
-    // Levels 1-5: 2000ms down to 750ms (decreasing by 250ms per level)
+    // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
 
-    // Level 6 starts at 750ms
-    const level6Time = 750;
-
-    // From level 6, decrease by 50ms until reaching 300ms (levels 6-15)
-    const timeFromLevel6 = level6Time - (lvl - 6) * 50;
-
-    if (timeFromLevel6 >= 300) {
-      return timeFromLevel6;
+    // Level 6 starts at 750ms (1000 - 250)
+    // Levels 6-17: decrease by 50ms per level until 200ms
+    if (lvl <= 17) {
+      return 750 - (lvl - 6) * 50;
     }
 
-    // After 300ms (level 15+), decrease by 25ms until 200ms (levels 15-19)
-    const timeFromLevel15 = 300 - (lvl - 15) * 25;
-
-    if (timeFromLevel15 >= 200) {
-      return timeFromLevel15;
+    // Levels 18-19: decrease by 25ms per level
+    if (lvl <= 19) {
+      return 200 - (lvl - 17) * 25;
     }
 
-    // After 200ms (level 19+), decrease by 12.5ms until 50ms minimum
-    return Math.max(50, 200 - (lvl - 19) * 12.5);
+    // Level 20+: decrease by 12.5ms per level until 50ms minimum
+    return Math.max(50, 150 - (lvl - 19) * 12.5);
   };
 
   // Keep gameStateRef in sync with gameState
@@ -155,54 +149,75 @@ const CognitiveTaskGame = () => {
     if (!isSupabaseConfigured()) return;
 
     console.log('🔄 Auth effect initializing...');
+    let mounted = true;
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 Checking for existing session...');
-      if (session?.user) {
-        console.log('✅ Session found for user:', session.user.email);
-        console.log('✅ User ID:', session.user.id);
-        console.log('✅ User metadata:', session.user.user_metadata);
-        setUser(session.user);
-        setShowAuth(false);
-        // Load user progress from Supabase
-        loadUserProgress(session.user.id);
-      } else {
-        console.log('❌ No active session found');
-        setUser(null);
-        // If in adaptive mode and no session, prompt for login
-        if (mode === 'adaptive') {
-          console.log('🔐 Adaptive mode requires login - showing auth modal');
-          setShowAuth(true);
+    // Function to restore session with retry logic (for mobile reliability)
+    const restoreSession = async (retryCount = 0) => {
+      try {
+        console.log(`🔍 Attempting to restore session (attempt ${retryCount + 1})...`);
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('❌ Error getting session:', error);
+          // Retry up to 3 times with exponential backoff
+          if (retryCount < 3 && mounted) {
+            const delay = Math.pow(2, retryCount) * 100; // 100ms, 200ms, 400ms
+            console.log(`⏱️ Retrying in ${delay}ms...`);
+            setTimeout(() => restoreSession(retryCount + 1), delay);
+          }
+          return;
+        }
+
+        if (!mounted) return;
+
+        if (session?.user) {
+          console.log('✅ Session restored for user:', session.user.email);
+          console.log('✅ User ID:', session.user.id);
+          setUser(session.user);
+          setShowAuth(false);
+          loadUserProgress(session.user.id);
+        } else {
+          console.log('❌ No active session found');
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('❌ Exception restoring session:', error);
+        if (retryCount < 3 && mounted) {
+          setTimeout(() => restoreSession(retryCount + 1), Math.pow(2, retryCount) * 100);
         }
       }
-    }).catch(error => {
-      console.error('❌ Error getting session:', error);
-    });
+    };
+
+    // Immediately try to restore session
+    restoreSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔄 Auth state changed:', event);
-      console.log('🔄 Session:', session);
-      setUser(session?.user || null);
+
+      if (!mounted) return;
+
+      if (event === 'INITIAL_SESSION') {
+        console.log('📱 INITIAL_SESSION event - session being restored');
+      }
+
       if (session?.user) {
-        console.log('✅ User logged in:', session.user.email);
+        console.log('✅ User session active:', session.user.email);
+        setUser(session.user);
         setShowAuth(false);
         loadUserProgress(session.user.id);
-      } else {
-        console.log('❌ User logged out');
-        // If in adaptive mode, show auth modal
-        if (mode === 'adaptive') {
-          setShowAuth(true);
-        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out');
+        setUser(null);
       }
     });
 
     return () => {
-      console.log('🔌 Unsubscribing from auth changes');
+      console.log('🔌 Cleaning up auth effect');
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // Remove mode dependency to prevent re-initialization
+  }, []); // Only run once on mount
 
   // Toggle sound setting
   const toggleSound = () => {
