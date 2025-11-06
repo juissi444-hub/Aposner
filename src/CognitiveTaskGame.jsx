@@ -101,6 +101,7 @@ const CognitiveTaskGame = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
@@ -311,12 +312,57 @@ const CognitiveTaskGame = () => {
     });
   }, []);
 
+  // Username validation function
+  const validateUsername = (username) => {
+    if (!username) {
+      return '';
+    }
+
+    if (username.length < 3) {
+      return 'Username must be at least 3 characters';
+    }
+
+    if (username.length > 20) {
+      return 'Username must be 20 characters or less';
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      return 'Username can only contain letters, numbers, hyphens, and underscores';
+    }
+
+    if (/\s/.test(username)) {
+      return 'Username cannot contain spaces';
+    }
+
+    return '';
+  };
+
+  // Handle username change with validation
+  const handleUsernameChange = (value) => {
+    setUsername(value);
+    if (authMode === 'signup' && value) {
+      setUsernameError(validateUsername(value));
+    } else {
+      setUsernameError('');
+    }
+  };
+
   // Authentication functions
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!isSupabaseConfigured()) return;
 
     setAuthError('');
+
+    // Validate username on signup
+    if (authMode === 'signup') {
+      const validationError = validateUsername(username);
+      if (validationError) {
+        setUsernameError(validationError);
+        setAuthError('Please fix the username errors before signing up');
+        return;
+      }
+    }
 
     try {
       if (authMode === 'signup') {
@@ -4340,11 +4386,30 @@ const CognitiveTaskGame = () => {
             <form onSubmit={handleAuth} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Username</label>
+                {authMode === 'signup' && usernameError && (
+                  <div className="mb-2 text-red-400 text-sm">
+                    <p className="font-semibold">Username requirements:</p>
+                    <ul className="list-disc list-inside mt-1">
+                      <li>3-20 characters</li>
+                      <li>Only letters, numbers, hyphens (-), and underscores (_)</li>
+                      <li>No spaces</li>
+                    </ul>
+                    <p className="mt-1 text-red-300">❌ {usernameError}</p>
+                  </div>
+                )}
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  className={`w-full px-4 py-2 bg-gray-700 border ${
+                    authMode === 'signup' && usernameError
+                      ? 'border-red-500'
+                      : 'border-gray-600'
+                  } rounded-lg focus:outline-none focus:ring-2 ${
+                    authMode === 'signup' && usernameError
+                      ? 'focus:ring-red-500'
+                      : 'focus:ring-blue-500'
+                  } text-white`}
                   required
                 />
               </div>
@@ -4382,6 +4447,7 @@ const CognitiveTaskGame = () => {
                 onClick={() => {
                   setAuthMode(authMode === 'login' ? 'signup' : 'login');
                   setAuthError('');
+                  setUsernameError('');
                   setShowPassword(false);
                 }}
                 className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg"
