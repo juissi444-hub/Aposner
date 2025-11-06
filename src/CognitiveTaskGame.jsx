@@ -361,6 +361,12 @@ const CognitiveTaskGame = () => {
   const migrateAnonymousToAccount = useCallback(async (userId, username) => {
     if (!isSupabaseConfigured()) return;
 
+    // Safety check: never query leaderboard with anonymous user IDs
+    if (!userId || userId.toString().startsWith('anon_')) {
+      console.warn('⚠️ migrateAnonymousToAccount called with invalid userId:', userId);
+      return;
+    }
+
     const anonId = localStorage.getItem('aposner-anonymous-id');
     if (!anonId) {
       return;
@@ -369,7 +375,7 @@ const CognitiveTaskGame = () => {
     try {
       // Anonymous users don't have leaderboard entries (only authenticated users do)
       // Just get their local progress from user_progress table
-      const { data: anonData, error: anonError } = await supabase
+      const { data: anonData, error: anonError} = await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', anonId)
