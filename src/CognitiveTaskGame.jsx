@@ -60,7 +60,11 @@ const CognitiveTaskGame = () => {
     'followup-numerical': true,
     'physical-numerical': true,
     'meaning': true,
-    'same-time': true
+    'same-time': true,
+    'even': true,
+    'odd': true,
+    'doubled': true,
+    'tripled': true
   });
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [autoContinueEnabled, setAutoContinueEnabled] = useState(false);
@@ -921,7 +925,11 @@ const CognitiveTaskGame = () => {
     'followup-numerical': 'Sequential Numbers (3-4, 24-25)',
     'physical-numerical': 'Sequential Number Forms (one-two, II-III, 3-4)',
     'meaning': 'Same Meaning Numbers (2-two, V-5, five-5)',
-    'same-time': 'Same Time (🕐-1:00, 3:30-half past three)'
+    'same-time': 'Same Time (🕐-1:00, 3:30-half past three)',
+    'even': 'Both Even (2-4, IV-VIII, two-six)',
+    'odd': 'Both Odd (3-5, VII-IX, three-nine)',
+    'doubled': 'Doubled (2-4, II-IV, two-four)',
+    'tripled': 'Tripled (3-9, III-IX, three-nine)'
   };
 
   const wordPairs = {
@@ -1760,6 +1768,109 @@ const CognitiveTaskGame = () => {
       ['1:30', '1:30 pm'], ['2:30', '2:30 pm'], ['3:30', '3:30 am'], ['4:30', '4:30 am'],
       ['one o\'clock', '1 o\'clock'], ['two o\'clock', '2 o\'clock'], ['three o\'clock', '3 o\'clock'],
       ['12:00', 'noon'], ['12:00', 'midnight'], ['00:00', 'midnight'], ['12:00', 'twelve o\'clock']
+    ],
+    'even': [
+      // Both numbers are even (0-100) - digits
+      ['0', '2'], ['2', '4'], ['4', '6'], ['6', '8'], ['8', '10'],
+      ['10', '12'], ['12', '14'], ['14', '16'], ['16', '18'], ['18', '20'],
+      ['20', '22'], ['22', '24'], ['24', '26'], ['26', '28'], ['28', '30'],
+      ['30', '32'], ['32', '34'], ['34', '36'], ['36', '38'], ['38', '40'],
+      ['40', '42'], ['42', '44'], ['44', '46'], ['46', '48'], ['48', '50'],
+      ['50', '52'], ['52', '54'], ['54', '56'], ['56', '58'], ['58', '60'],
+      ['60', '62'], ['62', '64'], ['64', '66'], ['66', '68'], ['68', '70'],
+      ['70', '72'], ['72', '74'], ['74', '76'], ['76', '78'], ['78', '80'],
+      ['80', '82'], ['82', '84'], ['84', '86'], ['86', '88'], ['88', '90'],
+      ['90', '92'], ['92', '94'], ['94', '96'], ['96', '98'], ['98', '100'],
+      // Both even - verbal
+      ['zero', 'two'], ['two', 'four'], ['four', 'six'], ['six', 'eight'], ['eight', 'ten'],
+      ['ten', 'twelve'], ['twelve', 'fourteen'], ['fourteen', 'sixteen'], ['sixteen', 'eighteen'], ['eighteen', 'twenty'],
+      ['twenty', 'thirty'], ['thirty', 'forty'], ['forty', 'fifty'], ['fifty', 'sixty'], ['sixty', 'seventy'],
+      ['seventy', 'eighty'], ['eighty', 'ninety'], ['ninety', 'one hundred'],
+      // Both even - Roman numerals
+      ['II', 'IV'], ['IV', 'VI'], ['VI', 'VIII'], ['VIII', 'X'], ['X', 'XII'],
+      ['XII', 'XIV'], ['XIV', 'XVI'], ['XVI', 'XVIII'], ['XVIII', 'XX'], ['XX', 'XXX'],
+      ['XXX', 'XL'], ['XL', 'L'], ['L', 'LX'], ['LX', 'LXX'], ['LXX', 'LXXX'],
+      ['LXXX', 'XC'], ['XC', 'C'],
+      // Both even - mixed formats
+      ['2', 'four'], ['4', 'VI'], ['VI', 'eight'], ['8', 'X'], ['ten', '12'],
+      ['12', 'XIV'], ['XIV', 'sixteen'], ['16', 'XVIII'], ['twenty', '22'], ['24', 'XXVI'],
+      ['30', 'forty'], ['L', 'sixty'], ['70', 'LXXX'], ['ninety', '92']
+    ],
+    'odd': [
+      // Both numbers are odd (1-99) - digits
+      ['1', '3'], ['3', '5'], ['5', '7'], ['7', '9'], ['9', '11'],
+      ['11', '13'], ['13', '15'], ['15', '17'], ['17', '19'], ['19', '21'],
+      ['21', '23'], ['23', '25'], ['25', '27'], ['27', '29'], ['29', '31'],
+      ['31', '33'], ['33', '35'], ['35', '37'], ['37', '39'], ['39', '41'],
+      ['41', '43'], ['43', '45'], ['45', '47'], ['47', '49'], ['49', '51'],
+      ['51', '53'], ['53', '55'], ['55', '57'], ['57', '59'], ['59', '61'],
+      ['61', '63'], ['63', '65'], ['65', '67'], ['67', '69'], ['69', '71'],
+      ['71', '73'], ['73', '75'], ['75', '77'], ['77', '79'], ['79', '81'],
+      ['81', '83'], ['83', '85'], ['85', '87'], ['87', '89'], ['89', '91'],
+      ['91', '93'], ['93', '95'], ['95', '97'], ['97', '99'],
+      // Both odd - verbal
+      ['one', 'three'], ['three', 'five'], ['five', 'seven'], ['seven', 'nine'], ['nine', 'eleven'],
+      ['eleven', 'thirteen'], ['thirteen', 'fifteen'], ['fifteen', 'seventeen'], ['seventeen', 'nineteen'], ['nineteen', 'twenty-one'],
+      ['twenty-one', 'twenty-three'], ['twenty-three', 'twenty-five'], ['twenty-five', 'twenty-seven'], ['twenty-seven', 'twenty-nine'],
+      // Both odd - Roman numerals
+      ['I', 'III'], ['III', 'V'], ['V', 'VII'], ['VII', 'IX'], ['IX', 'XI'],
+      ['XI', 'XIII'], ['XIII', 'XV'], ['XV', 'XVII'], ['XVII', 'XIX'], ['XIX', 'XXI'],
+      ['XXI', 'XXIII'], ['XXIII', 'XXV'], ['XXV', 'XXVII'], ['XXVII', 'XXIX'],
+      // Both odd - mixed formats
+      ['1', 'three'], ['3', 'V'], ['V', 'seven'], ['7', 'IX'], ['nine', '11'],
+      ['11', 'XIII'], ['XIII', 'fifteen'], ['15', 'XVII'], ['nineteen', '21'], ['23', 'XXV'],
+      ['31', 'thirty-three'], ['41', 'XLIII'], ['51', 'fifty-three'], ['61', 'LXIII']
+    ],
+    'doubled': [
+      // Number is doubled (0-50 range so doubled stays within 100) - digits
+      ['0', '0'], ['1', '2'], ['2', '4'], ['3', '6'], ['4', '8'], ['5', '10'],
+      ['6', '12'], ['7', '14'], ['8', '16'], ['9', '18'], ['10', '20'],
+      ['11', '22'], ['12', '24'], ['13', '26'], ['14', '28'], ['15', '30'],
+      ['16', '32'], ['17', '34'], ['18', '36'], ['19', '38'], ['20', '40'],
+      ['21', '42'], ['22', '44'], ['23', '46'], ['24', '48'], ['25', '50'],
+      ['26', '52'], ['27', '54'], ['28', '56'], ['29', '58'], ['30', '60'],
+      ['31', '62'], ['32', '64'], ['33', '66'], ['34', '68'], ['35', '70'],
+      ['36', '72'], ['37', '74'], ['38', '76'], ['39', '78'], ['40', '80'],
+      ['41', '82'], ['42', '84'], ['43', '86'], ['44', '88'], ['45', '90'],
+      ['46', '92'], ['47', '94'], ['48', '96'], ['49', '98'], ['50', '100'],
+      // Doubled - verbal
+      ['zero', 'zero'], ['one', 'two'], ['two', 'four'], ['three', 'six'], ['four', 'eight'], ['five', 'ten'],
+      ['six', 'twelve'], ['seven', 'fourteen'], ['eight', 'sixteen'], ['nine', 'eighteen'], ['ten', 'twenty'],
+      ['eleven', 'twenty-two'], ['twelve', 'twenty-four'], ['thirteen', 'twenty-six'], ['fourteen', 'twenty-eight'], ['fifteen', 'thirty'],
+      ['twenty', 'forty'], ['twenty-five', 'fifty'], ['thirty', 'sixty'], ['forty', 'eighty'], ['fifty', 'one hundred'],
+      // Doubled - Roman numerals
+      ['I', 'II'], ['II', 'IV'], ['III', 'VI'], ['IV', 'VIII'], ['V', 'X'],
+      ['VI', 'XII'], ['VII', 'XIV'], ['VIII', 'XVI'], ['IX', 'XVIII'], ['X', 'XX'],
+      ['XI', 'XXII'], ['XII', 'XXIV'], ['XIII', 'XXVI'], ['XIV', 'XXVIII'], ['XV', 'XXX'],
+      ['XX', 'XL'], ['XXV', 'L'], ['XXX', 'LX'], ['XL', 'LXXX'], ['L', 'C'],
+      // Doubled - mixed formats
+      ['1', 'two'], ['2', 'IV'], ['III', 'six'], ['4', 'VIII'], ['five', '10'],
+      ['6', 'XII'], ['VII', 'fourteen'], ['8', 'XVI'], ['ten', '20'], ['12', 'XXIV'],
+      ['fifteen', '30'], ['20', 'forty'], ['XXV', '50'], ['thirty', '60'], ['XL', 'eighty']
+    ],
+    'tripled': [
+      // Number is tripled (0-33 range so tripled stays within 100) - digits
+      ['0', '0'], ['1', '3'], ['2', '6'], ['3', '9'], ['4', '12'], ['5', '15'],
+      ['6', '18'], ['7', '21'], ['8', '24'], ['9', '27'], ['10', '30'],
+      ['11', '33'], ['12', '36'], ['13', '39'], ['14', '42'], ['15', '45'],
+      ['16', '48'], ['17', '51'], ['18', '54'], ['19', '57'], ['20', '60'],
+      ['21', '63'], ['22', '66'], ['23', '69'], ['24', '72'], ['25', '75'],
+      ['26', '78'], ['27', '81'], ['28', '84'], ['29', '87'], ['30', '90'],
+      ['31', '93'], ['32', '96'], ['33', '99'],
+      // Tripled - verbal
+      ['zero', 'zero'], ['one', 'three'], ['two', 'six'], ['three', 'nine'], ['four', 'twelve'], ['five', 'fifteen'],
+      ['six', 'eighteen'], ['seven', 'twenty-one'], ['eight', 'twenty-four'], ['nine', 'twenty-seven'], ['ten', 'thirty'],
+      ['eleven', 'thirty-three'], ['twelve', 'thirty-six'], ['thirteen', 'thirty-nine'], ['fourteen', 'forty-two'], ['fifteen', 'forty-five'],
+      ['twenty', 'sixty'], ['thirty', 'ninety'],
+      // Tripled - Roman numerals
+      ['I', 'III'], ['II', 'VI'], ['III', 'IX'], ['IV', 'XII'], ['V', 'XV'],
+      ['VI', 'XVIII'], ['VII', 'XXI'], ['VIII', 'XXIV'], ['IX', 'XXVII'], ['X', 'XXX'],
+      ['XI', 'XXXIII'], ['XII', 'XXXVI'], ['XIII', 'XXXIX'], ['XIV', 'XLII'], ['XV', 'XLV'],
+      ['XX', 'LX'], ['XXX', 'XC'],
+      // Tripled - mixed formats
+      ['1', 'three'], ['2', 'VI'], ['III', 'nine'], ['4', 'XII'], ['five', '15'],
+      ['6', 'XVIII'], ['VII', 'twenty-one'], ['8', 'XXIV'], ['ten', '30'], ['12', 'XXXVI'],
+      ['fifteen', '45'], ['20', 'sixty'], ['XXX', 'ninety']
     ]
   };
 
@@ -1971,6 +2082,178 @@ const CognitiveTaskGame = () => {
       const format2 = formats[Math.floor(Math.random() * formats.length)];
 
       return [allTimes[idx1][format1], allTimes[idx2][format2]];
+    } else if (relationType === 'even') {
+      // For even, use one even and one odd number (mixed parity)
+      const numberToWord = (n) => {
+        const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+              'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        if (n < 20) return words[n];
+        if (n === 100) return 'one hundred';
+        const ten = Math.floor(n / 10);
+        const one = n % 10;
+        return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0'; // Roman doesn't have zero
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      const formats = [
+        (n) => String(n),
+        (n) => numberToWord(n),
+        (n) => n === 0 ? '0' : numberToRoman(n)
+      ];
+
+      // Pick one even and one odd number
+      const evenNum = Math.floor(Math.random() * 50) * 2; // 0, 2, 4, ..., 98
+      const oddNum = Math.floor(Math.random() * 50) * 2 + 1; // 1, 3, 5, ..., 99
+
+      const format1 = formats[Math.floor(Math.random() * formats.length)];
+      const format2 = formats[Math.floor(Math.random() * formats.length)];
+
+      // Randomly decide which comes first
+      return Math.random() < 0.5 ? [format1(evenNum), format2(oddNum)] : [format1(oddNum), format2(evenNum)];
+    } else if (relationType === 'odd') {
+      // For odd, use one even and one odd number (mixed parity)
+      const numberToWord = (n) => {
+        const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+              'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        if (n < 20) return words[n];
+        if (n === 100) return 'one hundred';
+        const ten = Math.floor(n / 10);
+        const one = n % 10;
+        return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0';
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      const formats = [
+        (n) => String(n),
+        (n) => numberToWord(n),
+        (n) => n === 0 ? '0' : numberToRoman(n)
+      ];
+
+      // Pick one even and one odd number
+      const evenNum = Math.floor(Math.random() * 50) * 2; // 0, 2, 4, ..., 98
+      const oddNum = Math.floor(Math.random() * 50) * 2 + 1; // 1, 3, 5, ..., 99
+
+      const format1 = formats[Math.floor(Math.random() * formats.length)];
+      const format2 = formats[Math.floor(Math.random() * formats.length)];
+
+      // Randomly decide which comes first
+      return Math.random() < 0.5 ? [format1(evenNum), format2(oddNum)] : [format1(oddNum), format2(evenNum)];
+    } else if (relationType === 'doubled') {
+      // For doubled, use numbers that are NOT in a doubling relationship
+      const numberToWord = (n) => {
+        const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+              'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        if (n < 20) return words[n];
+        if (n === 100) return 'one hundred';
+        const ten = Math.floor(n / 10);
+        const one = n % 10;
+        return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0';
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      const formats = [
+        (n) => String(n),
+        (n) => numberToWord(n),
+        (n) => n === 0 ? '0' : numberToRoman(n)
+      ];
+
+      let num1 = Math.floor(Math.random() * 50); // 0-49
+      let num2 = Math.floor(Math.random() * 100); // 0-99
+      // Ensure num2 is NOT double of num1 and num1 is NOT double of num2
+      while (num2 === num1 * 2 || num1 === num2 * 2 || num1 === num2) {
+        num2 = Math.floor(Math.random() * 100);
+      }
+
+      const format1 = formats[Math.floor(Math.random() * formats.length)];
+      const format2 = formats[Math.floor(Math.random() * formats.length)];
+
+      return [format1(num1), format2(num2)];
+    } else if (relationType === 'tripled') {
+      // For tripled, use numbers that are NOT in a tripling relationship
+      const numberToWord = (n) => {
+        const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+              'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        if (n < 20) return words[n];
+        if (n === 100) return 'one hundred';
+        const ten = Math.floor(n / 10);
+        const one = n % 10;
+        return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0';
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      const formats = [
+        (n) => String(n),
+        (n) => numberToWord(n),
+        (n) => n === 0 ? '0' : numberToRoman(n)
+      ];
+
+      let num1 = Math.floor(Math.random() * 33); // 0-32
+      let num2 = Math.floor(Math.random() * 100); // 0-99
+      // Ensure num2 is NOT triple of num1 and num1 is NOT triple of num2
+      while (num2 === num1 * 3 || num1 === num2 * 3 || num1 === num2) {
+        num2 = Math.floor(Math.random() * 100);
+      }
+
+      const format1 = formats[Math.floor(Math.random() * formats.length)];
+      const format2 = formats[Math.floor(Math.random() * formats.length)];
+
+      return [format1(num1), format2(num2)];
     }
 
     return ['error', 'error'];
