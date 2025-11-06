@@ -1165,18 +1165,31 @@ const CognitiveTaskGame = () => {
 
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
+      console.log('═'.repeat(80));
+      console.log('🏁 GAME END - Evaluating performance');
+      console.log('🏁 Score:', score, '/', numTasks);
+      console.log('🏁 Wrong answers:', wrongCount);
+      console.log('🏁 Current level:', level);
+
       // Check if 6 or more mistakes were made
       if (wrongCount >= 6) {
+        console.log('⬇️ TOO MANY MISTAKES - Level decrease (6+ wrong)');
         handleLevelDecrease();
         return;
       }
 
       const percentage = (score / numTasks) * 100;
+      console.log(`📊 Level completion check: ${score}/${numTasks} = ${percentage.toFixed(1)}%`);
+      console.log(`📊 Level up threshold: 90% (27/30 or better)`);
+
       if (percentage >= 90) {
+        console.log(`✅ LEVEL UP! Score ${score}/${numTasks} (${percentage.toFixed(1)}%) >= 90%`);
         // Check if perfect score (100%)
         if (score === numTasks) {
+          console.log(`🎉 Perfect score! 30/30 = 100%`);
           setGameState('perfectScore');
         } else {
+          console.log(`⬆️ Level up! Score ${score}/${numTasks} >= 27/30`);
           setGameState('levelUp');
         }
         // Progress to next level
