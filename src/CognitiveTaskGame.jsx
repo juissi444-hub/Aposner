@@ -54,12 +54,28 @@ const CognitiveTaskGame = () => {
   const [leaderboard, setLeaderboard] = useState([]);
 
   const getTimeForLevel = (lvl) => {
-    // Level 1-7: 2000ms down to 500ms (decreasing by 250ms per level)
-    if (lvl <= 7) return 2000 - (lvl - 1) * 250;
-    // Level 8-9: 500ms down to 350ms (decreasing by 75ms per level)
-    if (lvl <= 9) return 500 - (lvl - 8) * 75;
-    // Level 10+: 350ms down to 50ms (decreasing by 25ms per level, minimum 50ms)
-    return Math.max(50, 350 - (lvl - 10) * 25);
+    // Levels 1-5: 2000ms down to 750ms (decreasing by 250ms per level)
+    if (lvl <= 5) return 2000 - (lvl - 1) * 250;
+
+    // Level 6 starts at 750ms
+    const level6Time = 750;
+
+    // From level 6, decrease by 50ms until reaching 300ms (levels 6-15)
+    const timeFromLevel6 = level6Time - (lvl - 6) * 50;
+
+    if (timeFromLevel6 >= 300) {
+      return timeFromLevel6;
+    }
+
+    // After 300ms (level 15+), decrease by 25ms until 200ms (levels 15-19)
+    const timeFromLevel15 = 300 - (lvl - 15) * 25;
+
+    if (timeFromLevel15 >= 200) {
+      return timeFromLevel15;
+    }
+
+    // After 200ms (level 19+), decrease by 12.5ms until 50ms minimum
+    return Math.max(50, 200 - (lvl - 19) * 12.5);
   };
 
   // Keep gameStateRef in sync with gameState
