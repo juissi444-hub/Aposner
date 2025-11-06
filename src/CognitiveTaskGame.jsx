@@ -1199,7 +1199,9 @@ const CognitiveTaskGame = () => {
           setLevel(prev => {
             const newLevel = prev + 1;
             console.log(`✅ Level ${prev} completed with score ${currentScore}/${numTasks}, advancing to level ${newLevel}`);
-            saveProgress(prev, currentScore); // Save the level just completed
+            // IMPORTANT: Save the NEW level we're advancing to, not the old one
+            saveProgress(newLevel, currentScore);
+            console.log(`💾 Saved progress: Level ${newLevel} with score ${currentScore}`);
             return newLevel;
           });
           setScore(0);
@@ -1369,6 +1371,11 @@ const CognitiveTaskGame = () => {
       if (e.key === 'Escape' && gameState !== 'menu') {
         e.preventDefault();
         stopAllSounds();
+        // Save current progress before returning to menu
+        if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore') {
+          console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
+          saveProgress(level, score);
+        }
         setGameState('menu');
         setFeedback(null);
       } else if (e.key === ' ' && gameState === 'showRelation') {
@@ -1385,7 +1392,7 @@ const CognitiveTaskGame = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameState, handleSpacePress, handleResponse, userAnswered, stopAllSounds]);
+  }, [gameState, handleSpacePress, handleResponse, userAnswered, stopAllSounds, saveProgress, level, score, mode]);
 
   // Prevent body scrolling when leaderboard modal is open
   useEffect(() => {
@@ -1694,6 +1701,11 @@ const CognitiveTaskGame = () => {
             <button
               onClick={() => {
                 stopAllSounds();
+                // Save progress before returning to menu
+                if (mode === 'adaptive') {
+                  console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
+                  saveProgress(level, score);
+                }
                 setGameState('menu');
               }}
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg order-2 sm:order-1"
