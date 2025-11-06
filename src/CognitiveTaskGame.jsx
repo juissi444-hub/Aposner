@@ -4480,9 +4480,11 @@ const CognitiveTaskGame = () => {
                     {/* Actual Data Distribution Graph */}
                     <div className="bg-gray-700 p-4 rounded-lg">
                       <h3 className="text-center text-lg font-bold mb-4">Actual Player Distribution Curve</h3>
-                      <div className="overflow-x-auto overflow-y-hidden pb-4">
-                        <div className="flex justify-center" style={{minWidth: '100%'}}>
-                          <svg width={graphWidth} height={graphHeight} className="overflow-visible">
+                      {isMobile && (
+                        <p className="text-center text-xs text-gray-400 mb-2">← Scroll horizontally to see full curve →</p>
+                      )}
+                      <div className="overflow-x-auto overflow-y-hidden pb-4 -mx-2 px-2">
+                        <svg width={graphWidth} height={graphHeight} className="mx-auto block">
                             {/* Gradient definitions */}
                             <defs>
                             <linearGradient id="bellGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -4667,7 +4669,6 @@ const CognitiveTaskGame = () => {
                             Level Achieved
                           </text>
                         </svg>
-                        </div>
                       </div>
 
                       {/* Legend */}
