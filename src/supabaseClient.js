@@ -109,10 +109,10 @@ export const supabase = supabaseUrl && supabaseAnonKey
         persistSession: true,
         storage: customStorageAdapter,
         autoRefreshToken: true,
-        detectSessionInUrl: true,
+        detectSessionInUrl: false, // Don't look for OAuth redirects
         storageKey: 'aposner-auth-token',
-        flowType: 'pkce',
-        debug: false
+        // Don't specify flowType - let Supabase use default for email/password
+        debug: true // Enable debug for troubleshooting
       }
     })
   : null;
