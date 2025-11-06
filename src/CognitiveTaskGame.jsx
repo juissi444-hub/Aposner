@@ -4875,7 +4875,7 @@ const CognitiveTaskGame = () => {
                 // Wide enough to show full range comfortably - at least 50px per level
                 const minGraphWidth = Math.max((range + 1) * 50, isMobile ? 600 : 1200);
                 const graphWidth = minGraphWidth;
-                const graphHeight = isMobile ? 250 : 350;
+                const graphHeight = isMobile ? 300 : 350; // Increased mobile height to show labels
                 const padding = isMobile ? 30 : 50;
                 const chartWidth = graphWidth - 2 * padding;
                 const chartHeight = graphHeight - 2 * padding;
@@ -4957,7 +4957,7 @@ const CognitiveTaskGame = () => {
                       {isMobile && (
                         <p className="text-center text-xs text-gray-400 mb-2">← Scroll horizontally to see full curve →</p>
                       )}
-                      <div className="overflow-x-auto overflow-y-hidden pb-4 -mx-2 px-2">
+                      <div className="overflow-x-auto overflow-y-hidden pb-12 -mx-2 px-2">
                         <svg width={graphWidth} height={graphHeight} className="mx-auto block">
                             {/* Gradient definitions */}
                             <defs>
