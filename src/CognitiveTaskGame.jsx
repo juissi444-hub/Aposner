@@ -1332,70 +1332,50 @@ const CognitiveTaskGame = () => {
       ['dull', 'sharp'], ['dumb', 'articulate'], ['durable', 'fragile'], ['dusk', 'dawn'], ['dust', 'polish'],
       ['dwarf', 'giant'], ['dwell', 'depart'], ['dwindle', 'flourish'], ['dynamic', 'static'], ['eager', 'reluctant']
     ],
-    'same-color': [
-      ['sky', 'ocean'], ['grass', 'leaf'], ['sun', 'banana'], ['snow', 'cloud'], ['coal', 'night'],
-      ['blood', 'rose'], ['orange', 'carrot'], ['grape', 'plum'], ['lime', 'mint'], ['cherry', 'tomato'],
-      ['lemon', 'butter'], ['blueberry', 'sapphire'], ['strawberry', 'fire'], ['plum', 'eggplant'], ['pumpkin', 'tiger'],
-      ['emerald', 'fern'], ['pearl', 'milk'], ['onyx', 'raven'], ['ruby', 'wine'], ['amber', 'honey'],
-      ['turquoise', 'sea'], ['coral', 'salmon'], ['ivory', 'cream'], ['silver', 'moon'], ['gold', 'wheat'],
-      ['bronze', 'penny'], ['charcoal', 'ash'], ['smoke', 'fog'], ['sand', 'beach'], ['rust', 'brick'],
-      ['chocolate', 'dirt'], ['vanilla', 'paper'], ['caramel', 'tan'], ['mint', 'jade'], ['rose', 'flamingo'],
-      ['lilac', 'violet'], ['indigo', 'navy'], ['cyan', 'aqua'], ['magenta', 'fuchsia'], ['scarlet', 'crimson'],
-      ['olive', 'khaki'], ['maroon', 'burgundy'], ['teal', 'peacock'], ['mustard', 'dandelion'], ['sage', 'moss'],
-      ['mauve', 'orchid'], ['taupe', 'mushroom'], ['sienna', 'terracotta'], ['cobalt', 'azure'], ['jade', 'viridian'],
-      ['peach', 'apricot'], ['cream', 'eggshell'], ['ebony', 'jet'], ['frost', 'ice'], ['storm', 'slate'],
-      // Additional same-color pairs
-      ['forest', 'pine'], ['lavender', 'amethyst'], ['sunflower', 'gold'], ['tangerine', 'pumpkin'], ['lime', 'emerald'],
-      ['berry', 'wine'], ['clay', 'brick'], ['dolphin', 'sky'], ['raven', 'coal'], ['wheat', 'straw'],
-      ['copper', 'autumn'], ['mint', 'lime'], ['violet', 'lilac'], ['sapphire', 'ocean'], ['charcoal', 'smoke'],
-      ['cherry', 'ruby'], ['peach', 'sunset'], ['lemon', 'sunflower'], ['plum', 'grape'], ['lime', 'frog'],
-      ['graphite', 'storm'], ['cotton', 'snow'], ['caramel', 'bronze'], ['honey', 'gold'], ['salmon', 'coral'],
-      ['forest', 'jade'], ['eggplant', 'plum'], ['burgundy', 'wine'], ['navy', 'midnight'], ['crimson', 'blood'],
-      ['ivory', 'bone'], ['chocolate', 'coffee'], ['vanilla', 'cream'], ['strawberry', 'lipstick'], ['banana', 'canary'],
-      ['blueberry', 'navy'], ['orange', 'sunset'], ['grape', 'amethyst'], ['kiwi', 'lime'], ['watermelon', 'pink'],
-      ['avocado', 'olive'], ['mango', 'yellow'], ['papaya', 'orange'], ['coconut', 'white'], ['fig', 'purple'],
-      // Additional same-color pairs (50+ more)
-      ['tomato', 'fire truck'], ['lettuce', 'grass'], ['eggplant', 'violet'], ['corn', 'sunflower'], ['pea', 'lime'],
-      ['carrot', 'tangerine'], ['beet', 'wine'], ['bluebell', 'sky'], ['rose petal', 'salmon'], ['marigold', 'gold'],
-      ['daffodil', 'lemon'], ['hibiscus', 'magenta'], ['jasmine', 'cream'], ['iris', 'indigo'], ['tulip', 'burgundy'],
-      ['poppy', 'scarlet'], ['hyacinth', 'lavender'], ['daisy', 'snow'], ['pansy', 'purple'], ['orchid', 'mauve'],
-      ['moss', 'forest'], ['fern', 'lime'], ['seaweed', 'olive'], ['algae', 'teal'], ['lichen', 'sage'],
-      ['bamboo', 'jade'], ['ivy', 'emerald'], ['cactus', 'olive'], ['clover', 'grass'], ['thyme', 'mint'],
-      ['ocean', 'sapphire'], ['lake', 'azure'], ['river', 'slate'], ['pond', 'teal'], ['stream', 'cyan'],
-      ['waterfall', 'crystal'], ['ice', 'diamond'], ['glacier', 'frost'], ['avalanche', 'snow'], ['hail', 'pearl'],
-      ['sunset', 'peach'], ['sunrise', 'rose'], ['twilight', 'purple'], ['dusk', 'violet'], ['midnight', 'onyx'],
-      ['noon', 'silver'], ['dawn', 'pink'], ['storm cloud', 'charcoal'], ['fog', 'gray'], ['mist', 'silver'],
-      ['desert sand', 'tan'], ['beach sand', 'cream'], ['dirt', 'brown'], ['mud', 'chocolate'], ['clay', 'rust'],
-      ['rock', 'granite'], ['stone', 'slate'], ['marble', 'ivory'], ['quartz', 'crystal'], ['obsidian', 'jet'],
-      ['coal dust', 'charcoal'], ['ash', 'gray'], ['soot', 'black'], ['ink', 'ebony'], ['tar', 'pitch'],
-      ['flame', 'orange'], ['ember', 'red'], ['smoke', 'ash'], ['spark', 'gold'], ['lava', 'crimson'],
-      ['pine tree', 'forest'], ['oak', 'bronze'], ['birch', 'ivory'], ['maple', 'amber'], ['willow', 'sage'],
-      ['cherry blossom', 'pink'], ['apple blossom', 'white'], ['lilac flower', 'lavender'], ['bluebonnet', 'indigo'], ['buttercup', 'yellow'],
-      // Even more same-color pairs (100+ more)
-      ['blush', 'rose'], ['brick', 'rust'], ['cardinal', 'crimson'], ['cayenne', 'chili'], ['cinnamon', 'brown'],
-      ['claret', 'burgundy'], ['cobalt blue', 'azure'], ['dusk sky', 'purple'], ['emerald green', 'jade'], ['fir', 'evergreen'],
-      ['flame', 'scarlet'], ['heather', 'lavender'], ['indigo ink', 'navy'], ['kelp', 'olive'], ['lapis', 'sapphire'],
-      ['mahogany', 'chestnut'], ['navy blue', 'midnight'], ['obsidian', 'raven'], ['olive oil', 'khaki'], ['pewter', 'silver'],
-      ['plum wine', 'burgundy'], ['raspberry', 'magenta'], ['redwood', 'mahogany'], ['rose gold', 'copper'], ['ruby red', 'garnet'],
-      ['saffron', 'gold'], ['sepia', 'brown'], ['slate rock', 'charcoal'], ['steel', 'graphite'], ['terracotta pot', 'rust'],
-      ['turquoise stone', 'cyan'], ['umber', 'brown'], ['vermillion', 'scarlet'], ['walnut', 'brown'], ['wine red', 'maroon'],
-      ['apricot', 'peach'], ['asparagus', 'sage'], ['aubergine', 'eggplant'], ['azure sky', 'cerulean'], ['basil', 'sage'],
-      ['brass', 'gold'], ['butterscotch', 'caramel'], ['canary', 'yellow'], ['champagne', 'cream'], ['charcoal gray', 'ash'],
-      ['cherry wood', 'mahogany'], ['chestnut', 'brown'], ['cocoa', 'chocolate'], ['concrete', 'gray'], ['cranberry', 'burgundy'],
-      ['cream cheese', 'ivory'], ['cucumber', 'lime'], ['denim', 'navy'], ['dove', 'gray'], ['dust', 'tan'],
-      ['eggshell', 'cream'], ['elephant', 'gray'], ['espresso', 'brown'], ['fawn', 'tan'], ['flax', 'cream'],
-      ['french vanilla', 'cream'], ['ginger', 'rust'], ['goldenrod', 'yellow'], ['granite', 'gray'], ['grapefruit', 'pink'],
-      ['gunmetal', 'charcoal'], ['honey dew', 'green'], ['ink', 'navy'], ['iron', 'gray'], ['jet black', 'onyx'],
-      ['kale', 'green'], ['khaki pants', 'tan'], ['latex', 'cream'], ['lead', 'gray'], ['licorice', 'black'],
-      ['merlot', 'burgundy'], ['midnight blue', 'navy'], ['mint leaf', 'sage'], ['mocha', 'brown'], ['moss green', 'olive'],
-      ['mushroom', 'taupe'], ['nickel', 'silver'], ['oatmeal', 'tan'], ['oyster', 'cream'], ['paprika', 'rust'],
-      ['parsley', 'green'], ['peacock feather', 'teal'], ['pear', 'lime'], ['pecan', 'brown'], ['pistachio', 'mint'],
-      ['platinum', 'silver'], ['powder', 'white'], ['pumpkin spice', 'orange'], ['raisin', 'purple'], ['raspberry sorbet', 'pink'],
-      ['rosemary', 'sage'], ['sandalwood', 'tan'], ['sapphire stone', 'cobalt'], ['sea foam', 'mint'], ['shadow', 'charcoal'],
-      ['silk', 'cream'], ['smoke gray', 'ash'], ['steel blue', 'slate'], ['storm sky', 'gray'], ['straw', 'tan'],
-      ['suede', 'tan'], ['tangerine peel', 'orange'], ['tarmac', 'black'], ['thistle', 'lavender'], ['toffee', 'caramel'],
-      ['topaz', 'amber'], ['turmeric', 'yellow'], ['ultramarine', 'cobalt'], ['urchin', 'purple'], ['verdant', 'emerald']
-    ],
+    'same-color': {
+      // Color groups: any two items from the same group share the same color
+      red: ['blood', 'rose', 'cherry', 'tomato', 'ruby', 'wine', 'strawberry', 'fire', 'crimson', 'scarlet',
+            'cardinal', 'poppy', 'ember', 'lava', 'lipstick', 'fire truck', 'cayenne', 'chili', 'vermillion',
+            'cardinal bird', 'red apple', 'red pepper', 'cranberry', 'raspberry', 'beet', 'pomegranate', 'watermelon'],
+      blue: ['sky', 'ocean', 'blueberry', 'sapphire', 'dolphin', 'cobalt', 'azure', 'navy', 'midnight', 'indigo',
+             'lake', 'river', 'bluebell', 'iris', 'denim', 'bluebonnet', 'lapis', 'cobalt blue', 'navy blue',
+             'indigo ink', 'ink', 'midnight blue', 'ultramarine', 'cerulean', 'turquoise', 'sea', 'peacock feather'],
+      green: ['grass', 'leaf', 'lime', 'mint', 'emerald', 'fern', 'jade', 'forest', 'pine', 'lettuce', 'pea',
+              'kiwi', 'avocado', 'moss', 'seaweed', 'algae', 'lichen', 'bamboo', 'ivy', 'cactus', 'clover', 'thyme',
+              'asparagus', 'cucumber', 'kale', 'parsley', 'pear', 'pistachio', 'basil', 'rosemary', 'sage', 'fir',
+              'evergreen', 'kelp', 'honey dew', 'moss green', 'olive', 'olive oil', 'khaki', 'khaki pants'],
+      yellow: ['sun', 'banana', 'lemon', 'butter', 'sunflower', 'gold', 'wheat', 'mustard', 'dandelion', 'corn',
+               'marigold', 'daffodil', 'buttercup', 'canary', 'mango', 'saffron', 'goldenrod', 'turmeric', 'brass',
+               'honey', 'amber', 'spark', 'straw', 'blonde', 'pineapple', 'lemonade'],
+      white: ['snow', 'cloud', 'pearl', 'milk', 'ivory', 'cream', 'frost', 'ice', 'cotton', 'vanilla', 'paper',
+              'daisy', 'jasmine', 'apple blossom', 'eggshell', 'coconut', 'powder', 'chalk', 'marshmallow', 'dove',
+              'silk', 'crystal', 'diamond', 'salt', 'swan', 'polar bear'],
+      black: ['coal', 'night', 'onyx', 'raven', 'ebony', 'jet', 'soot', 'ink', 'tar', 'pitch', 'tarmac', 'obsidian',
+              'jet black', 'licorice', 'shadow', 'crow', 'panther', 'bat', 'blackboard', 'tire'],
+      orange: ['orange', 'carrot', 'pumpkin', 'tiger', 'tangerine', 'salmon', 'coral', 'peach', 'apricot', 'sunset',
+               'flame', 'papaya', 'mango', 'clementine', 'persimmon', 'pumpkin spice', 'tangerine peel', 'rust',
+               'brick', 'terracotta', 'terracotta pot', 'ginger', 'paprika', 'cayenne'],
+      purple: ['grape', 'plum', 'eggplant', 'violet', 'lilac', 'lavender', 'mauve', 'orchid', 'amethyst', 'fig',
+               'pansy', 'hyacinth', 'iris', 'twilight', 'dusk', 'aubergine', 'raisin', 'urchin', 'eggplant', 'mulberry',
+               'plum wine', 'dusk sky'],
+      pink: ['flamingo', 'rose petal', 'blush', 'cherry blossom', 'watermelon', 'grapefruit', 'raspberry sorbet',
+             'dawn', 'sunrise', 'peach', 'salmon', 'coral', 'bubblegum', 'cotton candy', 'carnation', 'azalea'],
+      brown: ['chocolate', 'dirt', 'mud', 'coffee', 'cinnamon', 'chestnut', 'mahogany', 'walnut', 'sepia', 'umber',
+              'mocha', 'espresso', 'cocoa', 'pecan', 'oak', 'redwood', 'cherry wood', 'bark', 'bear', 'potato'],
+      gray: ['ash', 'smoke', 'fog', 'charcoal', 'slate', 'storm', 'graphite', 'granite', 'concrete', 'stone',
+             'elephant', 'dove', 'fog', 'mist', 'storm cloud', 'lead', 'iron', 'steel', 'pewter', 'shadow',
+             'charcoal gray', 'smoke gray', 'storm sky', 'gunmetal', 'slate rock', 'mushroom', 'koala'],
+      gold: ['gold', 'wheat', 'honey', 'amber', 'saffron', 'sunflower', 'brass', 'marigold', 'spark', 'topaz',
+             'rose gold', 'treasure', 'coin', 'trophy'],
+      silver: ['silver', 'moon', 'pewter', 'platinum', 'nickel', 'chrome', 'aluminum', 'sterling', 'mirror'],
+      tan: ['sand', 'beach', 'caramel', 'tan', 'fawn', 'dust', 'oatmeal', 'sandalwood', 'suede', 'straw',
+            'desert sand', 'beach sand', 'khaki', 'beige'],
+      cream: ['cream', 'butter', 'vanilla', 'eggshell', 'champagne', 'cream cheese', 'flax', 'french vanilla',
+              'latex', 'oyster', 'ivory', 'lace', 'parchment'],
+      teal: ['teal', 'turquoise', 'cyan', 'aqua', 'pond', 'stream', 'algae', 'peacock', 'sea foam', 'turquoise stone'],
+      maroon: ['maroon', 'burgundy', 'wine', 'claret', 'wine red', 'merlot', 'cranberry', 'tulip', 'plum wine'],
+      beige: ['beige', 'tan', 'sand', 'taupe', 'mushroom', 'fawn', 'camel', 'khaki']
+    },
     'followup-numerical': Array.from({length: 200}, (_, i) => [String(i), String(i + 1)]),
     'physical-numerical': [
       // Ascending Words (up to 100)
@@ -1495,7 +1475,16 @@ const CognitiveTaskGame = () => {
       ['6', 'VII'], ['VII', '8'], ['8', 'IX'], ['IX', '10'], ['10', 'XI'],
       ['twenty', 'XXI'], ['XXI', '22'], ['22', 'twenty-three'], ['thirty', '31'], ['31', 'XXXII'],
       ['forty', 'XLI'], ['XLI', '42'], ['fifty', 'LI'], ['LI', 'fifty-two'], ['sixty', 'LXI'],
-      ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92']
+      ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92'],
+      // Extended Roman numerals (beyond 100)
+      ['C', 'CI'], ['CI', 'CII'], ['CII', 'CIII'], ['CX', 'CXI'], ['CXX', 'CXXI'],
+      ['CL', 'CLI'], ['CC', 'CCI'], ['CCL', 'CCLI'], ['CCC', 'CCCI'], ['CD', 'CDI'],
+      ['D', 'DI'], ['DC', 'DCI'], ['CM', 'CMI'], ['100', '101'], ['150', '151'],
+      ['200', '201'], ['250', '251'], ['300', '301'], ['400', '401'], ['500', '501'],
+      // Large number sequences
+      ['one hundred', 'one hundred one'], ['two hundred', 'two hundred one'],
+      ['three hundred', 'three hundred one'], ['four hundred', 'four hundred one'],
+      ['five hundred', 'five hundred one']
     ],
     'meaning': [
       // Digit to word
@@ -1524,7 +1513,16 @@ const CognitiveTaskGame = () => {
       // More combinations
       ['forty', 'XL'], ['fifty', 'L'], ['sixty', 'LX'], ['seventy', 'LXX'], ['eighty', 'LXXX'],
       ['ninety', 'XC'], ['hundred', 'C'], ['100', 'hundred'], ['60', 'sixty'], ['70', 'seventy'],
-      ['80', 'eighty'], ['90', 'ninety']
+      ['80', 'eighty'], ['90', 'ninety'],
+      // Extended Roman numerals (100-500)
+      ['C', '100'], ['CI', '101'], ['CX', '110'], ['CXX', '120'], ['CL', '150'], ['CC', '200'],
+      ['CCL', '250'], ['CCC', '300'], ['CD', '400'], ['D', '500'],
+      ['one hundred', 'C'], ['one hundred ten', 'CX'], ['one hundred fifty', 'CL'],
+      ['two hundred', 'CC'], ['two hundred fifty', 'CCL'], ['three hundred', 'CCC'],
+      ['four hundred', 'CD'], ['five hundred', 'D'],
+      ['110', 'one hundred ten'], ['120', 'one hundred twenty'], ['150', 'one hundred fifty'],
+      ['200', 'two hundred'], ['250', 'two hundred fifty'], ['300', 'three hundred'],
+      ['400', 'four hundred'], ['500', 'five hundred']
     ],
     'same-time': [
       // Clock emoji to digital
@@ -1578,13 +1576,24 @@ const CognitiveTaskGame = () => {
       ];
       return nonAntonyms[Math.floor(Math.random() * nonAntonyms.length)];
     } else if (relationType === 'same-color') {
-      // For same-color, use items with different colors
-      const differentColors = [
-        ['sky', 'grass'], ['sun', 'ocean'], ['snow', 'coal'], ['blood', 'sky'], ['lemon', 'grape'],
-        ['orange', 'blueberry'], ['cherry', 'lime'], ['emerald', 'ruby'], ['pearl', 'coal'], ['gold', 'silver'],
-        ['chocolate', 'vanilla'], ['rose', 'violet'], ['peach', 'mint'], ['coral', 'jade'], ['amber', 'sapphire']
-      ];
-      return differentColors[Math.floor(Math.random() * differentColors.length)];
+      // For same-color lookalike, use items from DIFFERENT color groups
+      const colorGroups = wordPairs['same-color'];
+      const colorKeys = Object.keys(colorGroups);
+
+      // Pick two different color groups
+      let colorKey1 = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+      let colorKey2 = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+      while (colorKey1 === colorKey2) {
+        colorKey2 = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+      }
+
+      // Pick random item from each color group
+      const items1 = colorGroups[colorKey1];
+      const items2 = colorGroups[colorKey2];
+      const item1 = items1[Math.floor(Math.random() * items1.length)];
+      const item2 = items2[Math.floor(Math.random() * items2.length)];
+
+      return [item1, item2];
     } else if (relationType === 'followup-numerical') {
       // For sequential, use numbers that are NOT sequential
       const num1 = Math.floor(Math.random() * 95);
@@ -1601,14 +1610,25 @@ const CognitiveTaskGame = () => {
         const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
         if (n < 20) return words[n];
         if (n === 100) return 'one hundred';
+        if (n === 200) return 'two hundred';
+        if (n === 300) return 'three hundred';
+        if (n === 400) return 'four hundred';
+        if (n === 500) return 'five hundred';
+        if (n > 100) {
+          const hundreds = Math.floor(n / 100);
+          const remainder = n % 100;
+          const hundredsWords = ['', 'one hundred', 'two hundred', 'three hundred', 'four hundred', 'five hundred'];
+          if (remainder === 0) return hundredsWords[hundreds];
+          return `${hundredsWords[hundreds]} ${numberToWord(remainder)}`;
+        }
         const ten = Math.floor(n / 10);
         const one = n % 10;
         return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
       };
 
       const numberToRoman = (n) => {
-        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        const vals = [500, 400, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['D', 'CD', 'C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
         let roman = '';
         for (let i = 0; i < vals.length; i++) {
           while (n >= vals[i]) {
@@ -1625,9 +1645,9 @@ const CognitiveTaskGame = () => {
         (n) => numberToRoman(n)
       ];
 
-      const num = Math.floor(Math.random() * 98) + 1; // 1-98
+      const num = Math.floor(Math.random() * 498) + 1; // 1-498
       const offset = Math.floor(Math.random() * 3) + 2; // Skip by 2, 3, or 4
-      const nextNum = Math.min(num + offset, 100); // Cap at 100
+      const nextNum = Math.min(num + offset, 500); // Cap at 500
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
       const format2 = formats[Math.floor(Math.random() * formats.length)];
@@ -1641,14 +1661,25 @@ const CognitiveTaskGame = () => {
         const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
         if (n < 20) return words[n];
         if (n === 100) return 'one hundred';
+        if (n === 200) return 'two hundred';
+        if (n === 300) return 'three hundred';
+        if (n === 400) return 'four hundred';
+        if (n === 500) return 'five hundred';
+        if (n > 100) {
+          const hundreds = Math.floor(n / 100);
+          const remainder = n % 100;
+          const hundredsWords = ['', 'one hundred', 'two hundred', 'three hundred', 'four hundred', 'five hundred'];
+          if (remainder === 0) return hundredsWords[hundreds];
+          return `${hundredsWords[hundreds]} ${numberToWord(remainder)}`;
+        }
         const ten = Math.floor(n / 10);
         const one = n % 10;
         return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
       };
 
       const numberToRoman = (n) => {
-        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        const vals = [500, 400, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['D', 'CD', 'C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
         let roman = '';
         for (let i = 0; i < vals.length; i++) {
           while (n >= vals[i]) {
@@ -1665,10 +1696,10 @@ const CognitiveTaskGame = () => {
         (n) => numberToRoman(n)
       ];
 
-      let num1 = Math.floor(Math.random() * 100) + 1; // 1-100
-      let num2 = Math.floor(Math.random() * 100) + 1; // 1-100
+      let num1 = Math.floor(Math.random() * 500) + 1; // 1-500
+      let num2 = Math.floor(Math.random() * 500) + 1; // 1-500
       while (num1 === num2) {
-        num2 = Math.floor(Math.random() * 100) + 1;
+        num2 = Math.floor(Math.random() * 500) + 1;
       }
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
@@ -1713,6 +1744,62 @@ const CognitiveTaskGame = () => {
   };
 
   const getRandomPair = (relationType) => {
+    // Special handling for same-color (color groups instead of pairs)
+    if (relationType === 'same-color') {
+      const colorGroups = wordPairs['same-color'];
+      const colorKeys = Object.keys(colorGroups);
+
+      // Try to find a color group with available pairs
+      let attempts = 0;
+      while (attempts < colorKeys.length * 2) {
+        const colorKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+        const items = colorGroups[colorKey];
+
+        // Pick two different items from this color group
+        if (items.length < 2) continue; // Skip if not enough items
+
+        let idx1 = Math.floor(Math.random() * items.length);
+        let idx2 = Math.floor(Math.random() * items.length);
+        while (idx1 === idx2) {
+          idx2 = Math.floor(Math.random() * items.length);
+        }
+
+        const pair = [items[idx1], items[idx2]];
+        const pairKey = `${relationType}:${pair[0]}:${pair[1]}`;
+        const reversePairKey = `${relationType}:${pair[1]}:${pair[0]}`;
+
+        // Check if this pair hasn't been used yet
+        if (!usedPairs.has(pairKey) && !usedPairs.has(reversePairKey)) {
+          setUsedPairs(prev => new Set([...prev, pairKey]));
+          console.log(`✅ Selected color pair from ${colorKey}: ${pair[0]} - ${pair[1]}`);
+          return pair;
+        }
+
+        attempts++;
+      }
+
+      // If we couldn't find an unused pair, reset and try again
+      console.log(`⚠️ All color pairs used, resetting for ${relationType}`);
+      const newUsedPairs = new Set(
+        Array.from(usedPairs).filter(key => !key.startsWith(`${relationType}:`))
+      );
+      setUsedPairs(newUsedPairs);
+
+      // Pick a new pair after reset
+      const colorKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+      const items = colorGroups[colorKey];
+      let idx1 = Math.floor(Math.random() * items.length);
+      let idx2 = Math.floor(Math.random() * items.length);
+      while (idx1 === idx2 && items.length > 1) {
+        idx2 = Math.floor(Math.random() * items.length);
+      }
+      const pair = [items[idx1], items[idx2]];
+      const pairKey = `${relationType}:${pair[0]}:${pair[1]}`;
+      setUsedPairs(prev => new Set([...prev, pairKey]));
+      return pair;
+    }
+
+    // Original logic for other relation types
     const pairs = wordPairs[relationType];
 
     // Filter out already used pairs
