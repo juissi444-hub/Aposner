@@ -175,26 +175,32 @@ const CognitiveTaskGame = () => {
     try {
       const { data, error } = await supabase
         .from('leaderboard')
-        .select('highest_level')
+        .select('highest_level, best_score')
         .eq('user_id', userId)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
 
       if (data) {
-        // Merge with localStorage - use the higher value
+        // Merge with localStorage - use the higher value for level
         const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '1');
         const supabaseLevel = data.highest_level || 1;
         const maxLevel = Math.max(localLevel, supabaseLevel);
 
+        // For best_score, also merge with localStorage
+        const localBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
+        const supabaseBestScore = data.best_score || 0;
+        const maxBestScore = Math.max(localBestScore, supabaseBestScore);
+
         // Update both localStorage and state
         localStorage.setItem('adaptivePosnerLevel', String(maxLevel));
         localStorage.setItem('adaptivePosnerHighest', String(maxLevel));
+        localStorage.setItem('adaptivePosnerBestScore', String(maxBestScore));
         setSavedAdaptiveLevel(maxLevel);
         setHighestLevel(maxLevel);
         setLevel(maxLevel);
 
-        console.log(`Loaded progress: Local=${localLevel}, Supabase=${supabaseLevel}, Using=${maxLevel}`);
+        console.log(`Loaded progress: Level (Local=${localLevel}, Supabase=${supabaseLevel}, Using=${maxLevel}), Score (Local=${localBestScore}, Supabase=${supabaseBestScore}, Using=${maxBestScore})`);
       }
     } catch (error) {
       console.error('Error loading user progress:', error);
@@ -307,6 +313,13 @@ const CognitiveTaskGame = () => {
       setHighestLevel(newLevel);
     }
 
+    // Save best score to localStorage
+    const currentBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
+    if (currentScore > currentBestScore) {
+      localStorage.setItem('adaptivePosnerBestScore', String(currentScore));
+      console.log(`New best score saved: ${currentScore} (previous: ${currentBestScore})`);
+    }
+
     // Update leaderboard if in adaptive mode
     if (mode === 'adaptive') {
       updateLeaderboard(newLevel, currentScore);
@@ -317,6 +330,7 @@ const CognitiveTaskGame = () => {
   const resetProgress = () => {
     localStorage.removeItem('adaptivePosnerLevel');
     localStorage.removeItem('adaptivePosnerHighest');
+    localStorage.removeItem('adaptivePosnerBestScore');
     setSavedAdaptiveLevel(1);
     setHighestLevel(1);
     setLevel(1);
