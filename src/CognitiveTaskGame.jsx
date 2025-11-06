@@ -245,6 +245,7 @@ const CognitiveTaskGame = () => {
         throw error;
       }
       console.log('Leaderboard loaded:', data?.length || 0, 'entries');
+      console.log('Leaderboard data:', JSON.stringify(data, null, 2));
       setLeaderboard(data || []);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
@@ -253,9 +254,14 @@ const CognitiveTaskGame = () => {
   }, []);
 
   const updateLeaderboard = useCallback(async (newLevel, newScore) => {
-    if (!isSupabaseConfigured() || !user || mode !== 'adaptive') return;
+    if (!isSupabaseConfigured() || !user || mode !== 'adaptive') {
+      console.log('⚠️ updateLeaderboard skipped - configured:', isSupabaseConfigured(), 'user:', !!user, 'mode:', mode);
+      return;
+    }
 
     try {
+      console.log(`📝 updateLeaderboard called with newLevel=${newLevel}, newScore=${newScore}`);
+
       // Get current leaderboard entry
       const { data: currentData, error: fetchError } = await supabase
         .from('leaderboard')
@@ -265,6 +271,8 @@ const CognitiveTaskGame = () => {
 
       if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
+      console.log('📝 Current data:', currentData);
+
       // Determine the values to save
       let highestLevel = newLevel;
       let bestScore = newScore;
@@ -272,17 +280,22 @@ const CognitiveTaskGame = () => {
       if (currentData) {
         if (newLevel > currentData.highest_level) {
           // Player reached a new highest level - use new level and its score
+          console.log(`✅ New highest level reached: ${newLevel} > ${currentData.highest_level}`);
           highestLevel = newLevel;
           bestScore = newScore;
         } else if (newLevel === currentData.highest_level) {
           // Same level - keep the highest level, update best score if higher
+          console.log(`✅ Same level ${newLevel}, comparing scores: new=${newScore}, old=${currentData.best_score}`);
           highestLevel = currentData.highest_level;
           bestScore = Math.max(newScore, currentData.best_score || 0);
         } else {
           // Playing a lower level - don't update
+          console.log(`⚠️ Lower level ${newLevel} < ${currentData.highest_level}, skipping update`);
           return;
         }
       }
+
+      console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}`);
 
       const { error: updateError } = await supabase
         .from('leaderboard')
@@ -296,7 +309,7 @@ const CognitiveTaskGame = () => {
 
       if (updateError) throw updateError;
 
-      console.log(`Leaderboard updated: Level ${highestLevel}, Score ${bestScore}`);
+      console.log(`✅ Leaderboard updated: Level ${highestLevel}, Score ${bestScore}`);
     } catch (error) {
       console.error('Error updating leaderboard:', error);
     }
@@ -1599,6 +1612,7 @@ const CognitiveTaskGame = () => {
 
                     // Calculate level completion percentage (out of 30 tasks in adaptive mode)
                     const levelProgress = Math.round((entry.best_score / 30) * 100);
+                    console.log(`📊 User ${entry.username}: best_score=${entry.best_score}, levelProgress=${levelProgress}%`);
 
                     // Get styling based on rank
                     let rankStyle = '';
