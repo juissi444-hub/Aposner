@@ -692,8 +692,17 @@ const CognitiveTaskGame = () => {
       if (updateError) {
         console.error('❌ Error upserting leaderboard:', updateError);
         console.error('❌ Error details:', JSON.stringify(updateError, null, 2));
-        alert(`FAILED TO SAVE TO LEADERBOARD!\n\nError: ${updateError.message}\nCode: ${updateError.code}\n\nCheck RLS policies in Supabase!`);
-        throw updateError;
+
+        // For anonymous users, just log the error but don't block gameplay
+        if (!isAnonymous) {
+          alert(`Failed to save to leaderboard: ${updateError.message}\n\nCheck browser console for details.`);
+          throw updateError;
+        } else {
+          console.warn('⚠️ Anonymous user save failed - check SQL policies. Anonymous users need proper RLS configuration.');
+          console.warn('⚠️ Run the SQL commands provided to enable anonymous user support.');
+          // Don't throw for anonymous users - let them continue playing
+          return;
+        }
       }
 
       console.log(`✅ Leaderboard updated successfully!`);
@@ -717,7 +726,13 @@ const CognitiveTaskGame = () => {
       console.error('❌ Error code:', error.code);
       console.error('❌ Full error:', JSON.stringify(error, null, 2));
       console.error('═'.repeat(80));
-      alert(`CRITICAL ERROR: Failed to save to leaderboard!\n\n${error.message}\n\nCheck browser console for details.`);
+
+      // For anonymous users, don't show alert - just log
+      if (!isAnonymous) {
+        alert(`CRITICAL ERROR: Failed to save to leaderboard!\n\n${error.message}\n\nCheck browser console for details.`);
+      } else {
+        console.warn('⚠️ Anonymous users need RLS policies configured. See SQL commands in documentation.');
+      }
     }
   }, [user, mode]);
 
@@ -3089,13 +3104,18 @@ const CognitiveTaskGame = () => {
                   maxCount = Math.max(maxCount, levelCounts[level]);
                 });
 
-                // Adaptive range - expand if data is sparse, contract if dense
-                const dataRange = Math.max(...levels) - Math.min(...levels);
-                const suggestedRange = Math.max(dataRange, stdDev * 6); // At least 6 standard deviations
+                // Adaptive range - always show full bell curve (mean ± 3σ) plus actual data
+                const minDataLevel = Math.min(...levels);
+                const maxDataLevel = Math.max(...levels);
 
-                // Determine range for graph (adaptive to data, always showing full distribution)
-                const minLevel = Math.max(1, Math.floor(mean - suggestedRange / 2));
-                const maxLevel = Math.min(27, Math.ceil(mean + suggestedRange / 2));
+                // Calculate theoretical bell curve range (mean ± 3 standard deviations)
+                const theoreticalMin = mean - 3 * stdDev;
+                const theoreticalMax = mean + 3 * stdDev;
+
+                // Use the wider of: actual data range or theoretical bell curve range
+                // This ensures we always show the complete bell curve AND all player data
+                const minLevel = Math.max(1, Math.floor(Math.min(minDataLevel, theoreticalMin)));
+                const maxLevel = Math.min(27, Math.ceil(Math.max(maxDataLevel, theoreticalMax)));
                 const range = maxLevel - minLevel;
 
                 // Generate normal distribution curve points
@@ -3167,7 +3187,7 @@ const CognitiveTaskGame = () => {
                       </div>
                       <div className="text-center">
                         <div className="text-xl sm:text-2xl font-bold text-purple-400">{maxLevel}</div>
-                        <div className="text-xs sm:text-sm text-gray-400">Highest Level</div>
+                        <div className="text-xs sm:text-sm text-gray-400">Highest Level Reached</div>
                       </div>
                     </div>
 
