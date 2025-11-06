@@ -308,18 +308,21 @@ const CognitiveTaskGame = () => {
       }
 
       console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries');
+      console.log('✅ ALL users will be displayed (no limit applied)');
 
       if (!data || data.length === 0) {
         console.warn('⚠️ No leaderboard entries found - check if users have played in Adaptive mode');
       } else {
-        console.log('📊 Full leaderboard data from database:');
+        console.log('📊 Full leaderboard data from database (ALL ENTRIES):');
         data.forEach((entry, i) => {
           console.log(`   Entry ${i+1}: username=${entry.username}, highest_level=${entry.highest_level}, best_score=${entry.best_score}`);
         });
         console.log('📊 Complete data (JSON):', JSON.stringify(data, null, 2));
+        console.log(`📊 Total entries to display: ${data.length}`);
       }
 
       setLeaderboard(data || []);
+      console.log(`📊 Leaderboard state updated with ${data?.length || 0} entries`);
     } catch (error) {
       console.error('❌ Error loading leaderboard:', error);
       alert(`Failed to load leaderboard: ${error.message}\n\nCheck browser console for details.`);
@@ -1778,7 +1781,13 @@ const CognitiveTaskGame = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Leaderboard</h2>
-            <p className="text-center text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Adaptive Mode Only</p>
+            <p className="text-center text-xs sm:text-sm text-gray-400 mb-1">Adaptive Mode Only</p>
+            {leaderboard.length > 0 && (
+              <p className="text-center text-xs sm:text-sm text-green-400 mb-3 sm:mb-4">
+                Showing {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''} • Gold/Silver/Bronze for Top 3
+              </p>
+            )}
+            {leaderboard.length === 0 && <div className="mb-3 sm:mb-4"></div>}
             <div className="space-y-2 overflow-x-auto">
               {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
@@ -1791,6 +1800,10 @@ const CognitiveTaskGame = () => {
                     <div>Highest Level</div>
                     <div className="text-right">Ranking</div>
                   </div>
+                  {(() => {
+                    console.log(`🎨 RENDERING ${leaderboard.length} leaderboard entries to DOM`);
+                    return null;
+                  })()}
                   {leaderboard.map((entry, index) => {
                     // Calculate percentile: percentage of players you're better than
                     const percentile = leaderboard.length > 1
