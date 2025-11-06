@@ -1434,21 +1434,25 @@ const CognitiveTaskGame = () => {
           <div className="text-4xl font-bold text-blue-400 mb-12">
             {relationTypes[currentRelation]}
           </div>
-          <button
-            onClick={handleSpacePress}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg text-2xl active:bg-green-800 touch-manipulation"
-          >
-            Continue
-          </button>
-          <button
-            onClick={() => {
-              stopAllSounds();
-              setGameState('menu');
-            }}
-            className="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
-          >
-            Back to main menu
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={() => {
+                stopAllSounds();
+                setGameState('menu');
+              }}
+              className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg order-2 sm:order-1"
+            >
+              <span className="block sm:inline">Back to Menu</span>
+              <span className="hidden sm:inline text-sm text-gray-300 ml-2">(Press Esc)</span>
+            </button>
+            <button
+              onClick={handleSpacePress}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg text-2xl active:bg-green-800 touch-manipulation order-1 sm:order-2"
+            >
+              <span className="block sm:inline">Continue</span>
+              <span className="hidden sm:inline text-lg text-green-200 ml-2">(Press Space)</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -1679,16 +1683,17 @@ const CognitiveTaskGame = () => {
         console.log('📊 Modal render check - showLeaderboard:', showLeaderboard, 'isConfigured:', isSupabaseConfigured(), 'shouldShow:', shouldShow);
         return shouldShow;
       })() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-8 max-w-5xl w-full max-h-[80vh] overflow-y-auto">
-            <h2 className="text-3xl font-bold mb-6 text-center">Leaderboard</h2>
-            <p className="text-center text-sm text-gray-400 mb-4">Adaptive Mode Only</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Leaderboard</h2>
+            <p className="text-center text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Adaptive Mode Only</p>
             <div className="space-y-2 overflow-x-auto">
               {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
-                  <div className="grid gap-4 font-bold text-sm text-gray-400 px-4 py-2 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
+                  {/* Desktop header - hidden on mobile */}
+                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
                     <div>Rank</div>
                     <div>Username</div>
                     <div>Highest Level</div>
@@ -1701,8 +1706,9 @@ const CognitiveTaskGame = () => {
                       : 100;
 
                     // Calculate level completion percentage (out of 30 tasks in adaptive mode)
-                    const levelProgress = Math.round((entry.best_score / 30) * 100);
-                    console.log(`📊 User ${entry.username}: Level ${entry.highest_level}, ${levelProgress}% completed, ${percentile}th percentile`);
+                    const bestScore = entry.best_score || 0;
+                    const levelProgress = Math.round((bestScore / 30) * 100);
+                    console.log(`📊 User ${entry.username}: Level ${entry.highest_level}, best_score=${bestScore}, ${levelProgress}% completed, ${percentile}th percentile`);
 
                     // Get styling based on rank
                     let rankStyle = '';
@@ -1726,21 +1732,43 @@ const CognitiveTaskGame = () => {
                     return (
                       <div
                         key={entry.user_id}
-                        className={`grid gap-4 px-4 py-3 rounded-lg min-w-[600px] ${rankStyle}`}
-                        style={{gridTemplateColumns: '60px 1fr 200px 120px'}}
+                        className={`rounded-lg ${rankStyle}`}
                       >
-                        <div className="font-bold text-lg">
-                          {index === 0 && '🥇'}
-                          {index === 1 && '🥈'}
-                          {index === 2 && '🥉'}
-                          {index > 2 && `#${index + 1}`}
+                        {/* Desktop layout */}
+                        <div className="hidden sm:grid gap-4 px-4 py-3 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
+                          <div className="font-bold text-lg">
+                            {index === 0 && '🥇'}
+                            {index === 1 && '🥈'}
+                            {index === 2 && '🥉'}
+                            {index > 2 && `#${index + 1}`}
+                          </div>
+                          <div className="truncate font-medium">{entry.username}</div>
+                          <div className="font-semibold">
+                            <span className="text-white">Level {entry.highest_level}</span>
+                            <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
+                          </div>
+                          <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
                         </div>
-                        <div className="truncate font-medium">{entry.username}</div>
-                        <div className="font-semibold">
-                          <span className="text-white">Level {entry.highest_level}</span>
-                          <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
+
+                        {/* Mobile layout */}
+                        <div className="sm:hidden px-3 py-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xl">
+                                {index === 0 && '🥇'}
+                                {index === 1 && '🥈'}
+                                {index === 2 && '🥉'}
+                                {index > 2 && `#${index + 1}`}
+                              </span>
+                              <span className="font-medium text-sm">{entry.username}</span>
+                            </div>
+                            <span className="text-xs font-semibold text-yellow-400">{percentile}th</span>
+                          </div>
+                          <div className="text-sm font-semibold">
+                            <span className="text-white">Level {entry.highest_level}</span>
+                            <span className="text-green-400 ml-1">- {levelProgress}%</span>
+                          </div>
                         </div>
-                        <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
                       </div>
                     );
                   })}
