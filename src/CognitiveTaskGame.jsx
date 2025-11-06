@@ -158,7 +158,7 @@ const CognitiveTaskGame = () => {
               {
                 user_id: data.user.id,
                 username: username,
-                highest_level: 1,
+                highest_level: 0,
                 best_score: 0
               }
             ]);
@@ -166,7 +166,7 @@ const CognitiveTaskGame = () => {
             console.error('❌ Failed to create leaderboard entry:', insertError);
             throw insertError;
           }
-          console.log('✅ Leaderboard entry created successfully');
+          console.log('✅ Leaderboard entry created successfully with level 0');
         }
 
         setShowAuth(false);
@@ -255,6 +255,7 @@ const CognitiveTaskGame = () => {
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
+        .gt('highest_level', 0) // Only show users who have completed at least 1 level
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
@@ -267,13 +268,13 @@ const CognitiveTaskGame = () => {
         throw error;
       }
 
-      console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries');
+      console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries (excluding level 0)');
 
       if (!data || data.length === 0) {
         console.warn('⚠️ No leaderboard entries found!');
         console.warn('⚠️ This could mean:');
         console.warn('  1. The database schema has not been set up (run supabase-schema.sql)');
-        console.warn('  2. No users have signed up yet');
+        console.warn('  2. No users have completed any levels yet');
         console.warn('  3. Row Level Security policies are blocking access');
       } else {
         console.log('📊 Leaderboard data:', JSON.stringify(data, null, 2));
@@ -294,6 +295,7 @@ const CognitiveTaskGame = () => {
 
     try {
       console.log(`📝 updateLeaderboard called with newLevel=${newLevel}, newScore=${newScore}`);
+      console.log(`📝 User:`, user.user_metadata?.username || user.email);
 
       // Get current leaderboard entry
       const { data: currentData, error: fetchError } = await supabase
@@ -302,15 +304,19 @@ const CognitiveTaskGame = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('❌ Error fetching current leaderboard data:', fetchError);
+        throw fetchError;
+      }
 
-      console.log('📝 Current data:', currentData);
+      console.log('📝 Current leaderboard data:', JSON.stringify(currentData, null, 2));
 
       // Determine the values to save
       let highestLevel = newLevel;
       let bestScore = newScore;
 
       if (currentData) {
+        console.log(`📝 Comparing: new level ${newLevel} vs current ${currentData.highest_level}`);
         if (newLevel > currentData.highest_level) {
           // Player reached a new highest level - use new level and its score
           console.log(`✅ New highest level reached: ${newLevel} > ${currentData.highest_level}`);
@@ -326,11 +332,13 @@ const CognitiveTaskGame = () => {
           console.log(`⚠️ Lower level ${newLevel} < ${currentData.highest_level}, skipping update`);
           return;
         }
+      } else {
+        console.log(`📝 No current data found, creating new entry`);
       }
 
       console.log(`💾 Saving to leaderboard: Level ${highestLevel}, Score ${bestScore}`);
 
-      const { error: updateError } = await supabase
+      const { data: upsertData, error: updateError } = await supabase
         .from('leaderboard')
         .upsert({
           user_id: user.id,
@@ -338,13 +346,19 @@ const CognitiveTaskGame = () => {
           highest_level: highestLevel,
           best_score: bestScore,
           updated_at: new Date().toISOString()
-        });
+        })
+        .select();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('❌ Error upserting leaderboard:', updateError);
+        throw updateError;
+      }
 
-      console.log(`✅ Leaderboard updated: Level ${highestLevel}, Score ${bestScore}`);
+      console.log(`✅ Leaderboard updated successfully!`);
+      console.log(`✅ Updated data:`, JSON.stringify(upsertData, null, 2));
     } catch (error) {
-      console.error('Error updating leaderboard:', error);
+      console.error('❌ Error updating leaderboard:', error);
+      console.error('❌ Full error:', JSON.stringify(error, null, 2));
     }
   }, [user, mode]);
 
@@ -963,9 +977,11 @@ const CognitiveTaskGame = () => {
     setTimeout(() => {
       stopAllSounds();
       const currentScore = score;
+      const completedLevel = level; // Save the level they just failed
       setLevel(prev => {
         const newLevel = Math.max(1, prev - 1);
-        saveProgress(newLevel, currentScore);
+        // Save the level they're dropping to, with score from the failed level
+        saveProgress(newLevel, 0); // Reset score when dropping
         return newLevel;
       });
       setScore(0);
@@ -974,7 +990,7 @@ const CognitiveTaskGame = () => {
       setTaskHistory([]);
       prepareNextTask();
     }, 2000);
-  }, [saveProgress, stopAllSounds, score]);
+  }, [saveProgress, stopAllSounds, score, level]);
 
   const handleGameEnd = useCallback(() => {
     if (mode === 'adaptive') {
@@ -996,11 +1012,12 @@ const CognitiveTaskGame = () => {
         setTimeout(() => {
           stopAllSounds();
           const currentScore = score;
-          setLevel(prev => {
-            const newLevel = prev + 1;
-            saveProgress(newLevel, currentScore);
-            return newLevel;
-          });
+          const completedLevel = level; // The level they just completed
+          console.log(`✅ Level ${completedLevel} completed with score ${currentScore}/${numTasks}`);
+          // Save the level they just COMPLETED with their score
+          saveProgress(completedLevel, currentScore);
+          // Then advance to next level
+          setLevel(prev => prev + 1);
           setScore(0);
           setWrongCount(0);
           setCurrentTask(0);
@@ -1009,6 +1026,7 @@ const CognitiveTaskGame = () => {
         }, 3000);
       } else {
         // Failed to progress - save current level with current score
+        console.log(`⚠️ Level ${level} not completed: ${score}/${numTasks} (${percentage.toFixed(1)}%)`);
         saveProgress(level, score);
         setGameState('results');
       }
