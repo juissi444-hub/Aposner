@@ -58,11 +58,20 @@ const CognitiveTaskGame = () => {
 
   // Load progress from localStorage on mount
   useEffect(() => {
+    console.log('🔄 Loading progress from localStorage on mount...');
     const savedLevel = localStorage.getItem('adaptivePosnerLevel');
     const savedHighest = localStorage.getItem('adaptivePosnerHighest');
     const savedSound = localStorage.getItem('adaptivePosnerSound');
     const savedAutoContinue = localStorage.getItem('adaptivePosnerAutoContinue');
     const savedAutoContinueDelay = localStorage.getItem('adaptivePosnerAutoContinueDelay');
+
+    console.log('📦 localStorage values:', {
+      savedLevel,
+      savedHighest,
+      savedSound,
+      savedAutoContinue,
+      savedAutoContinueDelay
+    });
 
     if (savedLevel) {
       const levelNum = parseInt(savedLevel);
@@ -73,9 +82,12 @@ const CognitiveTaskGame = () => {
         setSavedAdaptiveLevel(1);
         setLevel(1);
       } else {
+        console.log('✅ Loaded savedAdaptiveLevel from localStorage:', levelNum);
         setSavedAdaptiveLevel(levelNum);
         setLevel(levelNum);
       }
+    } else {
+      console.log('⚠️ No saved level found in localStorage, using default: 1');
     }
 
     if (savedHighest) {
@@ -86,8 +98,11 @@ const CognitiveTaskGame = () => {
         localStorage.setItem('adaptivePosnerHighest', '1');
         setHighestLevel(1);
       } else {
+        console.log('✅ Loaded highestLevel from localStorage:', highestNum);
         setHighestLevel(highestNum);
       }
+    } else {
+      console.log('⚠️ No saved highest level found in localStorage, using default: 1');
     }
 
     if (savedSound !== null) {
@@ -104,6 +119,8 @@ const CognitiveTaskGame = () => {
         setAutoContinueDelay(delay);
       }
     }
+
+    console.log('✅ localStorage load complete');
   }, []);
 
   // Separate effect for authentication
@@ -264,15 +281,18 @@ const CognitiveTaskGame = () => {
     if (!isSupabaseConfigured()) return;
 
     try {
-      console.log('Loading user progress for user:', userId);
+      console.log('═'.repeat(80));
+      console.log('📥 Loading user progress from server for user:', userId);
 
       // Get current local values first (these are the fallback)
-      const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '1');
-      const localHighest = parseInt(localStorage.getItem('adaptivePosnerHighest') || '1');
+      const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '0');
+      const localHighest = parseInt(localStorage.getItem('adaptivePosnerHighest') || '0');
       const localBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
 
-      let serverCurrentLevel = 1;
-      let serverHighestLevel = 1;
+      console.log('📦 Current localStorage:', { localLevel, localHighest, localBestScore });
+
+      let serverCurrentLevel = 0;
+      let serverHighestLevel = 0;
       let serverBestScore = 0;
 
       // Try to load from user_progress table (current progress)
@@ -286,8 +306,9 @@ const CognitiveTaskGame = () => {
         if (progressError && progressError.code !== 'PGRST116') {
           console.warn('⚠️ user_progress table query failed (table may not exist yet):', progressError.message);
         } else if (progressData) {
-          serverCurrentLevel = progressData.current_level || 1;
-          serverHighestLevel = progressData.highest_level || 1;
+          serverCurrentLevel = progressData.current_level || 0;
+          serverHighestLevel = progressData.highest_level || 0;
+          console.log('📥 Loaded from user_progress:', { serverCurrentLevel, serverHighestLevel });
         }
       } catch (err) {
         console.warn('⚠️ Error loading user_progress:', err.message);
@@ -304,30 +325,45 @@ const CognitiveTaskGame = () => {
         if (leaderboardError && leaderboardError.code !== 'PGRST116') {
           console.warn('⚠️ leaderboard table query failed:', leaderboardError.message);
         } else if (leaderboardData) {
-          serverHighestLevel = Math.max(serverHighestLevel, leaderboardData.highest_level || 1);
+          serverHighestLevel = Math.max(serverHighestLevel, leaderboardData.highest_level || 0);
           serverBestScore = leaderboardData.best_score || 0;
+          console.log('📥 Loaded from leaderboard:', { serverHighestLevel, serverBestScore });
         }
       } catch (err) {
         console.warn('⚠️ Error loading leaderboard:', err.message);
       }
 
-      // Use the maximum values (localStorage wins if server has nothing)
-      const maxCurrentLevel = Math.max(localLevel, serverCurrentLevel);
-      const maxHighestLevel = Math.max(localHighest, serverHighestLevel);
-      const maxBestScore = Math.max(localBestScore, serverBestScore);
+      // Use the maximum values, but ensure at least 1
+      const maxCurrentLevel = Math.max(1, localLevel, serverCurrentLevel);
+      const maxHighestLevel = Math.max(1, localHighest, serverHighestLevel);
+      const maxBestScore = Math.max(0, localBestScore, serverBestScore);
 
-      // Update both localStorage and state
-      localStorage.setItem('adaptivePosnerLevel', String(maxCurrentLevel));
-      localStorage.setItem('adaptivePosnerHighest', String(maxHighestLevel));
-      localStorage.setItem('adaptivePosnerBestScore', String(maxBestScore));
+      console.log('🔢 Calculated maximums:', { maxCurrentLevel, maxHighestLevel, maxBestScore });
+
+      // ONLY update localStorage if we actually have data from server OR localStorage had values
+      // Don't write default values if both local and server are empty
+      const hasLocalData = localLevel > 0 || localHighest > 0 || localBestScore > 0;
+      const hasServerData = serverCurrentLevel > 0 || serverHighestLevel > 0 || serverBestScore > 0;
+
+      if (hasLocalData || hasServerData) {
+        console.log('💾 Updating localStorage with merged data');
+        localStorage.setItem('adaptivePosnerLevel', String(maxCurrentLevel));
+        localStorage.setItem('adaptivePosnerHighest', String(maxHighestLevel));
+        localStorage.setItem('adaptivePosnerBestScore', String(maxBestScore));
+      } else {
+        console.log('⚠️ No data from server or localStorage - NOT overwriting localStorage with defaults');
+      }
+
+      // Always update state (React state defaults are fine)
       setSavedAdaptiveLevel(maxCurrentLevel);
       setHighestLevel(maxHighestLevel);
       setLevel(maxCurrentLevel);
 
-      console.log(`✅ Loaded progress from server:`);
+      console.log(`✅ Progress sync complete:`);
       console.log(`   Current Level: Local=${localLevel}, Server=${serverCurrentLevel}, Using=${maxCurrentLevel}`);
       console.log(`   Highest Level: Local=${localHighest}, Server=${serverHighestLevel}, Using=${maxHighestLevel}`);
       console.log(`   Best Score: Local=${localBestScore}, Server=${serverBestScore}, Using=${maxBestScore}`);
+      console.log('═'.repeat(80));
     } catch (error) {
       console.error('Error loading user progress:', error);
       // Even if server fails, keep localStorage values
@@ -675,21 +711,40 @@ const CognitiveTaskGame = () => {
     console.log(`💾 currentScore === 0: ${currentScore === 0}`);
     console.log(`💾 Percentage this represents: ${Math.round((currentScore / 30) * 100)}%`);
 
-    localStorage.setItem('adaptivePosnerLevel', String(newLevel));
+    try {
+      localStorage.setItem('adaptivePosnerLevel', String(newLevel));
+      // Verify the save worked
+      const verified = localStorage.getItem('adaptivePosnerLevel');
+      if (verified === String(newLevel)) {
+        console.log(`✅ localStorage saved and verified: adaptivePosnerLevel=${verified}`);
+      } else {
+        console.error(`❌ localStorage verification FAILED! Tried to save ${newLevel}, got back ${verified}`);
+      }
+    } catch (e) {
+      console.error(`❌ Failed to save to localStorage:`, e);
+    }
     setSavedAdaptiveLevel(newLevel);
 
     // Update highest level if needed
     if (newLevel > highestLevel) {
-      localStorage.setItem('adaptivePosnerHighest', String(newLevel));
+      try {
+        localStorage.setItem('adaptivePosnerHighest', String(newLevel));
+        console.log(`📈 New highest level saved: ${newLevel}`);
+      } catch (e) {
+        console.error(`❌ Failed to save highest level:`, e);
+      }
       setHighestLevel(newLevel);
-      console.log(`📈 New highest level: ${newLevel}`);
     }
 
     // Save best score to localStorage
-    const currentBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
-    if (currentScore > currentBestScore) {
-      localStorage.setItem('adaptivePosnerBestScore', String(currentScore));
-      console.log(`🎯 New best score saved: ${currentScore} (previous: ${currentBestScore})`);
+    try {
+      const currentBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
+      if (currentScore > currentBestScore) {
+        localStorage.setItem('adaptivePosnerBestScore', String(currentScore));
+        console.log(`🎯 New best score saved: ${currentScore} (previous: ${currentBestScore})`);
+      }
+    } catch (e) {
+      console.error(`❌ Failed to save best score:`, e);
     }
 
     // Save to server
