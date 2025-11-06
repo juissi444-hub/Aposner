@@ -102,6 +102,7 @@ const CognitiveTaskGame = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
@@ -695,41 +696,79 @@ const CognitiveTaskGame = () => {
       return;
     }
 
+    // Set loading state on first attempt
+    if (retryCount === 0) {
+      setLeaderboardLoading(true);
+    }
+
     try {
       console.log('═'.repeat(80));
       console.log(`📊 LOADING LEADERBOARD FROM DATABASE (attempt ${retryCount + 1})...`);
       console.log('📊 User logged in:', !!user, user?.email);
       console.log('📊 User ID:', user?.id);
+      console.log('📊 Is mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+      console.log('📊 Network status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
+
+      // On mobile, use longer timeout and more retries
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const maxRetries = isMobile ? 5 : 3; // More retries on mobile
+      const baseDelay = isMobile ? 300 : 200; // Longer delays on mobile
 
       // Try with average_answer_time first, fall back if column doesn't exist
       let data, error, count;
       try {
         console.log('📊 Building query: SELECT * FROM leaderboard ORDER BY highest_level DESC, best_score DESC, average_answer_time ASC');
-        const result = await supabase
+
+        // Create a timeout promise for mobile
+        const timeoutMs = isMobile ? 10000 : 5000; // 10s on mobile, 5s on desktop
+        const queryPromise = supabase
           .from('leaderboard')
           .select('*', { count: 'exact' })
           .order('highest_level', { ascending: false })
           .order('best_score', { ascending: false })
           .order('average_answer_time', { ascending: true, nullsFirst: false });
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Query timeout')), timeoutMs)
+        );
+
+        const result = await Promise.race([queryPromise, timeoutPromise]);
         data = result.data;
         error = result.error;
         count = result.count;
+        console.log('✅ Query completed successfully');
       } catch (err) {
-        // If average_answer_time column doesn't exist, try without it
-        console.warn('⚠️ Query with average_answer_time failed, trying without it...');
-        const result = await supabase
-          .from('leaderboard')
-          .select('*', { count: 'exact' })
-          .order('highest_level', { ascending: false })
-          .order('best_score', { ascending: false });
-        data = result.data;
-        error = result.error;
-        count = result.count;
+        console.warn('⚠️ Query with average_answer_time failed:', err.message);
+
+        // If it's a timeout or column error, try without average_answer_time
+        try {
+          console.log('📊 Trying simpler query without average_answer_time...');
+          const timeoutMs = isMobile ? 10000 : 5000;
+          const queryPromise = supabase
+            .from('leaderboard')
+            .select('*', { count: 'exact' })
+            .order('highest_level', { ascending: false })
+            .order('best_score', { ascending: false });
+
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Query timeout')), timeoutMs)
+          );
+
+          const result = await Promise.race([queryPromise, timeoutPromise]);
+          data = result.data;
+          error = result.error;
+          count = result.count;
+          console.log('✅ Simpler query completed successfully');
+        } catch (fallbackErr) {
+          console.error('❌ Fallback query also failed:', fallbackErr.message);
+          throw fallbackErr;
+        }
       }
 
       console.log('📊 Query executed');
       console.log('📊 Count returned:', count);
       console.log('📊 Data length:', data?.length);
+      console.log('📊 Data is array:', Array.isArray(data));
 
       if (error) {
         console.error('❌ Leaderboard query error:', error);
@@ -739,10 +778,10 @@ const CognitiveTaskGame = () => {
         console.error('❌ Error hint:', error.hint);
         console.error('❌ RLS may be blocking access - check Supabase policies');
 
-        // Retry up to 3 times with exponential backoff (for mobile reliability)
-        if (retryCount < 3) {
-          const delay = Math.pow(2, retryCount) * 200; // 200ms, 400ms, 800ms
-          console.log(`⏱️ Retrying leaderboard load in ${delay}ms...`);
+        // Retry with exponential backoff
+        if (retryCount < maxRetries) {
+          const delay = Math.pow(2, retryCount) * baseDelay;
+          console.log(`⏱️ Retrying leaderboard load in ${delay}ms... (${retryCount + 1}/${maxRetries})`);
           setTimeout(() => loadLeaderboard(retryCount + 1), delay);
           return;
         }
@@ -775,18 +814,39 @@ const CognitiveTaskGame = () => {
       }
 
       setLeaderboard(data || []);
+      setLeaderboardLoading(false);
       console.log(`📊 Leaderboard state updated with ${data?.length || 0} entries`);
       console.log('═'.repeat(80));
     } catch (error) {
       console.error('❌ Error loading leaderboard:', error);
-      // Don't show alert on mobile - it blocks the UI
-      // Only log to console for debugging
-      if (retryCount >= 3) {
-        console.error('❌ Failed to load leaderboard after 3 retries');
-        console.error('❌ Error:', error.message);
-        // Show a non-blocking error state instead of alert
-        setLeaderboard([]);
+      console.error('❌ Error message:', error?.message || 'Unknown error');
+      console.error('❌ Error stack:', error?.stack);
+
+      // Determine max retries based on device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const maxRetries = isMobile ? 5 : 3;
+      const baseDelay = isMobile ? 300 : 200;
+
+      // Retry with exponential backoff
+      if (retryCount < maxRetries) {
+        const delay = Math.pow(2, retryCount) * baseDelay;
+        console.log(`⏱️ Retrying after error in ${delay}ms... (attempt ${retryCount + 2}/${maxRetries + 1})`);
+        setTimeout(() => loadLeaderboard(retryCount + 1), delay);
+        return;
       }
+
+      // After all retries failed
+      console.error(`❌ Failed to load leaderboard after ${maxRetries + 1} attempts`);
+      console.error('❌ Final error:', error.message);
+      console.error('❌ Possible causes:');
+      console.error('   1. Network connectivity issues');
+      console.error('   2. RLS policies blocking access');
+      console.error('   3. Supabase service unavailable');
+      console.error('   4. Query timeout (slow connection)');
+
+      // Show a non-blocking error state
+      setLeaderboard([]);
+      setLeaderboardLoading(false);
     }
   }, [user]);
 
@@ -3584,31 +3644,14 @@ const CognitiveTaskGame = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
-                  <div className="flex gap-2 flex-col sm:flex-row">
-                    <button
-                      onClick={async () => {
-                        console.log('🎯 VIEW LEADERBOARD BUTTON CLICKED (not logged in)');
-                        setShowLeaderboard(true);
-                        try {
-                          await loadLeaderboard();
-                          console.log('✅ Leaderboard data loaded successfully');
-                        } catch (error) {
-                          console.error('❌ Error loading leaderboard:', error);
-                        }
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
-                    >
-                      View Leaderboard
-                    </button>
-                    <button
-                      onClick={() => setShowAuth(true)}
-                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
-                    >
-                      Login / Sign Up
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
+                  >
+                    Login / Sign Up
+                  </button>
                 </div>
               )}
             </div>
@@ -4126,7 +4169,13 @@ const CognitiveTaskGame = () => {
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 px-1">
               <div className="space-y-2">
-              {leaderboard.length === 0 ? (
+              {leaderboardLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                  <p className="text-center text-gray-400">Loading leaderboard...</p>
+                  <p className="text-center text-gray-500 text-sm mt-2">This may take a moment on mobile</p>
+                </div>
+              ) : leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
