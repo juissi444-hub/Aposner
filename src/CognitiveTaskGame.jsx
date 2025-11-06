@@ -69,16 +69,22 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
+    console.log('🔄 Auth effect initializing...');
+
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 Checking for existing session...');
       if (session?.user) {
         console.log('✅ Session found for user:', session.user.email);
+        console.log('✅ User ID:', session.user.id);
+        console.log('✅ User metadata:', session.user.user_metadata);
         setUser(session.user);
         setShowAuth(false);
         // Load user progress from Supabase
         loadUserProgress(session.user.id);
       } else {
-        console.log('❌ No active session found - user needs to log in');
+        console.log('❌ No active session found');
+        setUser(null);
         // If in adaptive mode and no session, prompt for login
         if (mode === 'adaptive') {
           console.log('🔐 Adaptive mode requires login - showing auth modal');
@@ -86,12 +92,13 @@ const CognitiveTaskGame = () => {
         }
       }
     }).catch(error => {
-      console.error('Error getting session:', error);
+      console.error('❌ Error getting session:', error);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔄 Auth state changed:', event);
+      console.log('🔄 Session:', session);
       setUser(session?.user || null);
       if (session?.user) {
         console.log('✅ User logged in:', session.user.email);
@@ -110,7 +117,7 @@ const CognitiveTaskGame = () => {
       console.log('🔌 Unsubscribing from auth changes');
       subscription.unsubscribe();
     };
-  }, [mode]);
+  }, []); // Remove mode dependency to prevent re-initialization
 
   // Toggle sound setting
   const toggleSound = () => {
@@ -377,6 +384,8 @@ const CognitiveTaskGame = () => {
 
   // Save progress to localStorage
   const saveProgress = useCallback((newLevel, currentScore = 0) => {
+    console.log(`💾 saveProgress called: level=${newLevel}, score=${currentScore}, mode=${mode}`);
+
     localStorage.setItem('adaptivePosnerLevel', String(newLevel));
     setSavedAdaptiveLevel(newLevel);
 
@@ -384,20 +393,25 @@ const CognitiveTaskGame = () => {
     if (newLevel > highestLevel) {
       localStorage.setItem('adaptivePosnerHighest', String(newLevel));
       setHighestLevel(newLevel);
+      console.log(`📈 New highest level: ${newLevel}`);
     }
 
     // Save best score to localStorage
     const currentBestScore = parseInt(localStorage.getItem('adaptivePosnerBestScore') || '0');
     if (currentScore > currentBestScore) {
       localStorage.setItem('adaptivePosnerBestScore', String(currentScore));
-      console.log(`New best score saved: ${currentScore} (previous: ${currentBestScore})`);
+      console.log(`🎯 New best score saved: ${currentScore} (previous: ${currentBestScore})`);
     }
 
     // Update leaderboard if in adaptive mode
     if (mode === 'adaptive') {
+      console.log(`📤 Calling updateLeaderboard from saveProgress`);
+      console.log(`📤 User status:`, user ? `Logged in as ${user.email}` : 'NOT LOGGED IN');
       updateLeaderboard(newLevel, currentScore);
+    } else {
+      console.log(`⚠️ Not calling updateLeaderboard - mode is ${mode}, not adaptive`);
     }
-  }, [highestLevel, mode, updateLeaderboard]);
+  }, [highestLevel, mode, updateLeaderboard, user]);
 
   // Reset progress
   const resetProgress = () => {
@@ -1217,6 +1231,8 @@ const CognitiveTaskGame = () => {
                       onClick={async () => {
                         console.log('🎯 Leaderboard button clicked');
                         console.log('📊 Supabase configured:', isSupabaseConfigured());
+                        console.log('📊 User:', user?.email);
+                        console.log('📊 User ID:', user?.id);
                         setShowLeaderboard(true);
                         console.log('📊 showLeaderboard set to true');
                         await loadLeaderboard();
@@ -1225,6 +1241,36 @@ const CognitiveTaskGame = () => {
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
                     >
                       Leaderboard
+                    </button>
+                    <button
+                      onClick={async () => {
+                        console.log('🧪 TEST: Checking my leaderboard entry...');
+                        if (!user) {
+                          alert('Not logged in!');
+                          return;
+                        }
+                        try {
+                          const { data, error } = await supabase
+                            .from('leaderboard')
+                            .select('*')
+                            .eq('user_id', user.id)
+                            .single();
+
+                          if (error) {
+                            console.error('❌ Error:', error);
+                            alert(`Error: ${error.message}`);
+                          } else {
+                            console.log('✅ My leaderboard entry:', data);
+                            alert(`Your entry:\nLevel: ${data?.highest_level || 'none'}\nScore: ${data?.best_score || 0}`);
+                          }
+                        } catch (e) {
+                          console.error('❌ Exception:', e);
+                          alert(`Exception: ${e.message}`);
+                        }
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                    >
+                      Test DB
                     </button>
                     <button
                       onClick={handleLogout}
