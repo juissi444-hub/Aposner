@@ -1,6 +1,6 @@
 # Database Setup Instructions
 
-## IMPORTANT: Run This SQL Migration First!
+## IMPORTANT: Run This SQL Migration!
 
 Before using the latest features (server progress tracking and leaderboard tiebreaker), you **MUST** run the SQL migration in your Supabase SQL Editor.
 
