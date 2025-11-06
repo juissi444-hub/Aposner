@@ -363,103 +363,58 @@ const CognitiveTaskGame = () => {
 
     const anonId = localStorage.getItem('aposner-anonymous-id');
     if (!anonId) {
-      console.log('📝 No anonymous ID found - skipping migration');
       return;
     }
 
     try {
-      console.log('🔄 Migrating anonymous data to account...');
-      console.log('🔄 Anonymous ID:', anonId);
-      console.log('🔄 User ID:', userId);
-
-      // Get anonymous user's leaderboard data
+      // Anonymous users don't have leaderboard entries (only authenticated users do)
+      // Just get their local progress from user_progress table
       const { data: anonData, error: anonError } = await supabase
-        .from('leaderboard')
+        .from('user_progress')
         .select('*')
         .eq('user_id', anonId)
         .single();
 
-      if (anonError && anonError.code !== 'PGRST116') {
-        console.error('❌ Error fetching anonymous data:', anonError);
-        return;
-      }
-
-      if (!anonData) {
-        console.log('📝 No anonymous leaderboard data found - clearing ID');
+      // Ignore any errors - anonymous data migration is optional
+      if (anonError || !anonData) {
         localStorage.removeItem('aposner-anonymous-id');
         return;
       }
 
-      console.log('📥 Found anonymous data:', anonData);
-
-      // Get user's existing leaderboard data (if any)
-      const { data: userData, error: userError } = await supabase
+      // Get user's existing data
+      const { data: userData } = await supabase
         .from('leaderboard')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (userError && userError.code !== 'PGRST116') {
-        console.error('❌ Error fetching user data:', userError);
-        return;
+      // If anonymous data has better progress, update user's leaderboard
+      const currentLevel = anonData.current_level || 0;
+      const highestLevel = anonData.highest_level || 0;
+      const bestScore = anonData.best_score || 0;
+
+      if (highestLevel > (userData?.highest_level || 0) ||
+          bestScore > (userData?.best_score || 0)) {
+        await supabase
+          .from('leaderboard')
+          .upsert({
+            user_id: userId,
+            username: username,
+            highest_level: Math.max(highestLevel, userData?.highest_level || 0),
+            best_score: Math.max(bestScore, userData?.best_score || 0),
+            is_anonymous: false,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' });
       }
 
-      console.log('📥 Existing user data:', userData);
-
-      // Merge data - keep maximum values
-      const mergedData = {
-        user_id: userId,
-        username: username,
-        highest_level: Math.max(
-          anonData.highest_level || 0,
-          userData?.highest_level || 0
-        ),
-        best_score: Math.max(
-          anonData.best_score || 0,
-          userData?.best_score || 0
-        ),
-        // Keep the better average answer time (lower is better)
-        average_answer_time: (() => {
-          const anonTime = anonData.average_answer_time;
-          const userTime = userData?.average_answer_time;
-          if (anonTime && userTime) return Math.min(anonTime, userTime);
-          return anonTime || userTime || null;
-        })(),
-        is_anonymous: false,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('💾 Merged data to save:', mergedData);
-
-      // Update user's leaderboard entry
-      const { error: upsertError } = await supabase
-        .from('leaderboard')
-        .upsert(mergedData, { onConflict: 'user_id' });
-
-      if (upsertError) {
-        console.error('❌ Error upserting merged data:', upsertError);
-        return;
-      }
-
-      console.log('✅ User data updated with merged values');
-
-      // Delete anonymous entry
-      const { error: deleteError } = await supabase
-        .from('leaderboard')
+      // Delete anonymous progress entry
+      await supabase
+        .from('user_progress')
         .delete()
         .eq('user_id', anonId);
 
-      if (deleteError) {
-        console.error('❌ Error deleting anonymous entry:', deleteError);
-        // Continue anyway - the important part (data migration) is done
-      } else {
-        console.log('✅ Anonymous entry deleted');
-      }
-
-      // Clear anonymous ID from localStorage
+      // Clear anonymous ID
       localStorage.removeItem('aposner-anonymous-id');
-      console.log('✅ Anonymous ID cleared from localStorage');
-      console.log('✅ Migration complete!');
     } catch (error) {
       console.error('❌ Migration failed:', error);
     }
