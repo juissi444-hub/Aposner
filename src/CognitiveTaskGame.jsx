@@ -229,23 +229,38 @@ const CognitiveTaskGame = () => {
 
       if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
-      const shouldUpdate = !currentData ||
-                          newLevel > currentData.highest_level ||
-                          (newLevel === currentData.highest_level && newScore > currentData.best_score);
+      // Determine the values to save
+      let highestLevel = newLevel;
+      let bestScore = newScore;
 
-      if (shouldUpdate) {
-        const { error: updateError } = await supabase
-          .from('leaderboard')
-          .upsert({
-            user_id: user.id,
-            username: user.user_metadata?.username || user.email,
-            highest_level: Math.max(newLevel, currentData?.highest_level || 0),
-            best_score: Math.max(newScore, currentData?.best_score || 0),
-            updated_at: new Date().toISOString()
-          });
-
-        if (updateError) throw updateError;
+      if (currentData) {
+        if (newLevel > currentData.highest_level) {
+          // Player reached a new highest level - use new level and its score
+          highestLevel = newLevel;
+          bestScore = newScore;
+        } else if (newLevel === currentData.highest_level) {
+          // Same level - keep the highest level, update best score if higher
+          highestLevel = currentData.highest_level;
+          bestScore = Math.max(newScore, currentData.best_score || 0);
+        } else {
+          // Playing a lower level - don't update
+          return;
+        }
       }
+
+      const { error: updateError } = await supabase
+        .from('leaderboard')
+        .upsert({
+          user_id: user.id,
+          username: user.user_metadata?.username || user.email,
+          highest_level: highestLevel,
+          best_score: bestScore,
+          updated_at: new Date().toISOString()
+        });
+
+      if (updateError) throw updateError;
+
+      console.log(`Leaderboard updated: Level ${highestLevel}, Score ${bestScore}`);
     } catch (error) {
       console.error('Error updating leaderboard:', error);
     }
@@ -590,7 +605,8 @@ const CognitiveTaskGame = () => {
           prepareNextTask();
         }, 3000);
       } else {
-        // Failed to progress
+        // Failed to progress - save current level with current score
+        saveProgress(level, score);
         setGameState('results');
       }
     } else {
@@ -600,7 +616,7 @@ const CognitiveTaskGame = () => {
         setGameState('menu');
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds, level]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
