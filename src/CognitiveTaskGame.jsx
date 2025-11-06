@@ -228,11 +228,6 @@ const CognitiveTaskGame = () => {
           console.log('✅ User ID:', session.user.id);
           setUser(session.user);
           setShowAuth(false);
-
-          // Migrate anonymous data if exists
-          const username = session.user.user_metadata?.username || session.user.email;
-          migrateAnonymousToAccount(session.user.id, username);
-
           loadUserProgress(session.user.id);
         } else {
           console.log('❌ No active session found');
@@ -485,11 +480,11 @@ const CognitiveTaskGame = () => {
       console.log('✅ Migration complete!');
 
       // Refresh leaderboard to show updated data
-      fetchLeaderboard();
+      loadLeaderboard();
     } catch (error) {
       console.error('❌ Migration failed:', error);
     }
-  }, []);
+  }, [loadLeaderboard]);
 
   const handleLogout = async () => {
     if (!isSupabaseConfigured()) return;
@@ -2896,14 +2891,14 @@ const CognitiveTaskGame = () => {
           </div>
 
           {isSupabaseConfigured() && (
-            <div className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
+            <div className="bg-gray-800 p-4 rounded-lg">
               {user ? (
-                <>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <div>
                     <p className="text-sm text-gray-400">Logged in as</p>
                     <p className="font-bold text-green-400">{user.user_metadata?.username || user.email}</p>
                   </div>
-                  <div className="space-x-2">
+                  <div className="flex gap-2 flex-col sm:flex-row">
                     <button
                       onClick={async () => {
                         console.log('═'.repeat(80));
@@ -2927,28 +2922,28 @@ const CognitiveTaskGame = () => {
 
                         console.log('═'.repeat(80));
                       }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                     >
                       Leaderboard
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                     >
                       Logout
                     </button>
                   </div>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
                   <button
                     onClick={() => setShowAuth(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                   >
                     Login / Sign Up
                   </button>
-                </>
+                </div>
               )}
             </div>
           )}
@@ -3103,7 +3098,7 @@ const CognitiveTaskGame = () => {
               <input
                 type="range"
                 min="1"
-                max="50"
+                max="28"
                 value={level}
                 onChange={(e) => setLevel(parseInt(e.target.value))}
                 className="w-full"
