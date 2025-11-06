@@ -158,7 +158,7 @@ const CognitiveTaskGame = () => {
               {
                 user_id: data.user.id,
                 username: username,
-                highest_level: 0,
+                highest_level: 1,
                 best_score: 0
               }
             ]);
@@ -166,7 +166,7 @@ const CognitiveTaskGame = () => {
             console.error('❌ Failed to create leaderboard entry:', insertError);
             throw insertError;
           }
-          console.log('✅ Leaderboard entry created successfully with level 0');
+          console.log('✅ Leaderboard entry created successfully');
         }
 
         setShowAuth(false);
@@ -255,7 +255,6 @@ const CognitiveTaskGame = () => {
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
-        .gt('highest_level', 0) // Only show users who have completed at least 1 level
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
@@ -268,14 +267,10 @@ const CognitiveTaskGame = () => {
         throw error;
       }
 
-      console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries (excluding level 0)');
+      console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries');
 
       if (!data || data.length === 0) {
-        console.warn('⚠️ No leaderboard entries found!');
-        console.warn('⚠️ This could mean:');
-        console.warn('  1. The database schema has not been set up (run supabase-schema.sql)');
-        console.warn('  2. No users have completed any levels yet');
-        console.warn('  3. Row Level Security policies are blocking access');
+        console.warn('⚠️ No leaderboard entries found - check if users have played in Adaptive mode');
       } else {
         console.log('📊 Leaderboard data:', JSON.stringify(data, null, 2));
       }
@@ -1012,12 +1007,12 @@ const CognitiveTaskGame = () => {
         setTimeout(() => {
           stopAllSounds();
           const currentScore = score;
-          const completedLevel = level; // The level they just completed
-          console.log(`✅ Level ${completedLevel} completed with score ${currentScore}/${numTasks}`);
-          // Save the level they just COMPLETED with their score
-          saveProgress(completedLevel, currentScore);
-          // Then advance to next level
-          setLevel(prev => prev + 1);
+          setLevel(prev => {
+            const newLevel = prev + 1;
+            console.log(`✅ Level ${prev} completed with score ${currentScore}/${numTasks}, advancing to level ${newLevel}`);
+            saveProgress(prev, currentScore); // Save the level just completed
+            return newLevel;
+          });
           setScore(0);
           setWrongCount(0);
           setCurrentTask(0);
@@ -1644,11 +1639,7 @@ const CognitiveTaskGame = () => {
             <p className="text-center text-sm text-gray-400 mb-4">Adaptive Mode Only</p>
             <div className="space-y-2 overflow-x-auto">
               {leaderboard.length === 0 ? (
-                <div className="text-center text-gray-400 space-y-2">
-                  <p>No leaderboard entries found.</p>
-                  <p className="text-sm">Please check browser console (F12) for details.</p>
-                  <p className="text-xs text-gray-500">Make sure the Supabase schema has been set up.</p>
-                </div>
+                <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
                   <div className="grid gap-4 font-bold text-sm text-gray-400 px-4 py-2 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
