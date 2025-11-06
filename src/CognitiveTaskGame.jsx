@@ -63,62 +63,44 @@ const CognitiveTaskGame = () => {
     if (savedSound !== null) {
       setSoundEnabled(savedSound === 'true');
     }
+  }, []);
 
-    // Check for existing session and set up auth listener
+  // Separate effect for authentication
+  useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
-    let subscription = null;
-
-    const initAuth = async () => {
-      try {
-        console.log('🔐 Checking for existing session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error('Error getting session:', error);
-          return;
-        }
-
-        if (session?.user) {
-          console.log('✅ Session found for user:', session.user.email);
-          setUser(session.user);
-          // Load user progress from Supabase
-          await loadUserProgress(session.user.id);
-        } else {
-          console.log('❌ No active session found');
-        }
-
-        // Listen for auth changes
-        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('🔄 Auth state changed:', event);
-          setUser(session?.user || null);
-          if (session?.user) {
-            console.log('✅ User logged in:', session.user.email);
-            // Close auth modal when user logs in
-            setShowAuth(false);
-            // Load user progress when user logs in
-            await loadUserProgress(session.user.id);
-          } else {
-            console.log('❌ User logged out');
-          }
-        });
-
-        subscription = authListener.subscription;
-      } catch (error) {
-        console.error('Error initializing auth:', error);
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        console.log('✅ Session found for user:', session.user.email);
+        setUser(session.user);
+        // Load user progress from Supabase
+        loadUserProgress(session.user.id);
+      } else {
+        console.log('❌ No active session found');
       }
-    };
+    }).catch(error => {
+      console.error('Error getting session:', error);
+    });
 
-    initAuth();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth state changed:', event);
+      setUser(session?.user || null);
+      if (session?.user) {
+        console.log('✅ User logged in:', session.user.email);
+        setShowAuth(false);
+        loadUserProgress(session.user.id);
+      } else {
+        console.log('❌ User logged out');
+      }
+    });
 
-    // Cleanup function
     return () => {
-      if (subscription) {
-        console.log('🔌 Unsubscribing from auth changes');
-        subscription.unsubscribe();
-      }
+      console.log('🔌 Unsubscribing from auth changes');
+      subscription.unsubscribe();
     };
-  }, [loadUserProgress]);
+  }, []);
 
   // Toggle sound setting
   const toggleSound = () => {
