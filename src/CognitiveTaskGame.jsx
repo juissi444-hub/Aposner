@@ -10,6 +10,7 @@ const CognitiveTaskGame = () => {
   const successAudioRef = useRef(null);
   const timeoutRef = useRef(null);
   const autoContinueTimerRef = useRef(null);
+  const gameStateRef = useRef('menu'); // Ref to track current gameState for cleanup
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
   const [level, setLevel] = useState(1);
@@ -46,6 +47,11 @@ const CognitiveTaskGame = () => {
     if (lvl >= 8) return 500 - (lvl - 7) * 50;
     return 2000 - (lvl - 1) * 250;
   };
+
+  // Keep gameStateRef in sync with gameState
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   // Load progress from localStorage on mount
   useEffect(() => {
@@ -1211,20 +1217,31 @@ const CognitiveTaskGame = () => {
     if (autoContinueTimerRef.current) {
       clearTimeout(autoContinueTimerRef.current);
       autoContinueTimerRef.current = null;
+      console.log('⏱️ Auto-continue timer cleared');
     }
 
     // Start auto-continue timer if enabled and in showRelation state
     if (autoContinueEnabled && gameState === 'showRelation') {
       console.log(`⏱️ Auto-continue timer started: ${autoContinueDelay} seconds`);
       autoContinueTimerRef.current = setTimeout(() => {
-        console.log('⏱️ Auto-continue triggered');
-        handleSpacePress();
+        console.log('⏱️ Auto-continue timer fired');
+        // Check current gameState using ref (not captured closure variable)
+        const currentGameState = gameStateRef.current;
+        console.log(`⏱️ Current game state check: ${currentGameState}`);
+        // Only trigger if still in showRelation state (guard against race conditions)
+        if (currentGameState === 'showRelation') {
+          console.log('⏱️ Auto-continue triggered - calling handleSpacePress');
+          handleSpacePress();
+        } else {
+          console.log(`⏱️ Auto-continue cancelled - game state is now ${currentGameState}, not showRelation`);
+        }
       }, autoContinueDelay * 1000);
     }
 
     // Cleanup function
     return () => {
       if (autoContinueTimerRef.current) {
+        console.log('⏱️ Auto-continue timer cleanup on unmount/state change');
         clearTimeout(autoContinueTimerRef.current);
         autoContinueTimerRef.current = null;
       }
