@@ -924,6 +924,16 @@ const CognitiveTaskGame = () => {
     setLevel(1);
   };
 
+  // Helper function to get proper ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
+  const getOrdinalSuffix = (num) => {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) return num + 'st';
+    if (j === 2 && k !== 12) return num + 'nd';
+    if (j === 3 && k !== 13) return num + 'rd';
+    return num + 'th';
+  };
+
   const relationTypes = {
     'whole-part': 'Whole-Part (fish-pike, world-France)',
     'antonym': 'Antonym/Opposite (dark-light, cold-warm)',
@@ -1694,15 +1704,8 @@ const CognitiveTaskGame = () => {
       ['twenty', 'XXI'], ['XXI', '22'], ['22', 'twenty-three'], ['thirty', '31'], ['31', 'XXXII'],
       ['forty', 'XLI'], ['XLI', '42'], ['fifty', 'LI'], ['LI', 'fifty-two'], ['sixty', 'LXI'],
       ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92'],
-      // Extended Roman numerals (100-500 only)
-      ['C', 'CI'], ['CI', 'CII'], ['CII', 'CIII'], ['CX', 'CXI'], ['CXX', 'CXXI'],
-      ['CL', 'CLI'], ['CC', 'CCI'], ['CCL', 'CCLI'], ['CCC', 'CCCI'], ['CD', 'CDI'],
-      ['D', 'DI'], ['100', '101'], ['150', '151'],
-      ['200', '201'], ['250', '251'], ['300', '301'], ['400', '401'], ['450', '451'],
-      // Large number sequences
-      ['one hundred', 'one hundred one'], ['two hundred', 'two hundred one'],
-      ['three hundred', 'three hundred one'], ['four hundred', 'four hundred one'],
-      ['five hundred', 'five hundred one']
+      // Roman numeral C (100) - final Roman numeral
+      ['C', '100'], ['99', 'C'], ['XCIX', 'C'], ['ninety-nine', 'C']
     ],
     'meaning': [
       // Digit to word
@@ -1732,15 +1735,8 @@ const CognitiveTaskGame = () => {
       ['forty', 'XL'], ['fifty', 'L'], ['sixty', 'LX'], ['seventy', 'LXX'], ['eighty', 'LXXX'],
       ['ninety', 'XC'], ['hundred', 'C'], ['100', 'hundred'], ['60', 'sixty'], ['70', 'seventy'],
       ['80', 'eighty'], ['90', 'ninety'],
-      // Extended Roman numerals (100-500)
-      ['C', '100'], ['CI', '101'], ['CX', '110'], ['CXX', '120'], ['CL', '150'], ['CC', '200'],
-      ['CCL', '250'], ['CCC', '300'], ['CD', '400'], ['D', '500'],
-      ['one hundred', 'C'], ['one hundred ten', 'CX'], ['one hundred fifty', 'CL'],
-      ['two hundred', 'CC'], ['two hundred fifty', 'CCL'], ['three hundred', 'CCC'],
-      ['four hundred', 'CD'], ['five hundred', 'D'],
-      ['110', 'one hundred ten'], ['120', 'one hundred twenty'], ['150', 'one hundred fifty'],
-      ['200', 'two hundred'], ['250', 'two hundred fifty'], ['300', 'three hundred'],
-      ['400', 'four hundred'], ['500', 'five hundred']
+      // C (100) is the final Roman numeral
+      ['C', '100'], ['one hundred', 'C'], ['100', 'one hundred']
     ],
     'same-time': [
       // Clock emoji to digital
@@ -1977,8 +1973,9 @@ const CognitiveTaskGame = () => {
       };
 
       const numberToRoman = (n) => {
-        const vals = [500, 400, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-        const syms = ['D', 'CD', 'C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        if (n > 100) n = 100; // Cap at 100
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
         let roman = '';
         for (let i = 0; i < vals.length; i++) {
           while (n >= vals[i]) {
@@ -1992,12 +1989,12 @@ const CognitiveTaskGame = () => {
       const formats = [
         (n) => String(n),
         (n) => numberToWord(n),
-        (n) => numberToRoman(n)
+        (n) => n > 100 ? String(n) : numberToRoman(n) // Use digits for >100
       ];
 
-      const num = Math.floor(Math.random() * 498) + 1; // 1-498
-      const offset = Math.floor(Math.random() * 3) + 2; // Skip by 2, 3, or 4
-      const nextNum = Math.min(num + offset, 500); // Cap at 500
+      const num = Math.floor(Math.random() * 98) + 1; // 1-98
+      const offset = Math.floor(Math.random() * 2) + 1; // Skip by 1 or 2
+      const nextNum = Math.min(num + offset, 100); // Cap at 100
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
       const format2 = formats[Math.floor(Math.random() * formats.length)];
@@ -2028,8 +2025,9 @@ const CognitiveTaskGame = () => {
       };
 
       const numberToRoman = (n) => {
-        const vals = [500, 400, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-        const syms = ['D', 'CD', 'C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        if (n > 100) n = 100; // Cap at 100
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
         let roman = '';
         for (let i = 0; i < vals.length; i++) {
           while (n >= vals[i]) {
@@ -2043,13 +2041,13 @@ const CognitiveTaskGame = () => {
       const formats = [
         (n) => String(n),
         (n) => numberToWord(n),
-        (n) => numberToRoman(n)
+        (n) => n > 100 ? String(n) : numberToRoman(n) // Use digits for >100
       ];
 
-      let num1 = Math.floor(Math.random() * 500) + 1; // 1-500
-      let num2 = Math.floor(Math.random() * 500) + 1; // 1-500
+      let num1 = Math.floor(Math.random() * 100) + 1; // 1-100
+      let num2 = Math.floor(Math.random() * 100) + 1; // 1-100
       while (num1 === num2) {
-        num2 = Math.floor(Math.random() * 500) + 1;
+        num2 = Math.floor(Math.random() * 100) + 1;
       }
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
@@ -3367,7 +3365,7 @@ const CognitiveTaskGame = () => {
                     console.log(`   Best Score (raw from DB): ${entry.best_score}`);
                     console.log(`   Best Score (after ||0): ${bestScore}`);
                     console.log(`   Calculation: ${bestScore}/30 = ${levelProgress}%`);
-                    console.log(`   Percentile: ${percentile}th`);
+                    console.log(`   Percentile: ${getOrdinalSuffix(percentile)}`);
 
                     if (entry.best_score === null || entry.best_score === undefined) {
                       console.warn(`⚠️ WARNING: best_score is ${entry.best_score} for ${entry.username}!`);
@@ -3418,7 +3416,7 @@ const CognitiveTaskGame = () => {
                             <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
                           </div>
-                          <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
+                          <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{getOrdinalSuffix(percentile)} percentile</div>
                         </div>
 
                         {/* Mobile layout */}
@@ -3436,7 +3434,7 @@ const CognitiveTaskGame = () => {
                                 {entry.username}
                               </span>
                             </div>
-                            <span className="text-xs font-semibold text-yellow-400">{percentile}th percentile</span>
+                            <span className="text-xs font-semibold text-yellow-400">{getOrdinalSuffix(percentile)} percentile</span>
                           </div>
                           <div className="text-sm font-semibold">
                             <span className="text-white">Level {entry.highest_level}</span>
@@ -3482,8 +3480,14 @@ const CognitiveTaskGame = () => {
 
       {/* Bell Curve Modal */}
       {showBellCurve && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
+          onClick={() => setShowBellCurve(false)}
+        >
+          <div
+            className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Player Distribution Analysis</h2>
             <p className="text-center text-sm text-gray-400 mb-6">Normal distribution curve with standard deviation markers (IQ-style)</p>
 
