@@ -76,6 +76,7 @@ const CognitiveTaskGame = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [autoContinueEnabled, setAutoContinueEnabled] = useState(false);
   const [autoContinueDelay, setAutoContinueDelay] = useState(3); // 1-20 seconds
+  const [experimentalMode, setExperimentalMode] = useState(false); // Enable experimental relation types
   const [numTasks, setNumTasks] = useState(20);
   const [currentTask, setCurrentTask] = useState(0);
   const [currentRelation, setCurrentRelation] = useState('');
@@ -146,13 +147,15 @@ const CognitiveTaskGame = () => {
     const savedSound = localStorage.getItem('adaptivePosnerSound');
     const savedAutoContinue = localStorage.getItem('adaptivePosnerAutoContinue');
     const savedAutoContinueDelay = localStorage.getItem('adaptivePosnerAutoContinueDelay');
+    const savedExperimentalMode = localStorage.getItem('adaptivePosnerExperimental');
 
     console.log('📦 localStorage values:', {
       savedLevel,
       savedHighest,
       savedSound,
       savedAutoContinue,
-      savedAutoContinueDelay
+      savedAutoContinueDelay,
+      savedExperimentalMode
     });
 
     if (savedLevel) {
@@ -200,6 +203,10 @@ const CognitiveTaskGame = () => {
       if (delay >= 1 && delay <= 20) {
         setAutoContinueDelay(delay);
       }
+    }
+
+    if (savedExperimentalMode !== null) {
+      setExperimentalMode(savedExperimentalMode === 'true');
     }
 
     console.log('✅ localStorage load complete');
@@ -282,6 +289,13 @@ const CognitiveTaskGame = () => {
       setAutoContinueDelay(delayNum);
       localStorage.setItem('adaptivePosnerAutoContinueDelay', String(delayNum));
     }
+  };
+
+  // Toggle experimental mode
+  const toggleExperimentalMode = () => {
+    const newState = !experimentalMode;
+    setExperimentalMode(newState);
+    localStorage.setItem('adaptivePosnerExperimental', String(newState));
   };
 
   // Stop all currently playing sounds
@@ -960,6 +974,30 @@ const CognitiveTaskGame = () => {
     'odd': 'Both Odd (3-5, VII-IX, three-nine)',
     'doubled': 'Doubled (2-4, II-IV, two-four)',
     'tripled': 'Tripled (3-9, III-IX, three-nine)'
+  };
+
+  // Get available relation types for a given level based on study design
+  // Levels 1-2: Physical and semantic retrieval (lower grade)
+  // Levels 3+: Conceptual retrieval (higher grade)
+  const getRelationTypesForLevel = (level, mode, experimentalEnabled) => {
+    // In experimental mode or manual mode, all relation types are available
+    if (experimentalEnabled || mode === 'manual') {
+      return Object.keys(relationTypes);
+    }
+
+    // In standard adaptive mode, follow the study design
+    if (mode === 'adaptive') {
+      if (level <= 2) {
+        // Levels 1-2: Physical and semantic retrieval
+        return ['whole-part', 'antonym', 'same-color', 'meaning'];
+      } else {
+        // Levels 3+: Conceptual retrieval (odd-even, mathematical relationships)
+        return ['even', 'odd', 'doubled', 'tripled', 'followup-numerical', 'physical-numerical', 'same-time'];
+      }
+    }
+
+    // Default: all types
+    return Object.keys(relationTypes);
   };
 
   const wordPairs = {
@@ -3395,18 +3433,23 @@ const CognitiveTaskGame = () => {
   };
 
   const prepareNextTask = () => {
-    const relationKeys = Object.keys(relationTypes);
+    // Get available relation types based on mode, level, and experimental setting
+    let availableRelations = getRelationTypesForLevel(level, mode, experimentalMode);
 
-    // In manual mode, filter to only selected relationship types
-    let availableRelations = relationKeys;
+    // In manual mode, further filter to only selected relationship types
     if (mode === 'manual') {
-      availableRelations = relationKeys.filter(key => selectedRelationTypes[key]);
+      availableRelations = availableRelations.filter(key => selectedRelationTypes[key]);
 
-      // If no relations are selected, fall back to all relations
+      // If no relations are selected, fall back to all available relations for this level
       if (availableRelations.length === 0) {
-        console.warn('⚠️ No relationship types selected, using all types');
-        availableRelations = relationKeys;
+        console.warn('⚠️ No relationship types selected, using all types for this level');
+        availableRelations = getRelationTypesForLevel(level, mode, experimentalMode);
       }
+    }
+
+    // Log which relation types are being used (helpful for debugging)
+    if (mode === 'adaptive' && !experimentalMode) {
+      console.log(`📚 Level ${level} relation types (Study design):`, availableRelations);
     }
 
     const selectedRelation = availableRelations[Math.floor(Math.random() * availableRelations.length)];
@@ -3941,6 +3984,48 @@ const CognitiveTaskGame = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Experimental Mode</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-medium">Enable Experimental Features</p>
+                <p className="text-sm text-gray-400">Use all relation types at all levels (non-standard)</p>
+              </div>
+              <button
+                onClick={toggleExperimentalMode}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  experimentalMode ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    experimentalMode ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            {!experimentalMode && (
+              <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
+                <p className="text-sm text-blue-300">
+                  <strong>Standard Adaptive Mode (Study Design):</strong>
+                </p>
+                <p className="text-xs text-blue-200 mt-1">
+                  • Levels 1-2: Physical/semantic tasks (whole-part, antonym, same-color, meaning)
+                </p>
+                <p className="text-xs text-blue-200">
+                  • Levels 3+: Conceptual tasks (even, odd, doubled, tripled, sequential, time)
+                </p>
+              </div>
+            )}
+            {experimentalMode && (
+              <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-700 rounded-lg">
+                <p className="text-sm text-yellow-300">
+                  <strong>Experimental Mode Active:</strong> All relation types available at all levels
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
