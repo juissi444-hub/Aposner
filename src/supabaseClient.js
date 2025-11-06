@@ -3,102 +3,148 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Custom storage adapter that's more reliable on mobile with better persistence
+// Test if storage is actually available (Chrome can block it)
+const isStorageAvailable = (type) => {
+  try {
+    const storage = window[type];
+    const test = '__storage_test__';
+    storage.setItem(test, test);
+    storage.removeItem(test);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Custom storage adapter that works reliably across all browsers (Chrome, Firefox, Safari, Edge)
 const customStorageAdapter = {
   getItem: (key) => {
     try {
-      if (typeof window !== 'undefined') {
-        // Always prioritize localStorage for persistence across page refreshes
-        if (window.localStorage) {
+      if (typeof window === 'undefined') return null;
+
+      // Try localStorage first (works in Chrome, Firefox, Safari)
+      if (isStorageAvailable('localStorage')) {
+        try {
           const item = window.localStorage.getItem(key);
-          if (item !== null && item !== undefined && item !== 'undefined') {
-            console.log(`✅ Retrieved session from localStorage: ${key.substring(0, 20)}...`);
+          if (item && item !== 'undefined' && item !== 'null') {
+            console.log(`✅ [${navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Browser'}] Retrieved from localStorage`);
             return item;
           }
+        } catch (e) {
+          console.warn('localStorage.getItem failed:', e);
         }
-        // Only fallback to sessionStorage if localStorage truly has nothing
-        if (window.sessionStorage) {
+      }
+
+      // Fallback to sessionStorage (Chrome sometimes prefers this)
+      if (isStorageAvailable('sessionStorage')) {
+        try {
           const item = window.sessionStorage.getItem(key);
-          if (item !== null && item !== undefined && item !== 'undefined') {
-            console.log(`⚠️ Retrieved session from sessionStorage (fallback): ${key.substring(0, 20)}...`);
-            // Copy to localStorage for next time
-            try {
-              window.localStorage.setItem(key, item);
-              console.log('📝 Copied session to localStorage for persistence');
-            } catch (e) {
-              console.warn('Could not copy to localStorage:', e);
+          if (item && item !== 'undefined' && item !== 'null') {
+            console.log(`⚠️ Retrieved from sessionStorage (fallback)`);
+            // Try to copy to localStorage for next time
+            if (isStorageAvailable('localStorage')) {
+              try {
+                window.localStorage.setItem(key, item);
+              } catch (e) {
+                // Quota exceeded or blocked - ignore
+              }
             }
             return item;
           }
+        } catch (e) {
+          console.warn('sessionStorage.getItem failed:', e);
         }
       }
-      console.warn(`❌ No session found in storage for key: ${key.substring(0, 20)}...`);
+
+      console.warn(`❌ No session found in any storage`);
       return null;
     } catch (error) {
-      console.error('❌ Error reading from storage:', error);
-      // Try sessionStorage as last resort
-      try {
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          const item = window.sessionStorage.getItem(key);
-          if (item !== null && item !== undefined && item !== 'undefined') {
-            return item;
-          }
-        }
-      } catch (e) {
-        console.error('❌ SessionStorage also failed:', e);
-      }
+      console.error('❌ Storage access completely blocked:', error);
       return null;
     }
   },
   setItem: (key, value) => {
     try {
-      if (typeof window !== 'undefined') {
-        // Ensure we're not storing undefined or null values
-        if (value === null || value === undefined || value === 'undefined' || value === 'null') {
-          console.warn(`⚠️ Attempted to store invalid value: ${value}`);
-          return;
-        }
+      if (typeof window === 'undefined') return;
 
-        console.log(`💾 Storing session in localStorage: ${key.substring(0, 20)}...`);
+      // Validate value
+      if (!value || value === 'undefined' || value === 'null') {
+        console.warn(`⚠️ Skipping invalid value: ${value}`);
+        return;
+      }
 
-        // Always write to localStorage first for persistence
-        if (window.localStorage) {
+      console.log(`💾 Storing session (Chrome-safe)`);
+
+      let savedToLocalStorage = false;
+      let savedToSessionStorage = false;
+
+      // Try localStorage first
+      if (isStorageAvailable('localStorage')) {
+        try {
           window.localStorage.setItem(key, value);
-          console.log('✅ Session saved to localStorage');
+          savedToLocalStorage = true;
+          console.log('✅ Saved to localStorage');
+        } catch (e) {
+          // Chrome quota exceeded or blocked
+          console.warn('localStorage.setItem failed:', e.name);
+          if (e.name === 'QuotaExceededError') {
+            // Try to clear old data
+            try {
+              window.localStorage.clear();
+              window.localStorage.setItem(key, value);
+              savedToLocalStorage = true;
+              console.log('✅ Saved to localStorage after clearing quota');
+            } catch (e2) {
+              console.warn('Still failed after clearing');
+            }
+          }
         }
-        // Also save to sessionStorage as backup
-        if (window.sessionStorage) {
+      }
+
+      // Always also save to sessionStorage as backup (Chrome-friendly)
+      if (isStorageAvailable('sessionStorage')) {
+        try {
           window.sessionStorage.setItem(key, value);
-          console.log('✅ Session saved to sessionStorage (backup)');
+          savedToSessionStorage = true;
+          console.log('✅ Saved to sessionStorage (backup)');
+        } catch (e) {
+          console.warn('sessionStorage.setItem failed:', e.name);
         }
+      }
+
+      if (!savedToLocalStorage && !savedToSessionStorage) {
+        console.error('❌ Failed to save session to any storage!');
       }
     } catch (error) {
-      console.error('❌ Error writing to localStorage:', error);
-      // Fallback to sessionStorage only
-      try {
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          window.sessionStorage.setItem(key, value);
-          console.warn('⚠️ Saved to sessionStorage only (localStorage failed)');
-        }
-      } catch (e) {
-        console.error('❌ SessionStorage also failed:', e);
-      }
+      console.error('❌ Unexpected error in setItem:', error);
     }
   },
   removeItem: (key) => {
     try {
-      if (typeof window !== 'undefined') {
-        console.log(`🗑️ Removing session: ${key.substring(0, 20)}...`);
-        if (window.localStorage) {
+      if (typeof window === 'undefined') return;
+
+      console.log(`🗑️ Removing session (all browsers)`);
+
+      // Remove from both storages (Chrome-safe)
+      if (isStorageAvailable('localStorage')) {
+        try {
           window.localStorage.removeItem(key);
+        } catch (e) {
+          console.warn('localStorage.removeItem failed:', e);
         }
-        if (window.sessionStorage) {
-          window.sessionStorage.removeItem(key);
-        }
-        console.log('✅ Session removed from both storages');
       }
+
+      if (isStorageAvailable('sessionStorage')) {
+        try {
+          window.sessionStorage.removeItem(key);
+        } catch (e) {
+          console.warn('sessionStorage.removeItem failed:', e);
+        }
+      }
+
+      console.log('✅ Session removed from all storages');
     } catch (error) {
-      console.error('❌ Error removing from storage:', error);
+      console.error('❌ Error in removeItem:', error);
     }
   }
 };
@@ -110,7 +156,10 @@ export const supabase = supabaseUrl && supabaseAnonKey
         storage: customStorageAdapter,
         autoRefreshToken: true,
         detectSessionInUrl: false,
-        storageKey: 'aposner-auth-token'
+        storageKey: 'aposner-auth-token',
+        // Chrome-specific settings for better compatibility
+        flowType: 'implicit', // Better for Chrome
+        debug: false
       }
     })
   : null;
