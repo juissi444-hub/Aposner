@@ -16,6 +16,15 @@ const CognitiveTaskGame = () => {
   const [level, setLevel] = useState(1);
   const [savedAdaptiveLevel, setSavedAdaptiveLevel] = useState(1);
   const [highestLevel, setHighestLevel] = useState(1);
+  const [selectedRelationTypes, setSelectedRelationTypes] = useState({
+    'whole-part': true,
+    'antonym': true,
+    'same-color': true,
+    'followup-numerical': true,
+    'physical-numerical': true,
+    'meaning': true,
+    'same-time': true
+  });
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [autoContinueEnabled, setAutoContinueEnabled] = useState(false);
   const [autoContinueDelay, setAutoContinueDelay] = useState(3); // 1-20 seconds
@@ -1854,7 +1863,20 @@ const CognitiveTaskGame = () => {
 
   const prepareNextTask = () => {
     const relationKeys = Object.keys(relationTypes);
-    const selectedRelation = relationKeys[Math.floor(Math.random() * relationKeys.length)];
+
+    // In manual mode, filter to only selected relationship types
+    let availableRelations = relationKeys;
+    if (mode === 'manual') {
+      availableRelations = relationKeys.filter(key => selectedRelationTypes[key]);
+
+      // If no relations are selected, fall back to all relations
+      if (availableRelations.length === 0) {
+        console.warn('⚠️ No relationship types selected, using all types');
+        availableRelations = relationKeys;
+      }
+    }
+
+    const selectedRelation = availableRelations[Math.floor(Math.random() * availableRelations.length)];
     setCurrentRelation(selectedRelation);
     setGameState('showRelation');
     setUserAnswered(false);
@@ -2444,6 +2466,56 @@ const CognitiveTaskGame = () => {
                 onChange={(e) => setNumTasks(parseInt(e.target.value))}
                 className="w-full"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-3">
+                Relationship Types to Include:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {Object.keys(relationTypes).map(key => (
+                  <label key={key} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedRelationTypes[key]}
+                      onChange={(e) => {
+                        setSelectedRelationTypes(prev => ({
+                          ...prev,
+                          [key]: e.target.checked
+                        }));
+                      }}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                    <span className="text-sm">{relationTypes[key]}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => {
+                    const allSelected = {};
+                    Object.keys(relationTypes).forEach(key => {
+                      allSelected[key] = true;
+                    });
+                    setSelectedRelationTypes(allSelected);
+                  }}
+                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={() => {
+                    const noneSelected = {};
+                    Object.keys(relationTypes).forEach(key => {
+                      noneSelected[key] = false;
+                    });
+                    setSelectedRelationTypes(noneSelected);
+                  }}
+                  className="text-xs bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded"
+                >
+                  Deselect All
+                </button>
+              </div>
             </div>
           </div>
         </div>
