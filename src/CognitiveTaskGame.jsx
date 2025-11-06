@@ -355,14 +355,35 @@ const CognitiveTaskGame = () => {
   }, [user]);
 
   const updateLeaderboard = useCallback(async (newLevel, newScore) => {
-    if (!isSupabaseConfigured() || !user || mode !== 'adaptive') {
-      console.log('⚠️ updateLeaderboard skipped - configured:', isSupabaseConfigured(), 'user:', !!user, 'mode:', mode);
+    console.log('═'.repeat(80));
+    console.log('🔥🔥🔥 updateLeaderboard CALLED 🔥🔥🔥');
+    console.log('🔥 newLevel:', newLevel);
+    console.log('🔥 newScore:', newScore);
+    console.log('🔥 isSupabaseConfigured():', isSupabaseConfigured());
+    console.log('🔥 user:', user?.email);
+    console.log('🔥 mode:', mode);
+
+    if (!isSupabaseConfigured()) {
+      console.error('❌ BLOCKED: Supabase not configured');
+      alert('ERROR: Supabase is not configured. Check your .env file.');
+      return;
+    }
+
+    if (!user) {
+      console.error('❌ BLOCKED: No user logged in');
+      alert('ERROR: You must be logged in to save to leaderboard. Please log in and try again.');
+      return;
+    }
+
+    if (mode !== 'adaptive') {
+      console.log('⚠️ BLOCKED: Not in adaptive mode (current mode:', mode, ')');
       return;
     }
 
     try {
-      console.log(`📝 updateLeaderboard called with newLevel=${newLevel}, newScore=${newScore}`);
+      console.log(`📝 ✅ All checks passed - proceeding with leaderboard update`);
       console.log(`📝 User:`, user.user_metadata?.username || user.email);
+      console.log(`📝 User ID:`, user.id);
 
       // Get current leaderboard entry
       const { data: currentData, error: fetchError } = await supabase
@@ -422,11 +443,14 @@ const CognitiveTaskGame = () => {
 
       if (updateError) {
         console.error('❌ Error upserting leaderboard:', updateError);
+        console.error('❌ Error details:', JSON.stringify(updateError, null, 2));
+        alert(`FAILED TO SAVE TO LEADERBOARD!\n\nError: ${updateError.message}\nCode: ${updateError.code}\n\nCheck RLS policies in Supabase!`);
         throw updateError;
       }
 
       console.log(`✅ Leaderboard updated successfully!`);
       console.log(`✅ Data saved to database:`, upsertData);
+      console.log(`✅ SUCCESS: Entry saved with level ${highestLevel} and score ${bestScore}`);
 
       // Verify the save by querying back
       const { data: verifyData } = await supabase
@@ -436,9 +460,16 @@ const CognitiveTaskGame = () => {
         .single();
       console.log(`✅ Verification query - data in database:`, verifyData);
       console.log(`✅ Verification: highest_level=${verifyData?.highest_level}, best_score=${verifyData?.best_score}`);
+      console.log('═'.repeat(80));
     } catch (error) {
+      console.error('═'.repeat(80));
+      console.error('❌❌❌ LEADERBOARD UPDATE FAILED ❌❌❌');
       console.error('❌ Error updating leaderboard:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error code:', error.code);
       console.error('❌ Full error:', JSON.stringify(error, null, 2));
+      console.error('═'.repeat(80));
+      alert(`CRITICAL ERROR: Failed to save to leaderboard!\n\n${error.message}\n\nCheck browser console for details.`);
     }
   }, [user, mode]);
 
