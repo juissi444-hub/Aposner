@@ -54,10 +54,12 @@ const CognitiveTaskGame = () => {
   const [leaderboard, setLeaderboard] = useState([]);
 
   const getTimeForLevel = (lvl) => {
-    if (lvl >= 15) return Math.max(50, 150 - (lvl - 14) * 25);
-    if (lvl >= 10) return 350 - (lvl - 10) * 50;
-    if (lvl >= 8) return 500 - (lvl - 7) * 50;
-    return 2000 - (lvl - 1) * 250;
+    // Level 1-7: 2000ms down to 500ms (decreasing by 250ms per level)
+    if (lvl <= 7) return 2000 - (lvl - 1) * 250;
+    // Level 8-9: 500ms down to 350ms (decreasing by 75ms per level)
+    if (lvl <= 9) return 500 - (lvl - 8) * 75;
+    // Level 10+: 350ms down to 50ms (decreasing by 25ms per level, minimum 50ms)
+    return Math.max(50, 350 - (lvl - 10) * 25);
   };
 
   // Keep gameStateRef in sync with gameState
@@ -2004,6 +2006,7 @@ const CognitiveTaskGame = () => {
       timeoutRef.current = setTimeout(() => {
         if (!userAnswered) {
           // Timeout - no answer given
+          setUserAnswered(true); // Mark as answered to prevent keypresses
           setFeedback('timeout');
           setTaskHistory(prev => [...prev, {
             relation: currentRelation,
@@ -2020,6 +2023,7 @@ const CognitiveTaskGame = () => {
 
           setTimeout(() => {
             setFeedback(null);
+            setUserAnswered(false); // Reset for next task
             if (currentTask + 1 < numTasks) {
               setCurrentTask(prev => prev + 1);
               prepareNextTask();
@@ -2167,7 +2171,8 @@ const CognitiveTaskGame = () => {
       } else if (e.key === ' ' && gameState === 'showRelation') {
         e.preventDefault();
         handleSpacePress();
-      } else if (gameState === 'showWords' && !userAnswered) {
+      } else if (gameState === 'showWords' && !userAnswered && !feedback) {
+        // Only allow j/f keys when showing words, user hasn't answered, and no feedback is showing
         if (e.key === 'j') {
           handleResponse(true);
         } else if (e.key === 'f') {
@@ -2178,7 +2183,7 @@ const CognitiveTaskGame = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameState, handleSpacePress, handleResponse, userAnswered, stopAllSounds, saveProgress, level, score, mode]);
+  }, [gameState, handleSpacePress, handleResponse, userAnswered, feedback, stopAllSounds, saveProgress, level, score, mode]);
 
   // Prevent body scrolling when leaderboard modal is open
   useEffect(() => {
