@@ -74,10 +74,16 @@ const CognitiveTaskGame = () => {
       if (session?.user) {
         console.log('✅ Session found for user:', session.user.email);
         setUser(session.user);
+        setShowAuth(false);
         // Load user progress from Supabase
         loadUserProgress(session.user.id);
       } else {
-        console.log('❌ No active session found');
+        console.log('❌ No active session found - user needs to log in');
+        // If in adaptive mode and no session, prompt for login
+        if (mode === 'adaptive') {
+          console.log('🔐 Adaptive mode requires login - showing auth modal');
+          setShowAuth(true);
+        }
       }
     }).catch(error => {
       console.error('Error getting session:', error);
@@ -93,6 +99,10 @@ const CognitiveTaskGame = () => {
         loadUserProgress(session.user.id);
       } else {
         console.log('❌ User logged out');
+        // If in adaptive mode, show auth modal
+        if (mode === 'adaptive') {
+          setShowAuth(true);
+        }
       }
     });
 
@@ -100,7 +110,7 @@ const CognitiveTaskGame = () => {
       console.log('🔌 Unsubscribing from auth changes');
       subscription.unsubscribe();
     };
-  }, []);
+  }, [mode]);
 
   // Toggle sound setting
   const toggleSound = () => {
@@ -141,6 +151,7 @@ const CognitiveTaskGame = () => {
 
         // Create leaderboard entry for new user
         if (data.user) {
+          console.log('📝 Creating leaderboard entry for new user:', username);
           const { error: insertError } = await supabase
             .from('leaderboard')
             .insert([
@@ -151,7 +162,11 @@ const CognitiveTaskGame = () => {
                 best_score: 0
               }
             ]);
-          if (insertError) throw insertError;
+          if (insertError) {
+            console.error('❌ Failed to create leaderboard entry:', insertError);
+            throw insertError;
+          }
+          console.log('✅ Leaderboard entry created successfully');
         }
 
         setShowAuth(false);
@@ -228,12 +243,15 @@ const CognitiveTaskGame = () => {
   // Leaderboard functions
   const loadLeaderboard = useCallback(async () => {
     if (!isSupabaseConfigured()) {
-      console.error('Supabase not configured');
+      console.error('❌ Supabase not configured - cannot load leaderboard');
+      alert('Supabase is not configured. Please check your environment variables.');
       return;
     }
 
     try {
-      console.log('Loading leaderboard...');
+      console.log('📊 Loading leaderboard...');
+      console.log('📊 User logged in:', !!user, user?.email);
+
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
@@ -241,17 +259,32 @@ const CognitiveTaskGame = () => {
         .order('best_score', { ascending: false });
 
       if (error) {
-        console.error('Leaderboard query error:', error);
+        console.error('❌ Leaderboard query error:', error);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error details:', error.details);
+        console.error('❌ Error hint:', error.hint);
         throw error;
       }
-      console.log('Leaderboard loaded:', data?.length || 0, 'entries');
-      console.log('Leaderboard data:', JSON.stringify(data, null, 2));
+
+      console.log('✅ Leaderboard loaded:', data?.length || 0, 'entries');
+
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No leaderboard entries found!');
+        console.warn('⚠️ This could mean:');
+        console.warn('  1. The database schema has not been set up (run supabase-schema.sql)');
+        console.warn('  2. No users have signed up yet');
+        console.warn('  3. Row Level Security policies are blocking access');
+      } else {
+        console.log('📊 Leaderboard data:', JSON.stringify(data, null, 2));
+      }
+
       setLeaderboard(data || []);
     } catch (error) {
-      console.error('Error loading leaderboard:', error);
-      alert('Failed to load leaderboard. Check console for details.');
+      console.error('❌ Error loading leaderboard:', error);
+      alert(`Failed to load leaderboard: ${error.message}\n\nCheck browser console for details.`);
     }
-  }, []);
+  }, [user]);
 
   const updateLeaderboard = useCallback(async (newLevel, newScore) => {
     if (!isSupabaseConfigured() || !user || mode !== 'adaptive') {
@@ -1593,16 +1626,18 @@ const CognitiveTaskGame = () => {
             <p className="text-center text-sm text-gray-400 mb-4">Adaptive Mode Only</p>
             <div className="space-y-2 overflow-x-auto">
               {leaderboard.length === 0 ? (
-                <p className="text-center text-gray-400">No entries yet. Be the first!</p>
+                <div className="text-center text-gray-400 space-y-2">
+                  <p>No leaderboard entries found.</p>
+                  <p className="text-sm">Please check browser console (F12) for details.</p>
+                  <p className="text-xs text-gray-500">Make sure the Supabase schema has been set up.</p>
+                </div>
               ) : (
                 <>
-                  <div className="grid gap-6 font-bold text-sm text-gray-400 px-4 py-2 min-w-[700px]" style={{gridTemplateColumns: '60px 1fr 80px 80px 100px 150px'}}>
+                  <div className="grid gap-4 font-bold text-sm text-gray-400 px-4 py-2 min-w-[600px]" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
                     <div>Rank</div>
                     <div>Username</div>
-                    <div className="text-center">Level</div>
-                    <div className="text-center">Score</div>
-                    <div className="text-center">Progress</div>
-                    <div className="text-right">Percentile</div>
+                    <div>Highest Level</div>
+                    <div className="text-right">Ranking</div>
                   </div>
                   {leaderboard.map((entry, index) => {
                     // Calculate percentile: percentage of players you're better than
@@ -1612,7 +1647,7 @@ const CognitiveTaskGame = () => {
 
                     // Calculate level completion percentage (out of 30 tasks in adaptive mode)
                     const levelProgress = Math.round((entry.best_score / 30) * 100);
-                    console.log(`📊 User ${entry.username}: best_score=${entry.best_score}, levelProgress=${levelProgress}%`);
+                    console.log(`📊 User ${entry.username}: Level ${entry.highest_level}, ${levelProgress}% completed, ${percentile}th percentile`);
 
                     // Get styling based on rank
                     let rankStyle = '';
@@ -1636,19 +1671,20 @@ const CognitiveTaskGame = () => {
                     return (
                       <div
                         key={entry.user_id}
-                        className={`grid gap-6 px-4 py-3 rounded-lg min-w-[700px] ${rankStyle}`}
-                        style={{gridTemplateColumns: '60px 1fr 80px 80px 100px 150px'}}
+                        className={`grid gap-4 px-4 py-3 rounded-lg min-w-[600px] ${rankStyle}`}
+                        style={{gridTemplateColumns: '60px 1fr 200px 120px'}}
                       >
-                        <div className="font-bold">
+                        <div className="font-bold text-lg">
                           {index === 0 && '🥇'}
                           {index === 1 && '🥈'}
                           {index === 2 && '🥉'}
                           {index > 2 && `#${index + 1}`}
                         </div>
-                        <div className="truncate">{entry.username}</div>
-                        <div className="text-center">{entry.highest_level}</div>
-                        <div className="text-center">{entry.best_score}</div>
-                        <div className="text-center font-semibold text-green-400">{levelProgress}%</div>
+                        <div className="truncate font-medium">{entry.username}</div>
+                        <div className="font-semibold">
+                          <span className="text-white">Level {entry.highest_level}</span>
+                          <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
+                        </div>
                         <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{percentile}th percentile</div>
                       </div>
                     );
