@@ -102,7 +102,6 @@ const CognitiveTaskGame = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
@@ -210,46 +209,32 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
-    const isChrome = navigator.userAgent.includes('Chrome');
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     console.log('🔄 Auth effect initializing...');
-    console.log(`📱 Browser: ${isChrome ? 'Chrome' : 'Other'}, Mobile: ${isMobile}`);
     let mounted = true;
 
-    // Restore session on mount - Chrome-compatible
+    // Restore session on mount - simple and fast
     const restoreSession = async () => {
       try {
-        console.log(`🔍 Restoring session... [${isChrome ? 'Chrome' : 'Browser'}]`);
-
-        // Add timeout for Chrome
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Session restore timeout')), 5000)
-        );
-
-        const sessionPromise = supabase.auth.getSession();
-
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
+        console.log('🔍 Restoring session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('❌ Session restore error:', error.message, error);
+          console.error('❌ Session error:', error);
           setUser(null);
           return;
         }
 
         if (session?.user) {
-          console.log(`✅ Session restored: ${session.user.email} [${isChrome ? 'Chrome' : 'Browser'}]`);
+          console.log('✅ Session restored:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
-          console.log('ℹ️ No session found in storage');
+          console.log('ℹ️ No session');
           setUser(null);
         }
       } catch (error) {
-        console.error('❌ Exception restoring session:', error.message || error);
-        if (error.message === 'Session restore timeout') {
-          console.error('⏱️ Chrome session restore timeout');
-        }
+        console.error('❌ Exception:', error);
         setUser(null);
       }
     };
@@ -257,36 +242,28 @@ const CognitiveTaskGame = () => {
     // Immediately try to restore session
     restoreSession();
 
-    // Listen for auth changes - Chrome-compatible
+    // Listen for auth changes - simple
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(`🔄 Auth event: ${event} [${isChrome ? 'Chrome' : 'Browser'}]`);
+      console.log('🔄 Auth event:', event);
 
-      if (!mounted) {
-        console.log('⚠️ Component unmounted, ignoring auth event');
-        return;
-      }
+      if (!mounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log(`✅ Signed in: ${session.user.email} [${isChrome ? 'Chrome' : 'Browser'}]`);
+        console.log('✅ Signed in:', session.user.email);
         setUser(session.user);
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
         loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        console.log(`👋 Signed out [${isChrome ? 'Chrome' : 'Browser'}]`);
+        console.log('👋 Signed out');
         setUser(null);
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        console.log(`🔄 Token refreshed [${isChrome ? 'Chrome' : 'Browser'}]`);
+        console.log('🔄 Token refreshed');
         setUser(session.user);
       } else if (event === 'USER_UPDATED' && session?.user) {
-        console.log(`🔄 User updated [${isChrome ? 'Chrome' : 'Browser'}]`);
+        console.log('🔄 User updated');
         setUser(session.user);
-      } else if (event === 'INITIAL_SESSION') {
-        console.log(`📍 Initial session check [${isChrome ? 'Chrome' : 'Browser'}]`);
-        if (session?.user) {
-          setUser(session.user);
-        }
       }
     });
 
@@ -619,47 +596,32 @@ const CognitiveTaskGame = () => {
     }
   }, []);
 
-  // Leaderboard loading - Chrome-compatible with timeout
+  // Leaderboard loading - simple and fast
   const loadLeaderboard = useCallback(async () => {
     if (!isSupabaseConfigured()) {
       console.error('❌ Supabase not configured');
       return;
     }
 
-    setLeaderboardLoading(true);
-    const isChrome = navigator.userAgent.includes('Chrome');
-    console.log(`📊 Loading leaderboard... [${isChrome ? 'Chrome' : 'Browser'}]`);
+    console.log('📊 Loading leaderboard...');
 
     try {
-      // Add timeout for Chrome (prevents infinite loading)
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), 10000)
-      );
-
-      const queryPromise = supabase
+      const { data, error } = await supabase
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
         .order('best_score', { ascending: false });
 
-      // Race between query and timeout
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-
       if (error) {
-        console.error('❌ Leaderboard error:', error.message, error);
+        console.error('❌ Leaderboard error:', error);
         setLeaderboard([]);
       } else {
-        console.log(`✅ Loaded ${data?.length || 0} leaderboard entries`);
+        console.log(`✅ Loaded ${data?.length || 0} entries`);
         setLeaderboard(data || []);
       }
     } catch (error) {
-      console.error('❌ Exception loading leaderboard:', error.message || error);
-      if (error.message === 'Timeout') {
-        console.error('⏱️ Chrome timeout - leaderboard took too long');
-      }
+      console.error('❌ Exception:', error);
       setLeaderboard([]);
-    } finally {
-      setLeaderboardLoading(false);
     }
   }, [user]);
 
@@ -4456,23 +4418,7 @@ const CognitiveTaskGame = () => {
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 px-1">
               <div className="space-y-2">
-              {leaderboardLoading ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-center text-gray-400">Loading leaderboard...</p>
-                  <p className="text-center text-gray-500 text-sm mt-2">This may take a moment on mobile</p>
-                  <button
-                    onClick={() => {
-                      console.log('❌ User cancelled leaderboard loading');
-                      setLeaderboardLoading(false);
-                      setLeaderboard([]);
-                    }}
-                    className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : leaderboard.length === 0 ? (
+              {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
               ) : (
                 <>
