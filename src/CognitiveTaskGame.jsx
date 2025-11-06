@@ -1073,7 +1073,44 @@ const CognitiveTaskGame = () => {
       ['profession', 'architect'], ['profession', 'surgeon'], ['profession', 'pilot'], ['profession', 'accountant'], ['profession', 'pharmacist'],
       ['profession', 'veterinarian'], ['profession', 'dentist'], ['profession', 'electrician'], ['profession', 'plumber'], ['profession', 'carpenter'],
       ['profession', 'mechanic'], ['profession', 'chef'], ['profession', 'baker'], ['profession', 'barber'], ['profession', 'tailor'],
-      ['profession', 'librarian'], ['profession', 'journalist'], ['profession', 'photographer'], ['profession', 'designer'], ['profession', 'programmer']
+      ['profession', 'librarian'], ['profession', 'journalist'], ['profession', 'photographer'], ['profession', 'designer'], ['profession', 'programmer'],
+      // Even more whole-part pairs (150+ more)
+      ['beverage', 'coffee'], ['beverage', 'tea'], ['beverage', 'juice'], ['beverage', 'soda'], ['beverage', 'milk'],
+      ['beverage', 'wine'], ['beverage', 'beer'], ['beverage', 'cocktail'], ['beverage', 'smoothie'], ['beverage', 'lemonade'],
+      ['snack', 'chips'], ['snack', 'crackers'], ['snack', 'popcorn'], ['snack', 'pretzels'], ['snack', 'cookies'],
+      ['snack', 'candy'], ['snack', 'nuts'], ['snack', 'granola'], ['snack', 'jerky'], ['snack', 'trail mix'],
+      ['fabric', 'cotton'], ['fabric', 'silk'], ['fabric', 'wool'], ['fabric', 'linen'], ['fabric', 'polyester'],
+      ['fabric', 'denim'], ['fabric', 'velvet'], ['fabric', 'satin'], ['fabric', 'flannel'], ['fabric', 'leather'],
+      ['metal', 'iron'], ['metal', 'copper'], ['metal', 'aluminum'], ['metal', 'bronze'], ['metal', 'steel'],
+      ['metal', 'tin'], ['metal', 'zinc'], ['metal', 'nickel'], ['metal', 'titanium'], ['metal', 'platinum'],
+      ['gemstone', 'diamond'], ['gemstone', 'emerald'], ['gemstone', 'sapphire'], ['gemstone', 'opal'], ['gemstone', 'topaz'],
+      ['gemstone', 'amethyst'], ['gemstone', 'garnet'], ['gemstone', 'jade'], ['gemstone', 'pearl'], ['gemstone', 'turquoise'],
+      ['weather', 'rain'], ['weather', 'snow'], ['weather', 'fog'], ['weather', 'hail'], ['weather', 'sleet'],
+      ['weather', 'thunder'], ['weather', 'lightning'], ['weather', 'tornado'], ['weather', 'hurricane'], ['weather', 'blizzard'],
+      ['landform', 'mountain'], ['landform', 'valley'], ['landform', 'canyon'], ['landform', 'plateau'], ['landform', 'plain'],
+      ['landform', 'hill'], ['landform', 'cliff'], ['landform', 'mesa'], ['landform', 'butte'], ['landform', 'dune'],
+      ['waterway', 'river'], ['waterway', 'stream'], ['waterway', 'creek'], ['waterway', 'canal'], ['waterway', 'strait'],
+      ['waterway', 'channel'], ['waterway', 'inlet'], ['waterway', 'bay'], ['waterway', 'gulf'], ['waterway', 'fjord'],
+      ['structure', 'bridge'], ['structure', 'tower'], ['structure', 'dam'], ['structure', 'tunnel'], ['structure', 'wall'],
+      ['structure', 'fence'], ['structure', 'gate'], ['structure', 'arch'], ['structure', 'column'], ['structure', 'pillar'],
+      ['appliance', 'refrigerator'], ['appliance', 'oven'], ['appliance', 'microwave'], ['appliance', 'dishwasher'], ['appliance', 'washer'],
+      ['appliance', 'dryer'], ['appliance', 'toaster'], ['appliance', 'blender'], ['appliance', 'mixer'], ['appliance', 'vacuum'],
+      ['technology', 'computer'], ['technology', 'smartphone'], ['technology', 'tablet'], ['technology', 'laptop'], ['technology', 'monitor'],
+      ['technology', 'keyboard'], ['technology', 'mouse'], ['technology', 'router'], ['technology', 'modem'], ['technology', 'speaker'],
+      ['toy', 'doll'], ['toy', 'ball'], ['toy', 'puzzle'], ['toy', 'lego'], ['toy', 'teddy'],
+      ['toy', 'train'], ['toy', 'robot'], ['toy', 'kite'], ['toy', 'yo-yo'], ['toy', 'frisbee'],
+      ['container', 'box'], ['container', 'jar'], ['container', 'bottle'], ['container', 'can'], ['container', 'barrel'],
+      ['container', 'crate'], ['container', 'basket'], ['container', 'bag'], ['container', 'pouch'], ['container', 'sack'],
+      ['celestial', 'moon'], ['celestial', 'sun'], ['celestial', 'star'], ['celestial', 'comet'], ['celestial', 'asteroid'],
+      ['celestial', 'meteor'], ['celestial', 'planet'], ['celestial', 'galaxy'], ['celestial', 'nebula'], ['celestial', 'quasar'],
+      ['part of speech', 'noun'], ['part of speech', 'verb'], ['part of speech', 'adjective'], ['part of speech', 'adverb'], ['part of speech', 'pronoun'],
+      ['part of speech', 'preposition'], ['part of speech', 'conjunction'], ['part of speech', 'interjection'], ['part of speech', 'article'], ['part of speech', 'participle'],
+      ['literary genre', 'fiction'], ['literary genre', 'poetry'], ['literary genre', 'drama'], ['literary genre', 'essay'], ['literary genre', 'biography'],
+      ['literary genre', 'memoir'], ['literary genre', 'mystery'], ['literary genre', 'romance'], ['literary genre', 'thriller'], ['literary genre', 'fantasy'],
+      ['art style', 'realism'], ['art style', 'impressionism'], ['art style', 'cubism'], ['art style', 'surrealism'], ['art style', 'abstract'],
+      ['art style', 'baroque'], ['art style', 'renaissance'], ['art style', 'modernism'], ['art style', 'minimalism'], ['art style', 'expressionism'],
+      ['shape', 'circle'], ['shape', 'square'], ['shape', 'triangle'], ['shape', 'rectangle'], ['shape', 'pentagon'],
+      ['shape', 'hexagon'], ['shape', 'octagon'], ['shape', 'oval'], ['shape', 'diamond'], ['shape', 'star']
     ],
     'antonym': [
       ['hot', 'cold'], ['big', 'small'], ['fast', 'slow'], ['up', 'down'], ['left', 'right'],
@@ -1263,7 +1300,37 @@ const CognitiveTaskGame = () => {
       ['cursed', 'blessed'], ['custom', 'novelty'], ['damage', 'restore'], ['damp', 'arid'], ['danger', 'safety'],
       ['dark', 'illuminated'], ['day', 'night'], ['dead', 'alive'], ['deaf', 'hearing'], ['debatable', 'certain'],
       ['decay', 'growth'], ['deceitful', 'truthful'], ['decent', 'improper'], ['decline', 'incline'], ['decrease', 'multiply'],
-      ['deep', 'superficial'], ['defect', 'excellence'], ['defend', 'accuse'], ['deficient', 'sufficient'], ['definite', 'ambiguous']
+      ['deep', 'superficial'], ['defect', 'excellence'], ['defend', 'accuse'], ['deficient', 'sufficient'], ['definite', 'ambiguous'],
+      // Additional antonyms (100+ more)
+      ['delicate', 'robust'], ['deliberate', 'accidental'], ['delighted', 'dismayed'], ['deliver', 'withhold'], ['demand', 'supply'],
+      ['democratic', 'autocratic'], ['demolish', 'construct'], ['dense', 'sparse'], ['dependent', 'autonomous'], ['deplete', 'replenish'],
+      ['depression', 'elevation'], ['deprive', 'provide'], ['descend', 'ascend'], ['desert', 'oasis'], ['deserve', 'forfeit'],
+      ['desire', 'aversion'], ['despair', 'optimism'], ['despise', 'admire'], ['destination', 'origin'], ['destroy', 'create'],
+      ['detach', 'fasten'], ['detail', 'overview'], ['deteriorate', 'improve'], ['determined', 'indecisive'], ['detest', 'adore'],
+      ['develop', 'regress'], ['deviate', 'conform'], ['devote', 'neglect'], ['devour', 'nibble'], ['dexterous', 'clumsy'],
+      ['diagonal', 'straight'], ['dictator', 'democrat'], ['differ', 'agree'], ['difficult', 'effortless'], ['digest', 'expel'],
+      ['dignify', 'degrade'], ['diligent', 'lazy'], ['dim', 'brilliant'], ['diminish', 'amplify'], ['dip', 'rise'],
+      ['direct', 'indirect'], ['dirty', 'sterile'], ['disadvantage', 'merit'], ['disagree', 'concur'], ['disappear', 'materialize'],
+      ['disappoint', 'satisfy'], ['disapprove', 'endorse'], ['disarm', 'fortify'], ['disaster', 'triumph'], ['disbelief', 'faith'],
+      ['discard', 'retain'], ['discharge', 'absorb'], ['discipline', 'chaos'], ['disclose', 'conceal'], ['discomfort', 'ease'],
+      ['disconnect', 'link'], ['discontent', 'satisfaction'], ['discontinue', 'proceed'], ['discord', 'harmony'], ['discourage', 'inspire'],
+      ['discover', 'overlook'], ['discreet', 'obvious'], ['discrete', 'continuous'], ['discriminate', 'tolerate'], ['disdain', 'respect'],
+      ['disease', 'health'], ['disgrace', 'honor'], ['disguise', 'reveal'], ['disgust', 'delight'], ['dishonest', 'truthful'],
+      ['disintegrate', 'coalesce'], ['disinterested', 'biased'], ['dislike', 'favor'], ['disloyal', 'faithful'], ['dismal', 'cheerful'],
+      ['dismiss', 'hire'], ['disobey', 'comply'], ['disorder', 'system'], ['disorganize', 'arrange'], ['disparage', 'praise'],
+      ['disperse', 'gather'], ['displace', 'settle'], ['display', 'hide'], ['displease', 'gratify'], ['disproportionate', 'balanced'],
+      ['disprove', 'verify'], ['dispute', 'agreement'], ['disqualify', 'certify'], ['disregard', 'heed'], ['disrepair', 'maintenance'],
+      ['disrespect', 'reverence'], ['disrupt', 'stabilize'], ['dissatisfaction', 'contentment'], ['dissent', 'assent'], ['dissolve', 'solidify'],
+      ['dissuade', 'encourage'], ['distance', 'proximity'], ['distant', 'adjacent'], ['distaste', 'fondness'], ['distort', 'clarify'],
+      ['distract', 'focus'], ['distribute', 'collect'], ['distrust', 'confidence'], ['disturb', 'calm'], ['diverse', 'uniform'],
+      ['divert', 'redirect'], ['divide', 'unite'], ['divine', 'mortal'], ['division', 'multiplication'], ['divorce', 'marriage'],
+      ['docile', 'rebellious'], ['doctor', 'patient'], ['domestic', 'foreign'], ['dominant', 'submissive'], ['donate', 'receive'],
+      ['doom', 'salvation'], ['dormant', 'active'], ['doubt', 'certainty'], ['downward', 'upward'], ['drab', 'vivid'],
+      ['draft', 'finalize'], ['drag', 'propel'], ['drain', 'fill'], ['dramatic', 'subtle'], ['drastic', 'moderate'],
+      ['draw', 'repel'], ['dread', 'anticipation'], ['dreary', 'lively'], ['drench', 'dry'], ['drift', 'anchor'],
+      ['drip', 'gush'], ['drop', 'lift'], ['drown', 'rescue'], ['drowsy', 'alert'], ['dry', 'humid'],
+      ['dull', 'sharp'], ['dumb', 'articulate'], ['durable', 'fragile'], ['dusk', 'dawn'], ['dust', 'polish'],
+      ['dwarf', 'giant'], ['dwell', 'depart'], ['dwindle', 'flourish'], ['dynamic', 'static'], ['eager', 'reluctant']
     ],
     'same-color': [
       ['sky', 'ocean'], ['grass', 'leaf'], ['sun', 'banana'], ['snow', 'cloud'], ['coal', 'night'],
@@ -1303,26 +1370,95 @@ const CognitiveTaskGame = () => {
       ['coal dust', 'charcoal'], ['ash', 'gray'], ['soot', 'black'], ['ink', 'ebony'], ['tar', 'pitch'],
       ['flame', 'orange'], ['ember', 'red'], ['smoke', 'ash'], ['spark', 'gold'], ['lava', 'crimson'],
       ['pine tree', 'forest'], ['oak', 'bronze'], ['birch', 'ivory'], ['maple', 'amber'], ['willow', 'sage'],
-      ['cherry blossom', 'pink'], ['apple blossom', 'white'], ['lilac flower', 'lavender'], ['bluebonnet', 'indigo'], ['buttercup', 'yellow']
+      ['cherry blossom', 'pink'], ['apple blossom', 'white'], ['lilac flower', 'lavender'], ['bluebonnet', 'indigo'], ['buttercup', 'yellow'],
+      // Even more same-color pairs (100+ more)
+      ['blush', 'rose'], ['brick', 'rust'], ['cardinal', 'crimson'], ['cayenne', 'chili'], ['cinnamon', 'brown'],
+      ['claret', 'burgundy'], ['cobalt blue', 'azure'], ['dusk sky', 'purple'], ['emerald green', 'jade'], ['fir', 'evergreen'],
+      ['flame', 'scarlet'], ['heather', 'lavender'], ['indigo ink', 'navy'], ['kelp', 'olive'], ['lapis', 'sapphire'],
+      ['mahogany', 'chestnut'], ['navy blue', 'midnight'], ['obsidian', 'raven'], ['olive oil', 'khaki'], ['pewter', 'silver'],
+      ['plum wine', 'burgundy'], ['raspberry', 'magenta'], ['redwood', 'mahogany'], ['rose gold', 'copper'], ['ruby red', 'garnet'],
+      ['saffron', 'gold'], ['sepia', 'brown'], ['slate rock', 'charcoal'], ['steel', 'graphite'], ['terracotta pot', 'rust'],
+      ['turquoise stone', 'cyan'], ['umber', 'brown'], ['vermillion', 'scarlet'], ['walnut', 'brown'], ['wine red', 'maroon'],
+      ['apricot', 'peach'], ['asparagus', 'sage'], ['aubergine', 'eggplant'], ['azure sky', 'cerulean'], ['basil', 'sage'],
+      ['brass', 'gold'], ['butterscotch', 'caramel'], ['canary', 'yellow'], ['champagne', 'cream'], ['charcoal gray', 'ash'],
+      ['cherry wood', 'mahogany'], ['chestnut', 'brown'], ['cocoa', 'chocolate'], ['concrete', 'gray'], ['cranberry', 'burgundy'],
+      ['cream cheese', 'ivory'], ['cucumber', 'lime'], ['denim', 'navy'], ['dove', 'gray'], ['dust', 'tan'],
+      ['eggshell', 'cream'], ['elephant', 'gray'], ['espresso', 'brown'], ['fawn', 'tan'], ['flax', 'cream'],
+      ['french vanilla', 'cream'], ['ginger', 'rust'], ['goldenrod', 'yellow'], ['granite', 'gray'], ['grapefruit', 'pink'],
+      ['gunmetal', 'charcoal'], ['honey dew', 'green'], ['ink', 'navy'], ['iron', 'gray'], ['jet black', 'onyx'],
+      ['kale', 'green'], ['khaki pants', 'tan'], ['latex', 'cream'], ['lead', 'gray'], ['licorice', 'black'],
+      ['merlot', 'burgundy'], ['midnight blue', 'navy'], ['mint leaf', 'sage'], ['mocha', 'brown'], ['moss green', 'olive'],
+      ['mushroom', 'taupe'], ['nickel', 'silver'], ['oatmeal', 'tan'], ['oyster', 'cream'], ['paprika', 'rust'],
+      ['parsley', 'green'], ['peacock feather', 'teal'], ['pear', 'lime'], ['pecan', 'brown'], ['pistachio', 'mint'],
+      ['platinum', 'silver'], ['powder', 'white'], ['pumpkin spice', 'orange'], ['raisin', 'purple'], ['raspberry sorbet', 'pink'],
+      ['rosemary', 'sage'], ['sandalwood', 'tan'], ['sapphire stone', 'cobalt'], ['sea foam', 'mint'], ['shadow', 'charcoal'],
+      ['silk', 'cream'], ['smoke gray', 'ash'], ['steel blue', 'slate'], ['storm sky', 'gray'], ['straw', 'tan'],
+      ['suede', 'tan'], ['tangerine peel', 'orange'], ['tarmac', 'black'], ['thistle', 'lavender'], ['toffee', 'caramel'],
+      ['topaz', 'amber'], ['turmeric', 'yellow'], ['ultramarine', 'cobalt'], ['urchin', 'purple'], ['verdant', 'emerald']
     ],
     'followup-numerical': Array.from({length: 200}, (_, i) => [String(i), String(i + 1)]),
     'physical-numerical': [
-      // Words
+      // Ascending Words (up to 100)
       ['one', 'two'], ['two', 'three'], ['three', 'four'], ['four', 'five'], ['five', 'six'],
       ['six', 'seven'], ['seven', 'eight'], ['eight', 'nine'], ['nine', 'ten'], ['ten', 'eleven'],
       ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'], ['fifteen', 'sixteen'],
       ['sixteen', 'seventeen'], ['seventeen', 'eighteen'], ['eighteen', 'nineteen'], ['nineteen', 'twenty'], ['twenty', 'twenty-one'],
       ['twenty-one', 'twenty-two'], ['twenty-two', 'twenty-three'], ['twenty-three', 'twenty-four'], ['twenty-four', 'twenty-five'],
       ['twenty-five', 'twenty-six'], ['twenty-six', 'twenty-seven'], ['twenty-seven', 'twenty-eight'], ['twenty-eight', 'twenty-nine'],
-      ['twenty-nine', 'thirty'], ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'],
-      // Roman numerals
+      ['twenty-nine', 'thirty'], ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'], ['thirty-two', 'thirty-three'],
+      ['thirty-three', 'thirty-four'], ['thirty-four', 'thirty-five'], ['thirty-five', 'thirty-six'], ['thirty-six', 'thirty-seven'],
+      ['thirty-seven', 'thirty-eight'], ['thirty-eight', 'thirty-nine'], ['thirty-nine', 'forty'], ['forty', 'forty-one'],
+      ['forty-one', 'forty-two'], ['forty-two', 'forty-three'], ['forty-three', 'forty-four'], ['forty-four', 'forty-five'],
+      ['forty-five', 'forty-six'], ['forty-six', 'forty-seven'], ['forty-seven', 'forty-eight'], ['forty-eight', 'forty-nine'],
+      ['forty-nine', 'fifty'], ['fifty', 'fifty-one'], ['fifty-one', 'fifty-two'], ['fifty-two', 'fifty-three'],
+      ['fifty-three', 'fifty-four'], ['fifty-four', 'fifty-five'], ['fifty-five', 'fifty-six'], ['fifty-six', 'fifty-seven'],
+      ['fifty-seven', 'fifty-eight'], ['fifty-eight', 'fifty-nine'], ['fifty-nine', 'sixty'], ['sixty', 'sixty-one'],
+      ['sixty-one', 'sixty-two'], ['sixty-two', 'sixty-three'], ['sixty-three', 'sixty-four'], ['sixty-four', 'sixty-five'],
+      ['sixty-five', 'sixty-six'], ['sixty-six', 'sixty-seven'], ['sixty-seven', 'sixty-eight'], ['sixty-eight', 'sixty-nine'],
+      ['sixty-nine', 'seventy'], ['seventy', 'seventy-one'], ['seventy-one', 'seventy-two'], ['seventy-two', 'seventy-three'],
+      ['seventy-three', 'seventy-four'], ['seventy-four', 'seventy-five'], ['seventy-five', 'seventy-six'], ['seventy-six', 'seventy-seven'],
+      ['seventy-seven', 'seventy-eight'], ['seventy-eight', 'seventy-nine'], ['seventy-nine', 'eighty'], ['eighty', 'eighty-one'],
+      ['eighty-one', 'eighty-two'], ['eighty-two', 'eighty-three'], ['eighty-three', 'eighty-four'], ['eighty-four', 'eighty-five'],
+      ['eighty-five', 'eighty-six'], ['eighty-six', 'eighty-seven'], ['eighty-seven', 'eighty-eight'], ['eighty-eight', 'eighty-nine'],
+      ['eighty-nine', 'ninety'], ['ninety', 'ninety-one'], ['ninety-one', 'ninety-two'], ['ninety-two', 'ninety-three'],
+      ['ninety-three', 'ninety-four'], ['ninety-four', 'ninety-five'], ['ninety-five', 'ninety-six'], ['ninety-six', 'ninety-seven'],
+      ['ninety-seven', 'ninety-eight'], ['ninety-eight', 'ninety-nine'], ['ninety-nine', 'one hundred'],
+      // Descending Words
+      ['two', 'one'], ['three', 'two'], ['four', 'three'], ['five', 'four'], ['six', 'five'],
+      ['seven', 'six'], ['eight', 'seven'], ['nine', 'eight'], ['ten', 'nine'], ['eleven', 'ten'],
+      ['twelve', 'eleven'], ['thirteen', 'twelve'], ['fourteen', 'thirteen'], ['fifteen', 'fourteen'], ['sixteen', 'fifteen'],
+      ['seventeen', 'sixteen'], ['eighteen', 'seventeen'], ['nineteen', 'eighteen'], ['twenty', 'nineteen'], ['thirty', 'twenty-nine'],
+      ['forty', 'thirty-nine'], ['fifty', 'forty-nine'], ['sixty', 'fifty-nine'], ['seventy', 'sixty-nine'], ['eighty', 'seventy-nine'],
+      ['ninety', 'eighty-nine'], ['one hundred', 'ninety-nine'],
+      // Ascending Roman numerals (up to 100)
       ['I', 'II'], ['II', 'III'], ['III', 'IV'], ['IV', 'V'], ['V', 'VI'],
       ['VI', 'VII'], ['VII', 'VIII'], ['VIII', 'IX'], ['IX', 'X'], ['X', 'XI'],
       ['XI', 'XII'], ['XII', 'XIII'], ['XIII', 'XIV'], ['XIV', 'XV'], ['XV', 'XVI'],
       ['XVI', 'XVII'], ['XVII', 'XVIII'], ['XVIII', 'XIX'], ['XIX', 'XX'], ['XX', 'XXI'],
       ['XXI', 'XXII'], ['XXII', 'XXIII'], ['XXIII', 'XXIV'], ['XXIV', 'XXV'], ['XXV', 'XXVI'],
       ['XXVI', 'XXVII'], ['XXVII', 'XXVIII'], ['XXVIII', 'XXIX'], ['XXIX', 'XXX'], ['XXX', 'XXXI'],
-      // Digits
+      ['XXXI', 'XXXII'], ['XXXII', 'XXXIII'], ['XXXIII', 'XXXIV'], ['XXXIV', 'XXXV'], ['XXXV', 'XXXVI'],
+      ['XXXVI', 'XXXVII'], ['XXXVII', 'XXXVIII'], ['XXXVIII', 'XXXIX'], ['XXXIX', 'XL'], ['XL', 'XLI'],
+      ['XLI', 'XLII'], ['XLII', 'XLIII'], ['XLIII', 'XLIV'], ['XLIV', 'XLV'], ['XLV', 'XLVI'],
+      ['XLVI', 'XLVII'], ['XLVII', 'XLVIII'], ['XLVIII', 'XLIX'], ['XLIX', 'L'], ['L', 'LI'],
+      ['LI', 'LII'], ['LII', 'LIII'], ['LIII', 'LIV'], ['LIV', 'LV'], ['LV', 'LVI'],
+      ['LVI', 'LVII'], ['LVII', 'LVIII'], ['LVIII', 'LIX'], ['LIX', 'LX'], ['LX', 'LXI'],
+      ['LXI', 'LXII'], ['LXII', 'LXIII'], ['LXIII', 'LXIV'], ['LXIV', 'LXV'], ['LXV', 'LXVI'],
+      ['LXVI', 'LXVII'], ['LXVII', 'LXVIII'], ['LXVIII', 'LXIX'], ['LXIX', 'LXX'], ['LXX', 'LXXI'],
+      ['LXXI', 'LXXII'], ['LXXII', 'LXXIII'], ['LXXIII', 'LXXIV'], ['LXXIV', 'LXXV'], ['LXXV', 'LXXVI'],
+      ['LXXVI', 'LXXVII'], ['LXXVII', 'LXXVIII'], ['LXXVIII', 'LXXIX'], ['LXXIX', 'LXXX'], ['LXXX', 'LXXXI'],
+      ['LXXXI', 'LXXXII'], ['LXXXII', 'LXXXIII'], ['LXXXIII', 'LXXXIV'], ['LXXXIV', 'LXXXV'], ['LXXXV', 'LXXXVI'],
+      ['LXXXVI', 'LXXXVII'], ['LXXXVII', 'LXXXVIII'], ['LXXXVIII', 'LXXXIX'], ['LXXXIX', 'XC'], ['XC', 'XCI'],
+      ['XCI', 'XCII'], ['XCII', 'XCIII'], ['XCIII', 'XCIV'], ['XCIV', 'XCV'], ['XCV', 'XCVI'],
+      ['XCVI', 'XCVII'], ['XCVII', 'XCVIII'], ['XCVIII', 'XCIX'], ['XCIX', 'C'],
+      // Descending Roman numerals
+      ['II', 'I'], ['III', 'II'], ['IV', 'III'], ['V', 'IV'], ['VI', 'V'],
+      ['VII', 'VI'], ['VIII', 'VII'], ['IX', 'VIII'], ['X', 'IX'], ['XI', 'X'],
+      ['XII', 'XI'], ['XIII', 'XII'], ['XIV', 'XIII'], ['XV', 'XIV'], ['XVI', 'XV'],
+      ['XVII', 'XVI'], ['XVIII', 'XVII'], ['XIX', 'XVIII'], ['XX', 'XIX'], ['XXX', 'XXIX'],
+      ['XL', 'XXXIX'], ['L', 'XLIX'], ['LX', 'LIX'], ['LXX', 'LXIX'], ['LXXX', 'LXXIX'],
+      ['XC', 'LXXXIX'], ['C', 'XCIX'],
+      // Ascending Digits (up to 100)
       ['1', '2'], ['2', '3'], ['3', '4'], ['4', '5'], ['5', '6'],
       ['6', '7'], ['7', '8'], ['8', '9'], ['9', '10'], ['10', '11'],
       ['11', '12'], ['12', '13'], ['13', '14'], ['14', '15'], ['15', '16'],
@@ -1333,13 +1469,33 @@ const CognitiveTaskGame = () => {
       ['36', '37'], ['37', '38'], ['38', '39'], ['39', '40'], ['40', '41'],
       ['41', '42'], ['42', '43'], ['43', '44'], ['44', '45'], ['45', '46'],
       ['46', '47'], ['47', '48'], ['48', '49'], ['49', '50'], ['50', '51'],
-      // Mixed formats
+      ['51', '52'], ['52', '53'], ['53', '54'], ['54', '55'], ['55', '56'],
+      ['56', '57'], ['57', '58'], ['58', '59'], ['59', '60'], ['60', '61'],
+      ['61', '62'], ['62', '63'], ['63', '64'], ['64', '65'], ['65', '66'],
+      ['66', '67'], ['67', '68'], ['68', '69'], ['69', '70'], ['70', '71'],
+      ['71', '72'], ['72', '73'], ['73', '74'], ['74', '75'], ['75', '76'],
+      ['76', '77'], ['77', '78'], ['78', '79'], ['79', '80'], ['80', '81'],
+      ['81', '82'], ['82', '83'], ['83', '84'], ['84', '85'], ['85', '86'],
+      ['86', '87'], ['87', '88'], ['88', '89'], ['89', '90'], ['90', '91'],
+      ['91', '92'], ['92', '93'], ['93', '94'], ['94', '95'], ['95', '96'],
+      ['96', '97'], ['97', '98'], ['98', '99'], ['99', '100'],
+      // Descending Digits
+      ['2', '1'], ['3', '2'], ['4', '3'], ['5', '4'], ['6', '5'],
+      ['7', '6'], ['8', '7'], ['9', '8'], ['10', '9'], ['11', '10'],
+      ['12', '11'], ['13', '12'], ['14', '13'], ['15', '14'], ['16', '15'],
+      ['17', '16'], ['18', '17'], ['19', '18'], ['20', '19'], ['30', '29'],
+      ['40', '39'], ['50', '49'], ['60', '59'], ['70', '69'], ['80', '79'],
+      ['90', '89'], ['100', '99'],
+      // Mixed formats (words, Roman, digits)
       ['one', 'II'], ['II', 'three'], ['three', 'IV'], ['IV', 'five'], ['five', 'VI'],
       ['VI', 'seven'], ['seven', 'VIII'], ['VIII', 'nine'], ['nine', 'X'], ['X', 'eleven'],
       ['1', 'two'], ['two', '3'], ['3', 'four'], ['four', '5'], ['5', 'six'],
       ['six', '7'], ['7', 'eight'], ['eight', '9'], ['9', 'ten'], ['ten', '11'],
       ['I', '2'], ['2', 'III'], ['III', '4'], ['4', 'V'], ['V', '6'],
-      ['6', 'VII'], ['VII', '8'], ['8', 'IX'], ['IX', '10'], ['10', 'XI']
+      ['6', 'VII'], ['VII', '8'], ['8', 'IX'], ['IX', '10'], ['10', 'XI'],
+      ['twenty', 'XXI'], ['XXI', '22'], ['22', 'twenty-three'], ['thirty', '31'], ['31', 'XXXII'],
+      ['forty', 'XLI'], ['XLI', '42'], ['fifty', 'LI'], ['LI', 'fifty-two'], ['sixty', 'LXI'],
+      ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92']
     ],
     'meaning': [
       // Digit to word
@@ -1439,27 +1595,39 @@ const CognitiveTaskGame = () => {
       return [String(num1), String(num2)];
     } else if (relationType === 'physical-numerical') {
       // For physical numerical, use NON-consecutive numbers (looks similar but wrong)
+      const numberToWord = (n) => {
+        const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+              'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        if (n < 20) return words[n];
+        if (n === 100) return 'one hundred';
+        const ten = Math.floor(n / 10);
+        const one = n % 10;
+        return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
+      };
+
+      const numberToRoman = (n) => {
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
       const formats = [
         (n) => String(n),
-        (n) => {
-          const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-                'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-                'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
-                'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty', 'thirty-one', 'thirty-two',
-                'thirty-three', 'thirty-four', 'thirty-five', 'thirty-six', 'thirty-seven', 'thirty-eight', 'thirty-nine', 'forty', 'fifty'];
-          return words[n] || String(n);
-        },
-        (n) => {
-          const romans = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-                'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
-                'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX', 'XXXI'];
-          return romans[n] || String(n);
-        }
+        (n) => numberToWord(n),
+        (n) => numberToRoman(n)
       ];
 
-      const num = Math.floor(Math.random() * 30) + 1; // 1-30
+      const num = Math.floor(Math.random() * 98) + 1; // 1-98
       const offset = Math.floor(Math.random() * 3) + 2; // Skip by 2, 3, or 4
-      const nextNum = Math.min(num + offset, 50); // Cap at 50
+      const nextNum = Math.min(num + offset, 100); // Cap at 100
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
       const format2 = formats[Math.floor(Math.random() * formats.length)];
@@ -1467,29 +1635,40 @@ const CognitiveTaskGame = () => {
       return [format1(num), format2(nextNum)];
     } else if (relationType === 'meaning') {
       // For meaning, use DIFFERENT numbers in different forms
+      const numberToWord = (n) => {
+        const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+              'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        if (n < 20) return words[n];
+        if (n === 100) return 'one hundred';
+        const ten = Math.floor(n / 10);
+        const one = n % 10;
+        return one === 0 ? tens[ten] : `${tens[ten]}-${words[one]}`;
+      };
+
+      const numberToRoman = (n) => {
+        const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
       const formats = [
         (n) => String(n),
-        (n) => {
-          const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-                'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-                'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
-                'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty', 'thirty-one', 'thirty-two',
-                'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred'];
-          return words[n] || String(n);
-        },
-        (n) => {
-          const romans = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-                'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
-                'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX',
-                'XL', 'L', 'LX', 'LXX', 'LXXX', 'XC', 'C'];
-          return romans[n] || String(n);
-        }
+        (n) => numberToWord(n),
+        (n) => numberToRoman(n)
       ];
 
-      let num1 = Math.floor(Math.random() * 30) + 1; // 1-30
-      let num2 = Math.floor(Math.random() * 30) + 1; // 1-30
+      let num1 = Math.floor(Math.random() * 100) + 1; // 1-100
+      let num2 = Math.floor(Math.random() * 100) + 1; // 1-100
       while (num1 === num2) {
-        num2 = Math.floor(Math.random() * 30) + 1;
+        num2 = Math.floor(Math.random() * 100) + 1;
       }
 
       const format1 = formats[Math.floor(Math.random() * formats.length)];
