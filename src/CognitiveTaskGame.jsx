@@ -478,13 +478,10 @@ const CognitiveTaskGame = () => {
       localStorage.removeItem('aposner-anonymous-id');
       console.log('✅ Anonymous ID cleared from localStorage');
       console.log('✅ Migration complete!');
-
-      // Refresh leaderboard to show updated data
-      loadLeaderboard();
     } catch (error) {
       console.error('❌ Migration failed:', error);
     }
-  }, [loadLeaderboard]);
+  }, []);
 
   const handleLogout = async () => {
     if (!isSupabaseConfigured()) return;
