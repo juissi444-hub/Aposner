@@ -1155,9 +1155,13 @@ const CognitiveTaskGame = () => {
                   </div>
                   <div className="space-x-2">
                     <button
-                      onClick={() => {
-                        loadLeaderboard();
+                      onClick={async () => {
+                        console.log('🎯 Leaderboard button clicked');
+                        console.log('📊 Supabase configured:', isSupabaseConfigured());
                         setShowLeaderboard(true);
+                        console.log('📊 showLeaderboard set to true');
+                        await loadLeaderboard();
+                        console.log('📊 Leaderboard data loaded');
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
                     >
@@ -1565,7 +1569,11 @@ const CognitiveTaskGame = () => {
       )}
 
       {/* Leaderboard Modal */}
-      {showLeaderboard && isSupabaseConfigured() && (
+      {(() => {
+        const shouldShow = showLeaderboard && isSupabaseConfigured();
+        console.log('📊 Modal render check - showLeaderboard:', showLeaderboard, 'isConfigured:', isSupabaseConfigured(), 'shouldShow:', shouldShow);
+        return shouldShow;
+      })() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-800 rounded-lg p-8 max-w-5xl w-full max-h-[80vh] overflow-y-auto">
             <h2 className="text-3xl font-bold mb-6 text-center">Leaderboard</h2>
