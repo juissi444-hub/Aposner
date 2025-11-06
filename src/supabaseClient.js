@@ -79,7 +79,9 @@ export const supabase = supabaseUrl && supabaseAnonKey
         storage: customStorageAdapter,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storageKey: 'aposner-auth-token'
+        storageKey: 'aposner-auth-token',
+        flowType: 'pkce',
+        debug: false
       }
     })
   : null;
