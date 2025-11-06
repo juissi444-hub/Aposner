@@ -971,23 +971,20 @@ const CognitiveTaskGame = () => {
   };
 
   // Get available relation types for a given level based on study design
-  // Levels 1-2: Physical and semantic retrieval (lower grade)
-  // Levels 3+: Conceptual retrieval (higher grade)
+  // Study used ONLY Level 1-2 type tasks for ALL training sessions
+  // Level 3-4 tasks were used only for pre/post testing (transfer measurement)
   const getRelationTypesForLevel = (level, mode, experimentalEnabled) => {
     // In experimental mode or manual mode, all relation types are available
     if (experimentalEnabled || mode === 'manual') {
       return Object.keys(relationTypes);
     }
 
-    // In standard adaptive mode, follow the study design
+    // In standard adaptive mode, follow the study design:
+    // ALL levels use ONLY Level 1-2 type tasks (physical/semantic retrieval)
+    // Difficulty increases through time pressure, NOT task type changes
     if (mode === 'adaptive') {
-      if (level <= 2) {
-        // Levels 1-2: Physical and semantic retrieval
-        return ['whole-part', 'antonym', 'same-color', 'meaning'];
-      } else {
-        // Levels 3+: Conceptual retrieval (odd-even, mathematical relationships)
-        return ['even', 'odd', 'doubled', 'tripled', 'followup-numerical', 'physical-numerical', 'same-time'];
-      }
+      // Training used ONLY these task types throughout all 12 days
+      return ['whole-part', 'antonym', 'same-color', 'meaning'];
     }
 
     // Default: all types
@@ -3443,7 +3440,7 @@ const CognitiveTaskGame = () => {
 
     // Log which relation types are being used (helpful for debugging)
     if (mode === 'adaptive' && !experimentalMode) {
-      console.log(`📚 Level ${level} relation types (Study design):`, availableRelations);
+      console.log(`📚 Level ${level} using study-based training tasks (Level 1-2 types only):`, availableRelations);
     }
 
     const selectedRelation = availableRelations[Math.floor(Math.random() * availableRelations.length)];
@@ -4006,10 +4003,13 @@ const CognitiveTaskGame = () => {
                   <strong>Standard Adaptive Mode (Study Design):</strong>
                 </p>
                 <p className="text-xs text-blue-200 mt-1">
-                  • Levels 1-2: Physical/semantic tasks (whole-part, antonym, same-color, meaning)
+                  • ALL levels use ONLY Level 1-2 type tasks (whole-part, antonym, same-color, meaning)
                 </p>
-                <p className="text-xs text-blue-200">
-                  • Levels 3+: Conceptual tasks (even, odd, doubled, tripled, sequential, time)
+                <p className="text-xs text-blue-200 mt-1">
+                  • Difficulty increases through time pressure, not task type changes
+                </p>
+                <p className="text-xs text-blue-400 mt-2 italic">
+                  Note: Level 3-4 tasks (even, odd, doubled, etc.) were used only for pre/post testing in the study, not during training
                 </p>
               </div>
             )}
