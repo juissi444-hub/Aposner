@@ -3,6 +3,33 @@ import { Play, Eye, EyeOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const CognitiveTaskGame = () => {
+  // Add keyframe animation for 1st place glow
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes gloriously-shine {
+        0%, 100% {
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+                      0 0 40px rgba(255, 215, 0, 0.6),
+                      0 0 60px rgba(255, 215, 0, 0.4),
+                      inset 0 0 20px rgba(255, 255, 255, 0.2);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(255, 215, 0, 1),
+                      0 0 60px rgba(255, 215, 0, 0.8),
+                      0 0 90px rgba(255, 215, 0, 0.6),
+                      inset 0 0 30px rgba(255, 255, 255, 0.3);
+          transform: scale(1.02);
+        }
+      }
+      .first-place-glow {
+        animation: gloriously-shine 2s ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   const celebrationAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const incorrectAudioRef = useRef(null);
@@ -530,19 +557,36 @@ const CognitiveTaskGame = () => {
 
     if (!isSupabaseConfigured()) {
       console.error('❌ BLOCKED: Supabase not configured');
-      alert('ERROR: Supabase is not configured. Check your .env file.');
-      return;
-    }
-
-    if (!user) {
-      console.error('❌ BLOCKED: No user logged in');
-      alert('ERROR: You must be logged in to save to leaderboard. Please log in and try again.');
       return;
     }
 
     if (mode !== 'adaptive') {
       console.log('⚠️ BLOCKED: Not in adaptive mode (current mode:', mode, ')');
       return;
+    }
+
+    // Get or create anonymous user ID for non-logged-in users
+    let userId;
+    let username;
+    let isAnonymous = false;
+
+    if (user) {
+      userId = user.id;
+      username = user.user_metadata?.username || user.email;
+      console.log(`📝 Logged in user:`, username);
+    } else {
+      // Anonymous user - get or create a unique ID
+      let anonId = localStorage.getItem('aposner-anonymous-id');
+      if (!anonId) {
+        anonId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('aposner-anonymous-id', anonId);
+        console.log(`👤 Created new anonymous ID:`, anonId);
+      } else {
+        console.log(`👤 Using existing anonymous ID:`, anonId);
+      }
+      userId = anonId;
+      username = 'Anonymous User';
+      isAnonymous = true;
     }
 
     // Validate and correct data before attempting to save
@@ -563,14 +607,15 @@ const CognitiveTaskGame = () => {
 
     try {
       console.log(`📝 ✅ All checks passed - proceeding with leaderboard update`);
-      console.log(`📝 User:`, user.user_metadata?.username || user.email);
-      console.log(`📝 User ID:`, user.id);
+      console.log(`📝 User:`, username);
+      console.log(`📝 User ID:`, userId);
+      console.log(`📝 Is Anonymous:`, isAnonymous);
 
       // Get current leaderboard entry
       const { data: currentData, error: fetchError } = await supabase
         .from('leaderboard')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
@@ -621,10 +666,11 @@ const CognitiveTaskGame = () => {
 
       // Prepare data to save - include average_answer_time if we have it
       const dataToSave = {
-        user_id: user.id,
-        username: user.user_metadata?.username || user.email,
+        user_id: userId,
+        username: username,
         highest_level: highestLevel,
         best_score: bestScore,
+        is_anonymous: isAnonymous,
         updated_at: new Date().toISOString()
       };
 
@@ -658,7 +704,7 @@ const CognitiveTaskGame = () => {
       const { data: verifyData } = await supabase
         .from('leaderboard')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
       console.log(`✅ Verification query - data in database:`, verifyData);
       console.log(`✅ Verification: highest_level=${verifyData?.highest_level}, best_score=${verifyData?.best_score}`);
@@ -2935,7 +2981,7 @@ const CognitiveTaskGame = () => {
                     return (
                       <div
                         key={entry.user_id}
-                        className={`rounded-lg ${rankStyle}`}
+                        className={`rounded-lg ${rankStyle} ${index === 0 ? 'first-place-glow' : ''}`}
                       >
                         {/* Desktop layout */}
                         <div className="hidden sm:grid gap-4 px-4 py-3" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
@@ -2945,7 +2991,10 @@ const CognitiveTaskGame = () => {
                             {index === 2 && '🥉'}
                             {index > 2 && `#${index + 1}`}
                           </div>
-                          <div className="truncate font-medium">{entry.username}</div>
+                          <div className="truncate font-medium flex items-center gap-2">
+                            {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
+                            {entry.username}
+                          </div>
                           <div className="font-semibold">
                             <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
@@ -2963,7 +3012,10 @@ const CognitiveTaskGame = () => {
                                 {index === 2 && '🥉'}
                                 {index > 2 && `#${index + 1}`}
                               </span>
-                              <span className="font-medium text-sm">{entry.username}</span>
+                              <span className="font-medium text-sm flex items-center gap-1">
+                                {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
+                                {entry.username}
+                              </span>
                             </div>
                             <span className="text-xs font-semibold text-yellow-400">{percentile}th percentile</span>
                           </div>
