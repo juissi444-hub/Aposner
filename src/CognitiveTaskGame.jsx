@@ -63,12 +63,28 @@ const CognitiveTaskGame = () => {
 
     if (savedLevel) {
       const levelNum = parseInt(savedLevel);
-      setSavedAdaptiveLevel(levelNum);
-      setLevel(levelNum);
+      // Ensure level is at least 1
+      if (levelNum <= 0) {
+        console.warn('⚠️ Invalid saved level detected:', levelNum, '- resetting to 1');
+        localStorage.setItem('adaptivePosnerLevel', '1');
+        setSavedAdaptiveLevel(1);
+        setLevel(1);
+      } else {
+        setSavedAdaptiveLevel(levelNum);
+        setLevel(levelNum);
+      }
     }
 
     if (savedHighest) {
-      setHighestLevel(parseInt(savedHighest));
+      const highestNum = parseInt(savedHighest);
+      // Ensure highest is at least 1
+      if (highestNum <= 0) {
+        console.warn('⚠️ Invalid saved highest level detected:', highestNum, '- resetting to 1');
+        localStorage.setItem('adaptivePosnerHighest', '1');
+        setHighestLevel(1);
+      } else {
+        setHighestLevel(highestNum);
+      }
     }
 
     if (savedSound !== null) {
@@ -377,6 +393,18 @@ const CognitiveTaskGame = () => {
 
     if (mode !== 'adaptive') {
       console.log('⚠️ BLOCKED: Not in adaptive mode (current mode:', mode, ')');
+      return;
+    }
+
+    // Validate data before attempting to save
+    if (newLevel <= 0) {
+      console.error('❌ BLOCKED: Invalid level (level must be >= 1, got:', newLevel, ')');
+      alert(`ERROR: Cannot save invalid level ${newLevel} to leaderboard. Level must be at least 1.`);
+      return;
+    }
+
+    if (newScore < 0) {
+      console.error('❌ BLOCKED: Invalid score (score cannot be negative, got:', newScore, ')');
       return;
     }
 
