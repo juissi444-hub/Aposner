@@ -4558,7 +4558,7 @@ const CognitiveTaskGame = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Leaderboard</h2>
-            <p className="text-center text-xs sm:text-sm text-gray-400 mb-1">Adaptive Mode Only</p>
+            <p className="text-center text-xs sm:text-sm text-gray-400 mb-1">Only Standard Adaptive Mode</p>
             {leaderboard.length > 0 && (
               <p className="text-center text-xs sm:text-sm text-green-400 mb-3 sm:mb-4">
                 Showing all {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''} • Scroll to see more
