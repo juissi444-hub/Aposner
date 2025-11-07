@@ -3933,27 +3933,9 @@ const CognitiveTaskGame = () => {
                   </div>
                   <div className="flex gap-2 flex-col sm:flex-row">
                     <button
-                      onClick={async () => {
-                        console.log('═'.repeat(80));
-                        console.log('🎯🎯🎯 LEADERBOARD BUTTON CLICKED 🎯🎯🎯');
-                        console.log('📊 Supabase configured:', isSupabaseConfigured());
-                        console.log('📊 User:', user?.email);
-                        console.log('📊 User ID:', user?.id);
-                        console.log('📊 Current showLeaderboard state BEFORE setState:', showLeaderboard);
-
+                      onClick={() => {
+                        console.log('🎯 LEADERBOARD BUTTON CLICKED');
                         setShowLeaderboard(true);
-
-                        console.log('📊 setShowLeaderboard(true) CALLED');
-                        console.log('📊 About to load leaderboard data...');
-
-                        try {
-                          await loadLeaderboard();
-                          console.log('✅ Leaderboard data loaded successfully');
-                        } catch (error) {
-                          console.error('❌ Error loading leaderboard:', error);
-                        }
-
-                        console.log('═'.repeat(80));
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                     >
@@ -4215,6 +4197,11 @@ const CognitiveTaskGame = () => {
             <div className="text-sm text-gray-400 space-y-2 mt-4">
               <p><strong>Manual Mode:</strong> Choose your own level (1-18) and number of tasks (10-60)</p>
               <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (29/32) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
+            </div>
+            <div className="mt-4 p-3 bg-green-900/40 border border-green-700 rounded-lg">
+              <p className="text-sm text-green-200">
+                <strong>💡 Recommendation:</strong> We highly recommend training with <strong>Standard Adaptive Mode</strong> since it uses the same task types as in the study.
+              </p>
             </div>
           </div>
 
