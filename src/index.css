@@ -3,11 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  /* Use system CJK fonts as primary to avoid loading delays */
   body {
-    font-family: "Noto Sans SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", "STHeiti", "WenQuanYi Micro Hei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", "STHeiti", "WenQuanYi Micro Hei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 
   * {
     font-family: inherit;
+  }
+
+  /* Force font for all text including large game text */
+  span, div, p, h1, h2, h3, h4, h5, h6 {
+    font-family: inherit !important;
   }
 }
