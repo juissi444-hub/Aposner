@@ -77,7 +77,7 @@ const CognitiveTaskGame = () => {
   const [autoContinueEnabled, setAutoContinueEnabled] = useState(false);
   const [autoContinueDelay, setAutoContinueDelay] = useState(3); // 1-20 seconds
   const [experimentalMode, setExperimentalMode] = useState(false); // Enable experimental relation types
-  const [numTasks, setNumTasks] = useState(20);
+  const [numTasks, setNumTasks] = useState(32);
   const [currentTask, setCurrentTask] = useState(0);
   const [currentRelation, setCurrentRelation] = useState('');
   const [currentWords, setCurrentWords] = useState(['', '']);
@@ -882,7 +882,7 @@ const CognitiveTaskGame = () => {
     console.log(`💾 mode: ${mode}`);
     console.log(`💾 currentScore type: ${typeof currentScore}`);
     console.log(`💾 currentScore === 0: ${currentScore === 0}`);
-    console.log(`💾 Percentage this represents: ${Math.round((currentScore / 30) * 100)}%`);
+    console.log(`💾 Percentage this represents: ${Math.round((currentScore / 32) * 100)}%`);
 
     try {
       localStorage.setItem('adaptivePosnerLevel', String(newLevel));
@@ -3481,7 +3481,7 @@ const CognitiveTaskGame = () => {
     setMode(selectedMode);
     if (selectedMode === 'adaptive') {
       setLevel(savedAdaptiveLevel);
-      setNumTasks(30);
+      setNumTasks(32);
     }
     setScore(0);
     setWrongCount(0);
@@ -3560,22 +3560,22 @@ const CognitiveTaskGame = () => {
       }
 
       const percentage = (score / numTasks) * 100;
-      // EXPLICIT: 90% of 30 = 27. Score >= 27 MUST advance to next level
-      const requiredScore = 27; // Hardcoded to ensure 27/30 (90%) always advances
+      // EXPLICIT: 90% of 32 = 29 (rounded). Score >= 29 MUST advance to next level
+      const requiredScore = 29; // Hardcoded to ensure 29/32 (90%+) always advances
       console.log(`📊 Level completion check: ${score}/${numTasks} = ${percentage.toFixed(1)}%`);
-      console.log(`📊 Level up threshold: EXACTLY 27 or more (90%+)`);
+      console.log(`📊 Level up threshold: EXACTLY 29 or more (90%+)`);
       console.log(`📊 Required score: ${requiredScore}`);
       console.log(`📊 Actual score: ${score}`);
-      console.log(`📊 Will level up: ${score >= 27}`);
+      console.log(`📊 Will level up: ${score >= 29}`);
 
-      if (score >= 27) {
-        console.log(`✅✅✅ SCORE IS ${score} >= 27 - LEVELING UP NOW!`);
+      if (score >= 29) {
+        console.log(`✅✅✅ SCORE IS ${score} >= 29 - LEVELING UP NOW!`);
       } else {
-        console.log(`❌❌❌ SCORE IS ${score} < 27 - NOT LEVELING UP`);
+        console.log(`❌❌❌ SCORE IS ${score} < 29 - NOT LEVELING UP`);
       }
 
-      // CRITICAL: Score of 27 or more (90%+) MUST progress to next level
-      if (score >= 27) {
+      // CRITICAL: Score of 29 or more (90%+) MUST progress to next level
+      if (score >= 29) {
         console.log(`✅ LEVEL UP! Score ${score}/${numTasks} (${percentage.toFixed(1)}%) >= 90%`);
         // Check if perfect score (100%)
         if (score === numTasks) {
@@ -3797,7 +3797,7 @@ const CognitiveTaskGame = () => {
           console.log(`🔴 Level: ${level}`);
           console.log(`🔴 Score: ${score}`);
           console.log(`🔴 GameState: ${gameState}`);
-          console.log(`🔴 This represents: ${Math.round((score / 30) * 100)}% completion`);
+          console.log(`🔴 This represents: ${Math.round((score / 32) * 100)}% completion`);
           console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
           saveProgress(level, score);
         }
@@ -4186,7 +4186,7 @@ const CognitiveTaskGame = () => {
                 onClick={() => startGame('adaptive')}
                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-4 rounded-lg text-lg"
               >
-                Adaptive Mode
+                Adaptive Mode{experimentalMode && <span className="text-orange-300"> (Experimental)</span>}
                 {savedAdaptiveLevel > 1 && (
                   <div className="text-sm mt-1 text-yellow-300">Continue from Level {savedAdaptiveLevel}</div>
                 )}
@@ -4194,7 +4194,7 @@ const CognitiveTaskGame = () => {
             </div>
             <div className="text-sm text-gray-400 space-y-2 mt-4">
               <p><strong>Manual Mode:</strong> Choose your own level (1-18) and number of tasks (10-60)</p>
-              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (27/30) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
+              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (29/32) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
             </div>
           </div>
 
@@ -4284,7 +4284,7 @@ const CognitiveTaskGame = () => {
       {gameState === 'showRelation' && !feedback && (
         <div className="text-center space-y-8">
           <div className="text-sm text-gray-400">
-            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}</div>}
+            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}{experimentalMode && <span className="text-orange-300"> (Experimental)</span>}</div>}
             Task {currentTask + 1} / {numTasks}
           </div>
           <div className="text-3xl font-bold mb-8">
@@ -4304,7 +4304,7 @@ const CognitiveTaskGame = () => {
                   console.log(`🔴 Level: ${level}`);
                   console.log(`🔴 Score: ${score}`);
                   console.log(`🔴 GameState: ${gameState}`);
-                  console.log(`🔴 This represents: ${Math.round((score / 30) * 100)}% completion`);
+                  console.log(`🔴 This represents: ${Math.round((score / 32) * 100)}% completion`);
                   console.log(`💾 Saving progress before returning to menu: Level ${level}, Score ${score}`);
                   saveProgress(level, score);
                 }
@@ -4331,7 +4331,7 @@ const CognitiveTaskGame = () => {
       {gameState === 'showWords' && !feedback && (
         <div className="text-center space-y-8">
           <div className="text-sm text-gray-400">
-            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}</div>}
+            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}{experimentalMode && <span className="text-orange-300"> (Experimental)</span>}</div>}
             Task {currentTask + 1} / {numTasks}
           </div>
           <div className="text-6xl font-bold space-x-8">
