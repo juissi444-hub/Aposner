@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  /* Use system CJK fonts as primary to avoid loading delays */
+  /* Use web font Noto Sans SC as primary for reliable CJK character support */
   body {
-    font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", "STHeiti", "WenQuanYi Micro Hei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Noto Sans SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", "STHeiti", "WenQuanYi Micro Hei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 
   * {

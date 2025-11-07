@@ -6,6 +6,25 @@ const CognitiveTaskGame = () => {
   // Performance optimization: Memoize expensive computations
   const memoizedRelationTypes = useRef(null);
 
+  // Ensure CJK fonts are loaded and applied
+  useEffect(() => {
+    const fontStyle = document.createElement('style');
+    fontStyle.textContent = `
+      /* Force CJK font for all elements */
+      * {
+        font-family: "Noto Sans SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif !important;
+      }
+      /* Specific font-face for CJK unicode range */
+      @font-face {
+        font-family: 'CJK-Fallback';
+        src: local('Noto Sans SC'), local('Microsoft YaHei'), local('PingFang SC'), local('Hiragino Sans GB');
+        unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+2F800-2FA1F;
+      }
+    `;
+    document.head.appendChild(fontStyle);
+    return () => document.head.removeChild(fontStyle);
+  }, []);
+
   // Add keyframe animation for 1st place glow
   useEffect(() => {
     const style = document.createElement('style');
