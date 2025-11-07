@@ -16,8 +16,6 @@
     font-family: "Noto Sans SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", "STHeiti", "WenQuanYi Micro Hei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     /* Enable smooth scrolling on iOS */
     -webkit-overflow-scrolling: touch;
-    /* Prevent scroll jank by promoting to its own layer */
-    transform: translateZ(0);
     /* Improve scrolling performance */
     overflow-y: scroll;
     overflow-x: hidden;
@@ -25,8 +23,6 @@
 
   * {
     font-family: inherit;
-    /* Smooth box rendering */
-    -webkit-tap-highlight-color: transparent;
   }
 
   /* Force font for all text including large game text */
@@ -38,46 +34,6 @@
   .overflow-y-auto, .overflow-y-scroll {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    /* Use GPU acceleration for scrolling */
-    transform: translateZ(0);
-    will-change: scroll-position;
-  }
-
-  /* Smooth transitions without causing repaints */
-  .transition-colors {
-    will-change: background-color, color;
-  }
-
-  /* Optimize fixed position elements */
-  .fixed {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-
-  /* Optimize main container for smooth scrolling */
-  .min-h-screen {
-    /* Use GPU acceleration */
-    transform: translate3d(0, 0, 0);
-    /* Prevent text selection jank */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: text;
-  }
-
-  /* Optimize all buttons and interactive elements */
-  button, a, label {
-    /* Use GPU for hover/active states */
-    transform: translate3d(0, 0, 0);
-    /* Prevent layout shifts */
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  /* Optimize modals and overlays */
-  [class*="bg-opacity"], [class*="bg-black"] {
-    /* Use GPU for opacity transitions */
-    transform: translateZ(0);
-    will-change: opacity;
   }
 }
 
@@ -87,7 +43,6 @@
   .gpu-accelerate {
     transform: translateZ(0);
     backface-visibility: hidden;
-    perspective: 1000px;
   }
 
   /* Smooth scroll container utility */
@@ -96,3 +51,4 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
