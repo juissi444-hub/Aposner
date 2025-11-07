@@ -3678,6 +3678,11 @@ const CognitiveTaskGame = () => {
   };
 
   const prepareNextTask = () => {
+    // Safety guard: Don't prepare next task if we're in menu state
+    if (gameStateRef.current === 'menu') {
+      console.log('⚠️ prepareNextTask called while in menu state - ignoring');
+      return;
+    }
     // Get available relation types based on mode, level, and experimental setting
     let availableRelations = getRelationTypesForLevel(level, mode, experimentalMode);
 
@@ -3730,6 +3735,11 @@ const CognitiveTaskGame = () => {
   }, [saveProgress, stopAllSounds, score, level]);
 
   const handleGameEnd = useCallback(() => {
+    // Safety guard: Don't handle game end if we're in menu state
+    if (gameStateRef.current === 'menu') {
+      console.log('⚠️ handleGameEnd called while in menu state - ignoring');
+      return;
+    }
     if (mode === 'adaptive') {
       console.log('═'.repeat(80));
       console.log('🏁 GAME END - Evaluating performance');
@@ -3994,6 +4004,12 @@ const CognitiveTaskGame = () => {
           clearTimeout(levelTransitionTimerRef.current);
           levelTransitionTimerRef.current = null;
           console.log('⏱️ Level transition timer cleared on ESC menu return');
+        }
+        // Clear timeout timer (for word display timeout)
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+          console.log('⏱️ Timeout timer cleared on ESC menu return');
         }
         // Save current progress before returning to menu
         if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore') {
@@ -4528,6 +4544,12 @@ const CognitiveTaskGame = () => {
                   levelTransitionTimerRef.current = null;
                   console.log('⏱️ Level transition timer cleared on menu return');
                 }
+                // Clear timeout timer (for word display timeout)
+                if (timeoutRef.current) {
+                  clearTimeout(timeoutRef.current);
+                  timeoutRef.current = null;
+                  console.log('⏱️ Timeout timer cleared on menu return');
+                }
                 // Save progress before returning to menu
                 if (mode === 'adaptive') {
                   console.log(`🔴 BACK TO MENU clicked - Current state:`);
@@ -4604,6 +4626,12 @@ const CognitiveTaskGame = () => {
                 clearTimeout(levelTransitionTimerRef.current);
                 levelTransitionTimerRef.current = null;
                 console.log('⏱️ Level transition timer cleared on menu return');
+              }
+              // Clear timeout timer (for word display timeout)
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+                console.log('⏱️ Timeout timer cleared on menu return');
               }
               setGameState('menu');
             }}
@@ -4703,6 +4731,12 @@ const CognitiveTaskGame = () => {
                     levelTransitionTimerRef.current = null;
                     console.log('⏱️ Level transition timer cleared on menu return');
                   }
+                  // Clear timeout timer (for word display timeout)
+                  if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                    console.log('⏱️ Timeout timer cleared on menu return');
+                  }
                   setGameState('menu');
                 }}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
@@ -4735,6 +4769,12 @@ const CognitiveTaskGame = () => {
                     clearTimeout(levelTransitionTimerRef.current);
                     levelTransitionTimerRef.current = null;
                     console.log('⏱️ Level transition timer cleared on menu return');
+                  }
+                  // Clear timeout timer (for word display timeout)
+                  if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                    console.log('⏱️ Timeout timer cleared on menu return');
                   }
                   setGameState('menu');
                 }}
