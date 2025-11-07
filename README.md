@@ -19,10 +19,13 @@ A cognitive task game built with React to test your mental agility through vario
     - Get 6 wrong and level decreases!
     - Progress is saved automatically
     - Only adaptive mode counts towards leaderboard
-    - **Based on Scientific Research**: Follows the study design from "Training semantic long-term memory retrieval transfers to executive function and reading fluency"
-      - Uses ONLY Level 1-2 type tasks (whole-part, antonym, same-color, meaning) for all training
-      - Difficulty increases through time pressure, not task type changes
-      - Level 3-4 tasks (even, odd, doubled, etc.) were used only for pre/post testing in the study
+    - **Based on Scientific Research**: Follows the 4-level Posner task design from "Training semantic long-term memory retrieval transfers to executive function and reading fluency"
+      - **Level 1**: Same Format (1-2, III-IV, 五-六) - Physical property retrieval
+      - **Level 2**: Same Meaning (2-二-II) - Semantic property retrieval
+      - **Level 3**: Both Odd/Even - Same Format (1-3, 二-四) - Conceptual retrieval
+      - **Level 4**: Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual retrieval
+      - Uses numbers 1-9 in Arabic, Chinese (一~九), and Roman numerals (I-IX)
+      - Difficulty increases ONLY through time pressure (2000ms → 87.5ms), NOT task type changes
 
 - **Experimental Mode** (Optional):
   - Enable in settings to use all relation types at all levels

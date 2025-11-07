@@ -963,12 +963,20 @@ const CognitiveTaskGame = () => {
   };
 
   const relationTypes = {
+    // Level 1-2 tasks (Lower grade retrieval - from study)
+    'same-format': 'Same Format (1-2, V-VI, 三-四) - Physical property',
+    'meaning': 'Same Meaning (2-二-II) - Semantic property',
+
+    // Level 3-4 tasks (Higher grade retrieval - from study)
+    'parity-same-format': 'Both Odd or Both Even - Same Format (1-3, 一-三, I-III)',
+    'parity-mixed-format': 'Both Odd or Both Even - Mixed Format (1-一, 2-II, 四-4)',
+
+    // Experimental tasks (all other relation types)
     'whole-part': 'Whole-Part (fish-pike, world-France)',
     'antonym': 'Antonym/Opposite (dark-light, cold-warm)',
     'same-color': 'Same Color (grass-emerald, paper-snow)',
     'followup-numerical': 'Sequential Numbers (3-4, 24-25)',
     'physical-numerical': 'Sequential Number Forms (one-two, II-III, 3-4)',
-    'meaning': 'Same Meaning Numbers (2-two, V-5, five-5)',
     'same-time': 'Same Time (🕐-1:00, 3:30-half past three)',
     'even': 'Both Even (2-4, IV-VIII, two-six)',
     'odd': 'Both Odd (3-5, VII-IX, three-nine)',
@@ -977,20 +985,20 @@ const CognitiveTaskGame = () => {
   };
 
   // Get available relation types for a given level based on study design
-  // Study used ONLY Level 1-2 type tasks for ALL training sessions
-  // Level 3-4 tasks were used only for pre/post testing (transfer measurement)
+  // Study used 4 levels of Posner tasks
   const getRelationTypesForLevel = (level, mode, experimentalEnabled) => {
     // In experimental mode or manual mode, all relation types are available
     if (experimentalEnabled || mode === 'manual') {
       return Object.keys(relationTypes);
     }
 
-    // In standard adaptive mode, follow the study design:
-    // ALL levels use ONLY Level 1-2 type tasks (physical/semantic retrieval)
-    // Difficulty increases through time pressure, NOT task type changes
+    // In standard adaptive mode, use all 4 Posner task levels:
+    // Level 1: Physical property (same format)
+    // Level 2: Semantic property (same meaning)
+    // Level 3: Conceptual (parity - same format)
+    // Level 4: Conceptual (parity - mixed format)
     if (mode === 'adaptive') {
-      // Training used ONLY these task types throughout all 12 days
-      return ['whole-part', 'antonym', 'same-color', 'meaning'];
+      return ['same-format', 'meaning', 'parity-same-format', 'parity-mixed-format'];
     }
 
     // Default: all types
@@ -998,6 +1006,93 @@ const CognitiveTaskGame = () => {
   };
 
   const wordPairs = {
+    // Level 1-2 tasks from study (using numbers 1-9 in different formats)
+    'same-format': [
+      // Arabic-Arabic pairs
+      ['1', '2'], ['3', '4'], ['5', '6'], ['7', '8'], ['1', '9'],
+      ['2', '3'], ['4', '5'], ['6', '7'], ['8', '9'], ['1', '3'],
+      ['2', '4'], ['3', '5'], ['4', '6'], ['5', '7'], ['6', '8'],
+      ['7', '9'], ['1', '4'], ['2', '5'], ['3', '6'], ['4', '7'],
+
+      // Chinese-Chinese pairs (一~九)
+      ['一', '二'], ['三', '四'], ['五', '六'], ['七', '八'], ['一', '九'],
+      ['二', '三'], ['四', '五'], ['六', '七'], ['八', '九'], ['一', '三'],
+      ['二', '四'], ['三', '五'], ['四', '六'], ['五', '七'], ['六', '八'],
+      ['七', '九'], ['一', '四'], ['二', '五'], ['三', '六'], ['四', '七'],
+
+      // Roman-Roman pairs (I-IX)
+      ['I', 'II'], ['III', 'IV'], ['V', 'VI'], ['VII', 'VIII'], ['I', 'IX'],
+      ['II', 'III'], ['IV', 'V'], ['VI', 'VII'], ['VIII', 'IX'], ['I', 'III'],
+      ['II', 'IV'], ['III', 'V'], ['IV', 'VI'], ['V', 'VII'], ['VI', 'VIII'],
+      ['VII', 'IX'], ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII']
+    ],
+
+    'meaning': [
+      // Same meaning across different formats
+      ['1', '一'], ['2', '二'], ['3', '三'], ['4', '四'], ['5', '五'],
+      ['6', '六'], ['7', '七'], ['8', '八'], ['9', '九'],
+      ['1', 'I'], ['2', 'II'], ['3', 'III'], ['4', 'IV'], ['5', 'V'],
+      ['6', 'VI'], ['7', 'VII'], ['8', 'VIII'], ['9', 'IX'],
+      ['一', 'I'], ['二', 'II'], ['三', 'III'], ['四', 'IV'], ['五', 'V'],
+      ['六', 'VI'], ['七', 'VII'], ['八', 'VIII'], ['九', 'IX'],
+
+      // Matching numbers in same format
+      ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'],
+      ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'],
+      ['一', '一'], ['二', '二'], ['三', '三'], ['四', '四'], ['五', '五'],
+      ['六', '六'], ['七', '七'], ['八', '八'], ['九', '九'],
+      ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'],
+      ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX']
+    ],
+
+    // Level 3 task: Parity judgment - same format
+    'parity-same-format': [
+      // Both odd - Arabic
+      ['1', '3'], ['3', '5'], ['5', '7'], ['7', '9'], ['1', '5'],
+      ['1', '7'], ['1', '9'], ['3', '7'], ['3', '9'], ['5', '9'],
+      // Both even - Arabic
+      ['2', '4'], ['4', '6'], ['6', '8'], ['2', '6'], ['2', '8'],
+      ['4', '8'],
+
+      // Both odd - Chinese
+      ['一', '三'], ['三', '五'], ['五', '七'], ['七', '九'], ['一', '五'],
+      ['一', '七'], ['一', '九'], ['三', '七'], ['三', '九'], ['五', '九'],
+      // Both even - Chinese
+      ['二', '四'], ['四', '六'], ['六', '八'], ['二', '六'], ['二', '八'],
+      ['四', '八'],
+
+      // Both odd - Roman
+      ['I', 'III'], ['III', 'V'], ['V', 'VII'], ['VII', 'IX'], ['I', 'V'],
+      ['I', 'VII'], ['I', 'IX'], ['III', 'VII'], ['III', 'IX'], ['V', 'IX'],
+      // Both even - Roman
+      ['II', 'IV'], ['IV', 'VI'], ['VI', 'VIII'], ['II', 'VI'], ['II', 'VIII'],
+      ['IV', 'VIII']
+    ],
+
+    // Level 4 task: Parity judgment - mixed format
+    'parity-mixed-format': [
+      // Both odd - Arabic-Chinese
+      ['1', '三'], ['3', '五'], ['5', '七'], ['7', '九'], ['1', '五'],
+      ['3', '一'], ['5', '三'], ['7', '五'], ['9', '七'], ['9', '一'],
+      // Both even - Arabic-Chinese
+      ['2', '四'], ['4', '六'], ['6', '八'], ['2', '六'], ['4', '二'],
+      ['6', '四'], ['8', '六'], ['8', '二'],
+
+      // Both odd - Arabic-Roman
+      ['1', 'III'], ['3', 'V'], ['5', 'VII'], ['7', 'IX'], ['1', 'V'],
+      ['3', 'I'], ['5', 'III'], ['7', 'V'], ['9', 'VII'], ['9', 'I'],
+      // Both even - Arabic-Roman
+      ['2', 'IV'], ['4', 'VI'], ['6', 'VIII'], ['2', 'VI'], ['4', 'II'],
+      ['6', 'IV'], ['8', 'VI'], ['8', 'II'],
+
+      // Both odd - Chinese-Roman
+      ['一', 'III'], ['三', 'V'], ['五', 'VII'], ['七', 'IX'], ['一', 'V'],
+      ['三', 'I'], ['五', 'III'], ['七', 'V'], ['九', 'VII'], ['九', 'I'],
+      // Both even - Chinese-Roman
+      ['二', 'IV'], ['四', 'VI'], ['六', 'VIII'], ['二', 'VI'], ['四', 'II'],
+      ['六', 'IV'], ['八', 'VI'], ['八', 'II']
+    ],
+
     'whole-part': [
       ['animal', 'dog'], ['tree', 'oak'], ['fish', 'salmon'], ['bird', 'eagle'], ['flower', 'rose'],
       ['vehicle', 'car'], ['fruit', 'apple'], ['furniture', 'chair'], ['building', 'house'], ['color', 'red'],
@@ -2084,37 +2179,6 @@ const CognitiveTaskGame = () => {
       ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92'],
       // Roman numeral C (100) - final Roman numeral
       ['C', '100'], ['99', 'C'], ['XCIX', 'C'], ['ninety-nine', 'C']
-    ],
-    'meaning': [
-      // Digit to word
-      ['1', 'one'], ['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five'],
-      ['6', 'six'], ['7', 'seven'], ['8', 'eight'], ['9', 'nine'], ['10', 'ten'],
-      ['11', 'eleven'], ['12', 'twelve'], ['13', 'thirteen'], ['14', 'fourteen'], ['15', 'fifteen'],
-      ['16', 'sixteen'], ['17', 'seventeen'], ['18', 'eighteen'], ['19', 'nineteen'], ['20', 'twenty'],
-      ['21', 'twenty-one'], ['22', 'twenty-two'], ['23', 'twenty-three'], ['24', 'twenty-four'], ['25', 'twenty-five'],
-      ['26', 'twenty-six'], ['27', 'twenty-seven'], ['28', 'twenty-eight'], ['29', 'twenty-nine'], ['30', 'thirty'],
-      ['31', 'thirty-one'], ['32', 'thirty-two'], ['33', 'thirty-three'], ['40', 'forty'], ['50', 'fifty'],
-      // Word to Roman
-      ['one', 'I'], ['two', 'II'], ['three', 'III'], ['four', 'IV'], ['five', 'V'],
-      ['six', 'VI'], ['seven', 'VII'], ['eight', 'VIII'], ['nine', 'IX'], ['ten', 'X'],
-      ['eleven', 'XI'], ['twelve', 'XII'], ['thirteen', 'XIII'], ['fourteen', 'XIV'], ['fifteen', 'XV'],
-      ['sixteen', 'XVI'], ['seventeen', 'XVII'], ['eighteen', 'XVIII'], ['nineteen', 'XIX'], ['twenty', 'XX'],
-      ['twenty-one', 'XXI'], ['twenty-two', 'XXII'], ['twenty-three', 'XXIII'], ['twenty-four', 'XXIV'], ['twenty-five', 'XXV'],
-      ['twenty-six', 'XXVI'], ['twenty-seven', 'XXVII'], ['twenty-eight', 'XXVIII'], ['twenty-nine', 'XXIX'], ['thirty', 'XXX'],
-      // Roman to digit
-      ['I', '1'], ['II', '2'], ['III', '3'], ['IV', '4'], ['V', '5'],
-      ['VI', '6'], ['VII', '7'], ['VIII', '8'], ['IX', '9'], ['X', '10'],
-      ['XI', '11'], ['XII', '12'], ['XIII', '13'], ['XIV', '14'], ['XV', '15'],
-      ['XVI', '16'], ['XVII', '17'], ['XVIII', '18'], ['XIX', '19'], ['XX', '20'],
-      ['XXI', '21'], ['XXII', '22'], ['XXIII', '23'], ['XXIV', '24'], ['XXV', '25'],
-      ['XXVI', '26'], ['XXVII', '27'], ['XXVIII', '28'], ['XXIX', '29'], ['XXX', '30'],
-      ['XL', '40'], ['L', '50'], ['LX', '60'], ['LXX', '70'], ['LXXX', '80'], ['XC', '90'], ['C', '100'],
-      // More combinations
-      ['forty', 'XL'], ['fifty', 'L'], ['sixty', 'LX'], ['seventy', 'LXX'], ['eighty', 'LXXX'],
-      ['ninety', 'XC'], ['hundred', 'C'], ['100', 'hundred'], ['60', 'sixty'], ['70', 'seventy'],
-      ['80', 'eighty'], ['90', 'ninety'],
-      // C (100) is the final Roman numeral
-      ['C', '100'], ['one hundred', 'C'], ['100', 'one hundred']
     ],
     'same-time': [
       // Clock emoji to digital
@@ -3915,6 +3979,54 @@ const CognitiveTaskGame = () => {
             </div>
           )}
 
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4 text-yellow-400">📚 Chinese Numerals Reference</h2>
+            <p className="text-sm text-gray-300 mb-3">The adaptive mode uses Arabic, Chinese, and Roman numerals. Learn the Chinese characters:</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-blue-400 mb-1">一</div>
+                <div className="text-sm text-gray-400">1 (yī)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-blue-400 mb-1">二</div>
+                <div className="text-sm text-gray-400">2 (èr)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-blue-400 mb-1">三</div>
+                <div className="text-sm text-gray-400">3 (sān)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">四</div>
+                <div className="text-sm text-gray-400">4 (sì)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">五</div>
+                <div className="text-sm text-gray-400">5 (wǔ)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">六</div>
+                <div className="text-sm text-gray-400">6 (liù)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-purple-400 mb-1">七</div>
+                <div className="text-sm text-gray-400">7 (qī)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-purple-400 mb-1">八</div>
+                <div className="text-sm text-gray-400">8 (bā)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-purple-400 mb-1">九</div>
+                <div className="text-sm text-gray-400">9 (jiǔ)</div>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
+              <p className="text-xs text-blue-200">
+                <strong>Tip:</strong> Odd numbers (奇数): 一三五七九 | Even numbers (偶数): 二四六八
+              </p>
+            </div>
+          </div>
+
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
             <div className="flex items-center justify-between">
@@ -4006,16 +4118,19 @@ const CognitiveTaskGame = () => {
             {!experimentalMode && (
               <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
                 <p className="text-sm text-blue-300">
-                  <strong>Standard Adaptive Mode (Study Design):</strong>
+                  <strong>Standard Adaptive Mode (4-Level Posner Task):</strong>
                 </p>
-                <p className="text-xs text-blue-200 mt-1">
-                  • ALL levels use ONLY Level 1-2 type tasks (whole-part, antonym, same-color, meaning)
+                <div className="text-xs text-blue-200 mt-2 space-y-1">
+                  <p><strong>Level 1:</strong> Same Format (1-2, III-IV, 五-六) - Physical property</p>
+                  <p><strong>Level 2:</strong> Same Meaning (2-二-II) - Semantic property</p>
+                  <p><strong>Level 3:</strong> Both Odd/Even - Same Format (1-3, 二-四) - Conceptual</p>
+                  <p><strong>Level 4:</strong> Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
+                </div>
+                <p className="text-xs text-blue-200 mt-2">
+                  • Uses numbers 1-9 in Arabic, Chinese (一~九), and Roman numerals (I-IX)
                 </p>
-                <p className="text-xs text-blue-200 mt-1">
-                  • Difficulty increases through time pressure, not task type changes
-                </p>
-                <p className="text-xs text-blue-400 mt-2 italic">
-                  Note: Level 3-4 tasks (even, odd, doubled, etc.) were used only for pre/post testing in the study, not during training
+                <p className="text-xs text-blue-200">
+                  • Difficulty increases through time pressure only (2000ms → 87.5ms)
                 </p>
               </div>
             )}
