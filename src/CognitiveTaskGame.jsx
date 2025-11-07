@@ -4888,8 +4888,8 @@ const CognitiveTaskGame = () => {
 
       {/* Authentication Modal */}
       {showAuth && isSupabaseConfigured() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-8 max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 gpu-accelerate">
+          <div className="bg-gray-800 rounded-lg p-8 max-w-md w-full gpu-accelerate">
             <h2 className="text-3xl font-bold mb-6 text-center">
               {authMode === 'login' ? 'Login' : 'Sign Up'}
             </h2>
@@ -4968,8 +4968,8 @@ const CognitiveTaskGame = () => {
         console.log('📊 Modal render check - showLeaderboard:', showLeaderboard, 'isConfigured:', isSupabaseConfigured(), 'shouldShow:', shouldShow);
         return shouldShow;
       })() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 gpu-accelerate">
+          <div className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col gpu-accelerate">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Leaderboard</h2>
             <p className="text-center text-xs sm:text-sm text-gray-400 mb-1">Only Standard Adaptive Mode</p>
             {leaderboard.length > 0 && (
@@ -4980,7 +4980,7 @@ const CognitiveTaskGame = () => {
             {leaderboard.length === 0 && <div className="mb-3 sm:mb-4"></div>}
 
             {/* Scrollable content area */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 px-1">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 px-1 smooth-scroll">
               <div className="space-y-2">
               {leaderboard.length === 0 ? (
                 <p className="text-center text-gray-400">No entries yet. Be the first!</p>
@@ -5138,11 +5138,11 @@ const CognitiveTaskGame = () => {
       {/* Bell Curve Modal */}
       {showBellCurve && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 gpu-accelerate"
           onClick={() => setShowBellCurve(false)}
         >
           <div
-            className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col"
+            className="bg-gray-800 rounded-lg p-4 sm:p-8 max-w-5xl w-full max-h-[90vh] flex flex-col gpu-accelerate"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Player Distribution Analysis</h2>
@@ -5612,11 +5612,11 @@ const CognitiveTaskGame = () => {
       {/* About Us / Contact Modal */}
       {showAboutUs && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 gpu-accelerate"
           onClick={() => setShowAboutUs(false)}
         >
           <div
-            className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-lg p-6 sm:p-8 max-w-2xl w-full"
+            className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-lg p-6 sm:p-8 max-w-2xl w-full gpu-accelerate"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-4 text-center">About Us</h2>
