@@ -8,13 +8,13 @@ export default {
     extend: {
       fontFamily: {
         'sans': [
+          'Noto Sans SC',
           'Microsoft YaHei',
           '微软雅黑',
           'PingFang SC',
           'Hiragino Sans GB',
           'STHeiti',
           'WenQuanYi Micro Hei',
-          'Noto Sans SC',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
