@@ -134,6 +134,26 @@ const CognitiveTaskGame = () => {
     return levelTimings[lvl] || 87.5;
   };
 
+  // Get color class for a number/character based on its value (1-9)
+  const getNumberColor = (char) => {
+    // Map characters to numeric values
+    const numberMap = {
+      '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+      '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9,
+      'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9
+    };
+
+    const value = numberMap[char];
+
+    // Return color based on value (matching Chinese character guide)
+    if (value >= 1 && value <= 3) return 'text-blue-400';
+    if (value >= 4 && value <= 6) return 'text-green-400';
+    if (value >= 7 && value <= 9) return 'text-purple-400';
+
+    // Default color for non-numeric values
+    return 'text-yellow-400';
+  };
+
   // Keep gameStateRef in sync with gameState
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -4335,9 +4355,9 @@ const CognitiveTaskGame = () => {
             Task {currentTask + 1} / {numTasks}
           </div>
           <div className="text-6xl font-bold space-x-8">
-            <span className="text-yellow-400">{currentWords[0]}</span>
+            <span className={getNumberColor(currentWords[0])}>{currentWords[0]}</span>
             <span className="text-gray-500">-</span>
-            <span className="text-yellow-400">{currentWords[1]}</span>
+            <span className={getNumberColor(currentWords[1])}>{currentWords[1]}</span>
           </div>
           <div className="text-xl text-gray-400 mt-8">
             <div className="font-bold text-white mb-2">Answer NOW!</div>
