@@ -3924,43 +3924,54 @@ const CognitiveTaskGame = () => {
           </div>
 
           {isSupabaseConfigured() && (
-            <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-4 rounded-lg">
-              {user ? (
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                  <div>
-                    <p className="text-sm text-gray-400">Logged in as</p>
-                    <p className="font-bold text-green-400">{user.user_metadata?.username || user.email}</p>
+            <>
+              <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-4 rounded-lg">
+                {user ? (
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <div>
+                      <p className="text-sm text-gray-400">Logged in as</p>
+                      <p className="font-bold text-green-400">{user.user_metadata?.username || user.email}</p>
+                    </div>
+                    <div className="flex gap-2 flex-col sm:flex-row">
+                      <button
+                        onClick={() => {
+                          console.log('🎯 LEADERBOARD BUTTON CLICKED');
+                          setShowLeaderboard(true);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
+                      >
+                        Leaderboard
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2 flex-col sm:flex-row">
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
                     <button
-                      onClick={() => {
-                        console.log('🎯 LEADERBOARD BUTTON CLICKED');
-                        setShowLeaderboard(true);
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
+                      onClick={() => setShowAuth(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                     >
-                      Leaderboard
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
-                    >
-                      Logout
+                      Login / Sign Up
                     </button>
                   </div>
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                  <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
-                  <button
-                    onClick={() => setShowAuth(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
-                  >
-                    Login / Sign Up
-                  </button>
+                )}
+              </div>
+
+              {/* Samsung Chrome compatibility note */}
+              {navigator.userAgent.includes('SamsungBrowser') && !user && (
+                <div className="bg-orange-900/40 border border-orange-700 p-3 rounded-lg">
+                  <p className="text-xs text-orange-200">
+                    <strong>📱 Samsung Browser Users:</strong> If login doesn't persist after refresh, please enable cookies and site data in browser settings, or try using Chrome/Firefox for best experience.
+                  </p>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {savedAdaptiveLevel > 1 && (

@@ -13,15 +13,59 @@ const isValidCredentials = () => {
   return true;
 };
 
+// Custom storage adapter for Samsung Chrome compatibility
+// Samsung Chrome has issues with localStorage in certain modes
+const createCustomStorage = () => {
+  const memoryStore = new Map(); // Fallback for when localStorage fails
+
+  return {
+    getItem: (key) => {
+      try {
+        // Try localStorage first
+        const item = window.localStorage.getItem(key);
+        if (item !== null) return item;
+
+        // Fallback to memory store
+        return memoryStore.get(key) || null;
+      } catch (e) {
+        console.warn('localStorage read failed, using memory store:', e);
+        return memoryStore.get(key) || null;
+      }
+    },
+    setItem: (key, value) => {
+      try {
+        // Try localStorage first
+        window.localStorage.setItem(key, value);
+        // Also store in memory as backup
+        memoryStore.set(key, value);
+      } catch (e) {
+        console.warn('localStorage write failed, using memory store:', e);
+        // Fallback to memory store only
+        memoryStore.set(key, value);
+      }
+    },
+    removeItem: (key) => {
+      try {
+        window.localStorage.removeItem(key);
+        memoryStore.delete(key);
+      } catch (e) {
+        console.warn('localStorage remove failed:', e);
+        memoryStore.delete(key);
+      }
+    }
+  };
+};
+
 // Create Supabase client with persistent session storage
 // This ensures login persists across page refreshes
+// Uses custom storage adapter for Samsung Chrome compatibility
 export const supabase = isValidCredentials()
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true, // CRITICAL: Keep user logged in across refreshes
         autoRefreshToken: true, // Auto-refresh tokens to keep session alive
         detectSessionInUrl: false, // Don't check URL for auth callbacks
-        storage: window.localStorage, // Explicitly use localStorage for persistence
+        storage: createCustomStorage(), // Custom storage for Samsung Chrome
         storageKey: 'aposner-auth-session', // Custom key for session storage
         flowType: 'pkce' // Use PKCE flow for better security
       }
