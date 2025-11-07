@@ -4605,9 +4605,9 @@ const CognitiveTaskGame = () => {
                       ? Math.round(((leaderboard.length - index - 1) / leaderboard.length) * 100)
                       : 100;
 
-                    // Calculate level completion percentage (out of 30 tasks in adaptive mode)
+                    // Calculate level completion percentage (out of 32 tasks in adaptive mode)
                     const bestScore = entry.best_score || 0;
-                    const levelProgress = Math.round((bestScore / 30) * 100);
+                    const levelProgress = Math.round((bestScore / 32) * 100);
 
                     // Detailed logging for debugging
                     console.log(`📊 Leaderboard entry ${index + 1}:`);
@@ -4615,7 +4615,7 @@ const CognitiveTaskGame = () => {
                     console.log(`   Highest Level: ${entry.highest_level}`);
                     console.log(`   Best Score (raw from DB): ${entry.best_score}`);
                     console.log(`   Best Score (after ||0): ${bestScore}`);
-                    console.log(`   Calculation: ${bestScore}/30 = ${levelProgress}%`);
+                    console.log(`   Calculation: ${bestScore}/32 = ${levelProgress}%`);
                     console.log(`   Percentile: ${getOrdinalSuffix(percentile)}`);
 
                     if (entry.best_score === null || entry.best_score === undefined) {
