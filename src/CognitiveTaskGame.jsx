@@ -487,22 +487,28 @@ const CognitiveTaskGame = () => {
     if (!isSupabaseConfigured()) return;
     console.log('🚪 Logging out user...');
     try {
-      // Sign out from all sessions (global scope)
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      // Sign out from Supabase (let Supabase handle session cleanup)
+      const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('❌ Error signing out:', error);
+        throw error;
       }
-      console.log('✅ Successfully signed out');
-    } catch (error) {
-      console.error('❌ Exception during sign out:', error);
-    } finally {
-      // Always clear local state and reload
+      console.log('✅ Successfully signed out from Supabase');
+
+      // Clear UI state (Supabase will handle storage cleanup via onAuthStateChange)
       setUser(null);
       setShowLeaderboard(false);
       setShowAuth(false);
-      localStorage.removeItem('aposner-auth-token');
-      sessionStorage.removeItem('aposner-auth-token');
-      window.location.reload();
+      setLeaderboard([]);
+
+      console.log('✅ Logout complete - UI state cleared');
+    } catch (error) {
+      console.error('❌ Exception during sign out:', error);
+      // Even if there's an error, clear the UI state
+      setUser(null);
+      setShowLeaderboard(false);
+      setShowAuth(false);
+      setLeaderboard([]);
     }
   };
 
@@ -607,8 +613,12 @@ const CognitiveTaskGame = () => {
 
   // Leaderboard loading
   const loadLeaderboard = useCallback(async () => {
-    if (!isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured()) {
+      console.warn('⚠️ Leaderboard load skipped - Supabase not configured');
+      return;
+    }
 
+    console.log('📊 Loading leaderboard data...');
     try {
       const { data, error } = await supabase
         .from('leaderboard')
@@ -617,14 +627,23 @@ const CognitiveTaskGame = () => {
         .order('best_score', { ascending: false });
 
       if (error) {
+        console.error('❌ Leaderboard query error:', error);
+        console.error('   Error code:', error.code);
+        console.error('   Error message:', error.message);
+        console.error('   Error details:', error.details);
         setLeaderboard([]);
       } else {
+        console.log(`✅ Leaderboard loaded: ${data?.length || 0} entries`);
+        if (data && data.length > 0) {
+          console.log('📊 Sample entry:', data[0]);
+        }
         setLeaderboard(data || []);
       }
     } catch (error) {
+      console.error('❌ Leaderboard load exception:', error);
       setLeaderboard([]);
     }
-  }, [user]);
+  }, []); // No dependencies - this function doesn't need to be recreated
 
   // Auto-load leaderboard when modal opens
   useEffect(() => {
@@ -3986,9 +4005,11 @@ const CognitiveTaskGame = () => {
         handleSpacePress();
       } else if (gameState === 'showWords' && !userAnswered && !feedback) {
         // Only allow j/f keys when showing words, user hasn't answered, and no feedback is showing
-        if (e.key === 'j') {
+        if (e.key === 'j' || e.key === 'J') {
+          e.preventDefault();
           handleResponse(true);
-        } else if (e.key === 'f') {
+        } else if (e.key === 'f' || e.key === 'F') {
+          e.preventDefault();
           handleResponse(false);
         }
       }
