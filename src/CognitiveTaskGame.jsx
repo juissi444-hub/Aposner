@@ -3984,46 +3984,46 @@ const CognitiveTaskGame = () => {
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4 text-yellow-400">📚 Chinese Numerals Reference</h2>
             <p className="text-sm text-gray-300 mb-3">The adaptive mode uses Arabic, Chinese, and Roman numerals. Learn the Chinese characters:</p>
-            <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-3 gap-3 text-center" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-blue-400 mb-1">一</div>
+                <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>一</div>
                 <div className="text-sm text-gray-400">1 (yī)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-blue-400 mb-1">二</div>
+                <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>二</div>
                 <div className="text-sm text-gray-400">2 (èr)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-blue-400 mb-1">三</div>
+                <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>三</div>
                 <div className="text-sm text-gray-400">3 (sān)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-green-400 mb-1">四</div>
+                <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>四</div>
                 <div className="text-sm text-gray-400">4 (sì)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-green-400 mb-1">五</div>
+                <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>五</div>
                 <div className="text-sm text-gray-400">5 (wǔ)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-green-400 mb-1">六</div>
+                <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>六</div>
                 <div className="text-sm text-gray-400">6 (liù)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-purple-400 mb-1">七</div>
+                <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>七</div>
                 <div className="text-sm text-gray-400">7 (qī)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-purple-400 mb-1">八</div>
+                <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>八</div>
                 <div className="text-sm text-gray-400">8 (bā)</div>
               </div>
               <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-purple-400 mb-1">九</div>
+                <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>九</div>
                 <div className="text-sm text-gray-400">9 (jiǔ)</div>
               </div>
             </div>
             <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-blue-200" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
                 <strong>Tip:</strong> Odd numbers (奇数): 一三五七九 | Even numbers (偶数): 二四六八
               </p>
             </div>
@@ -4341,10 +4341,10 @@ const CognitiveTaskGame = () => {
             {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}{experimentalMode && <span className="text-orange-300"> (Experimental)</span>}</div>}
             Task {currentTask + 1} / {numTasks}
           </div>
-          <div className="text-6xl font-bold space-x-8">
-            <span className={getNumberColor(currentWords[0])}>{currentWords[0]}</span>
+          <div className="text-6xl font-bold space-x-8" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
+            <span className={getNumberColor(currentWords[0])} style={{fontFamily: 'inherit'}}>{currentWords[0]}</span>
             <span className="text-gray-500">-</span>
-            <span className={getNumberColor(currentWords[1])}>{currentWords[1]}</span>
+            <span className={getNumberColor(currentWords[1])} style={{fontFamily: 'inherit'}}>{currentWords[1]}</span>
           </div>
           <div className="text-xl text-gray-400 mt-8">
             <div className="font-bold text-white mb-2">Answer NOW!</div>
