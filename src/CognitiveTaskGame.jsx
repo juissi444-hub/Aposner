@@ -3862,11 +3862,11 @@ const CognitiveTaskGame = () => {
     if (feedback === 'correct') return 'bg-green-600';
     if (feedback === 'wrong') return 'bg-red-600';
     if (feedback === 'timeout') return 'bg-gray-600';
-    return 'bg-gray-900';
+    return 'bg-gray-800';
   };
 
   return (
-    <div className={`min-h-screen ${feedback ? getFeedbackColor() : 'bg-gray-900'} text-white flex items-center justify-center p-4 transition-colors duration-200`}>
+    <div className={`min-h-screen ${feedback ? getFeedbackColor() : 'bg-gray-800'} text-white flex items-center justify-center p-4 transition-colors duration-200`}>
       {/* Hidden audio elements for sounds */}
       <audio
         ref={celebrationAudioRef}
