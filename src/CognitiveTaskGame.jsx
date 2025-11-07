@@ -3876,9 +3876,10 @@ const CognitiveTaskGame = () => {
           setLevel(prev => {
             const newLevel = prev + 1;
             console.log(`✅ Level ${prev} completed with score ${currentScore}/${numTasks}, advancing to level ${newLevel}`);
-            // IMPORTANT: Save the NEW level we're advancing to, not the old one
-            saveProgress(newLevel, currentScore);
-            console.log(`💾 Saved progress: Level ${newLevel} with score ${currentScore}`);
+            // IMPORTANT: Save the completed level (prev) with its score, not the new level
+            // This ensures leaderboard shows "Level X - Y% completed" where Y is the actual completion % of level X
+            saveProgress(prev, currentScore);
+            console.log(`💾 Saved progress: Level ${prev} (completed) with score ${currentScore}`);
             return newLevel;
           });
           setScore(0);
