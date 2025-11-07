@@ -73,6 +73,7 @@ const CognitiveTaskGame = () => {
   const successAudioRef = useRef(null);
   const timeoutRef = useRef(null);
   const autoContinueTimerRef = useRef(null);
+  const levelTransitionTimerRef = useRef(null); // For level up/down transition delays
   const gameStateRef = useRef('menu'); // Ref to track current gameState for cleanup
   const [gameState, setGameState] = useState('menu');
   const [mode, setMode] = useState(null); // 'manual' or 'adaptive'
@@ -3704,7 +3705,7 @@ const CognitiveTaskGame = () => {
 
   const handleLevelDecrease = useCallback(() => {
     setGameState('levelDown');
-    setTimeout(() => {
+    levelTransitionTimerRef.current = setTimeout(() => {
       stopAllSounds();
       const currentScore = score;
       const completedLevel = level; // Save the level they just failed
@@ -3724,6 +3725,7 @@ const CognitiveTaskGame = () => {
       setUsedPairs(new Set()); // Clear used pairs for new level
       console.log('🔄 Level decreased - used pairs cleared');
       prepareNextTask();
+      levelTransitionTimerRef.current = null;
     }, 2000);
   }, [saveProgress, stopAllSounds, score, level]);
 
@@ -3769,7 +3771,7 @@ const CognitiveTaskGame = () => {
           setGameState('levelUp');
         }
         // Progress to next level
-        setTimeout(() => {
+        levelTransitionTimerRef.current = setTimeout(() => {
           stopAllSounds();
           const currentScore = score;
           setLevel(prev => {
@@ -3787,6 +3789,7 @@ const CognitiveTaskGame = () => {
           setUsedPairs(new Set()); // Clear used pairs for new level
           console.log('🔄 New level - used pairs cleared');
           prepareNextTask();
+          levelTransitionTimerRef.current = null;
         }, 3000);
       } else {
         // Failed to progress - save current level with current score
@@ -3797,7 +3800,7 @@ const CognitiveTaskGame = () => {
     } else {
       // Manual mode - just show results
       setGameState('results');
-      setTimeout(() => {
+      levelTransitionTimerRef.current = setTimeout(() => {
         // Clear auto-continue timer when auto-returning to menu
         if (autoContinueTimerRef.current) {
           clearTimeout(autoContinueTimerRef.current);
@@ -3805,6 +3808,7 @@ const CognitiveTaskGame = () => {
           console.log('⏱️ Auto-continue timer cleared on auto menu return');
         }
         setGameState('menu');
+        levelTransitionTimerRef.current = null;
       }, 5000);
     }
   }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds, level]);
@@ -3984,6 +3988,12 @@ const CognitiveTaskGame = () => {
           clearTimeout(autoContinueTimerRef.current);
           autoContinueTimerRef.current = null;
           console.log('⏱️ Auto-continue timer cleared on ESC menu return');
+        }
+        // Clear level transition timer
+        if (levelTransitionTimerRef.current) {
+          clearTimeout(levelTransitionTimerRef.current);
+          levelTransitionTimerRef.current = null;
+          console.log('⏱️ Level transition timer cleared on ESC menu return');
         }
         // Save current progress before returning to menu
         if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore') {
@@ -4512,6 +4522,12 @@ const CognitiveTaskGame = () => {
                   autoContinueTimerRef.current = null;
                   console.log('⏱️ Auto-continue timer cleared on menu return');
                 }
+                // Clear level transition timer
+                if (levelTransitionTimerRef.current) {
+                  clearTimeout(levelTransitionTimerRef.current);
+                  levelTransitionTimerRef.current = null;
+                  console.log('⏱️ Level transition timer cleared on menu return');
+                }
                 // Save progress before returning to menu
                 if (mode === 'adaptive') {
                   console.log(`🔴 BACK TO MENU clicked - Current state:`);
@@ -4582,6 +4598,12 @@ const CognitiveTaskGame = () => {
                 clearTimeout(autoContinueTimerRef.current);
                 autoContinueTimerRef.current = null;
                 console.log('⏱️ Auto-continue timer cleared on menu return');
+              }
+              // Clear level transition timer
+              if (levelTransitionTimerRef.current) {
+                clearTimeout(levelTransitionTimerRef.current);
+                levelTransitionTimerRef.current = null;
+                console.log('⏱️ Level transition timer cleared on menu return');
               }
               setGameState('menu');
             }}
@@ -4675,6 +4697,12 @@ const CognitiveTaskGame = () => {
                     autoContinueTimerRef.current = null;
                     console.log('⏱️ Auto-continue timer cleared on menu return');
                   }
+                  // Clear level transition timer
+                  if (levelTransitionTimerRef.current) {
+                    clearTimeout(levelTransitionTimerRef.current);
+                    levelTransitionTimerRef.current = null;
+                    console.log('⏱️ Level transition timer cleared on menu return');
+                  }
                   setGameState('menu');
                 }}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
@@ -4701,6 +4729,12 @@ const CognitiveTaskGame = () => {
                     clearTimeout(autoContinueTimerRef.current);
                     autoContinueTimerRef.current = null;
                     console.log('⏱️ Auto-continue timer cleared on menu return');
+                  }
+                  // Clear level transition timer
+                  if (levelTransitionTimerRef.current) {
+                    clearTimeout(levelTransitionTimerRef.current);
+                    levelTransitionTimerRef.current = null;
+                    console.log('⏱️ Level transition timer cleared on menu return');
                   }
                   setGameState('menu');
                 }}
