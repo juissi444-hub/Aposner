@@ -957,9 +957,13 @@ const CognitiveTaskGame = () => {
   };
 
   const relationTypes = {
-    // Level 1-2 tasks (used in adaptive mode training - from study)
+    // Level 1-2 tasks (Lower grade retrieval - from study)
     'same-format': 'Same Format (1-2, V-VI, 三-四) - Physical property',
-    'meaning': 'Same Meaning (2-two-II-二) - Semantic property',
+    'meaning': 'Same Meaning (2-二-II) - Semantic property',
+
+    // Level 3-4 tasks (Higher grade retrieval - from study)
+    'parity-same-format': 'Both Odd or Both Even - Same Format (1-3, 一-三, I-III)',
+    'parity-mixed-format': 'Both Odd or Both Even - Mixed Format (1-一, 2-II, 四-4)',
 
     // Experimental tasks (all other relation types)
     'whole-part': 'Whole-Part (fish-pike, world-France)',
@@ -968,8 +972,6 @@ const CognitiveTaskGame = () => {
     'followup-numerical': 'Sequential Numbers (3-4, 24-25)',
     'physical-numerical': 'Sequential Number Forms (one-two, II-III, 3-4)',
     'same-time': 'Same Time (🕐-1:00, 3:30-half past three)',
-
-    // Level 3-4 tasks (testing/transfer measurement only)
     'even': 'Both Even (2-4, IV-VIII, two-six)',
     'odd': 'Both Odd (3-5, VII-IX, three-nine)',
     'doubled': 'Doubled (2-4, II-IV, two-four)',
@@ -977,22 +979,20 @@ const CognitiveTaskGame = () => {
   };
 
   // Get available relation types for a given level based on study design
-  // Study used ONLY Level 1-2 type tasks for ALL training sessions
-  // Level 3-4 tasks were used only for pre/post testing (transfer measurement)
+  // Study used 4 levels of Posner tasks
   const getRelationTypesForLevel = (level, mode, experimentalEnabled) => {
     // In experimental mode or manual mode, all relation types are available
     if (experimentalEnabled || mode === 'manual') {
       return Object.keys(relationTypes);
     }
 
-    // In standard adaptive mode, follow the study design:
-    // ALL levels use ONLY Level 1-2 type tasks (physical/semantic retrieval)
-    // Difficulty increases through time pressure, NOT task type changes
+    // In standard adaptive mode, use all 4 Posner task levels:
+    // Level 1: Physical property (same format)
+    // Level 2: Semantic property (same meaning)
+    // Level 3: Conceptual (parity - same format)
+    // Level 4: Conceptual (parity - mixed format)
     if (mode === 'adaptive') {
-      // Training used ONLY these task types throughout all 12 days
-      // Level 1: Physical property (same format)
-      // Level 2: Semantic property (same meaning)
-      return ['same-format', 'meaning'];
+      return ['same-format', 'meaning', 'parity-same-format', 'parity-mixed-format'];
     }
 
     // Default: all types
@@ -1037,6 +1037,54 @@ const CognitiveTaskGame = () => {
       ['六', '六'], ['七', '七'], ['八', '八'], ['九', '九'],
       ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'],
       ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX']
+    ],
+
+    // Level 3 task: Parity judgment - same format
+    'parity-same-format': [
+      // Both odd - Arabic
+      ['1', '3'], ['3', '5'], ['5', '7'], ['7', '9'], ['1', '5'],
+      ['1', '7'], ['1', '9'], ['3', '7'], ['3', '9'], ['5', '9'],
+      // Both even - Arabic
+      ['2', '4'], ['4', '6'], ['6', '8'], ['2', '6'], ['2', '8'],
+      ['4', '8'],
+
+      // Both odd - Chinese
+      ['一', '三'], ['三', '五'], ['五', '七'], ['七', '九'], ['一', '五'],
+      ['一', '七'], ['一', '九'], ['三', '七'], ['三', '九'], ['五', '九'],
+      // Both even - Chinese
+      ['二', '四'], ['四', '六'], ['六', '八'], ['二', '六'], ['二', '八'],
+      ['四', '八'],
+
+      // Both odd - Roman
+      ['I', 'III'], ['III', 'V'], ['V', 'VII'], ['VII', 'IX'], ['I', 'V'],
+      ['I', 'VII'], ['I', 'IX'], ['III', 'VII'], ['III', 'IX'], ['V', 'IX'],
+      // Both even - Roman
+      ['II', 'IV'], ['IV', 'VI'], ['VI', 'VIII'], ['II', 'VI'], ['II', 'VIII'],
+      ['IV', 'VIII']
+    ],
+
+    // Level 4 task: Parity judgment - mixed format
+    'parity-mixed-format': [
+      // Both odd - Arabic-Chinese
+      ['1', '三'], ['3', '五'], ['5', '七'], ['7', '九'], ['1', '五'],
+      ['3', '一'], ['5', '三'], ['7', '五'], ['9', '七'], ['9', '一'],
+      // Both even - Arabic-Chinese
+      ['2', '四'], ['4', '六'], ['6', '八'], ['2', '六'], ['4', '二'],
+      ['6', '四'], ['8', '六'], ['8', '二'],
+
+      // Both odd - Arabic-Roman
+      ['1', 'III'], ['3', 'V'], ['5', 'VII'], ['7', 'IX'], ['1', 'V'],
+      ['3', 'I'], ['5', 'III'], ['7', 'V'], ['9', 'VII'], ['9', 'I'],
+      // Both even - Arabic-Roman
+      ['2', 'IV'], ['4', 'VI'], ['6', 'VIII'], ['2', 'VI'], ['4', 'II'],
+      ['6', 'IV'], ['8', 'VI'], ['8', 'II'],
+
+      // Both odd - Chinese-Roman
+      ['一', 'III'], ['三', 'V'], ['五', 'VII'], ['七', 'IX'], ['一', 'V'],
+      ['三', 'I'], ['五', 'III'], ['七', 'V'], ['九', 'VII'], ['九', 'I'],
+      // Both even - Chinese-Roman
+      ['二', 'IV'], ['四', 'VI'], ['六', 'VIII'], ['二', 'VI'], ['四', 'II'],
+      ['六', 'IV'], ['八', 'VI'], ['八', 'II']
     ],
 
     'whole-part': [
@@ -3925,6 +3973,54 @@ const CognitiveTaskGame = () => {
             </div>
           )}
 
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4 text-yellow-400">📚 Chinese Numerals Reference</h2>
+            <p className="text-sm text-gray-300 mb-3">The adaptive mode uses Arabic, Chinese, and Roman numerals. Learn the Chinese characters:</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-blue-400 mb-1">一</div>
+                <div className="text-sm text-gray-400">1 (yī)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-blue-400 mb-1">二</div>
+                <div className="text-sm text-gray-400">2 (èr)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-blue-400 mb-1">三</div>
+                <div className="text-sm text-gray-400">3 (sān)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">四</div>
+                <div className="text-sm text-gray-400">4 (sì)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">五</div>
+                <div className="text-sm text-gray-400">5 (wǔ)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">六</div>
+                <div className="text-sm text-gray-400">6 (liù)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-purple-400 mb-1">七</div>
+                <div className="text-sm text-gray-400">7 (qī)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-purple-400 mb-1">八</div>
+                <div className="text-sm text-gray-400">8 (bā)</div>
+              </div>
+              <div className="bg-black/30 p-3 rounded-lg">
+                <div className="text-3xl font-bold text-purple-400 mb-1">九</div>
+                <div className="text-sm text-gray-400">9 (jiǔ)</div>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
+              <p className="text-xs text-blue-200">
+                <strong>Tip:</strong> Odd numbers (奇数): 一三五七九 | Even numbers (偶数): 二四六八
+              </p>
+            </div>
+          </div>
+
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
             <div className="flex items-center justify-between">
@@ -4016,22 +4112,19 @@ const CognitiveTaskGame = () => {
             {!experimentalMode && (
               <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
                 <p className="text-sm text-blue-300">
-                  <strong>Standard Adaptive Mode (Study Design):</strong>
+                  <strong>Standard Adaptive Mode (4-Level Posner Task):</strong>
                 </p>
-                <p className="text-xs text-blue-200 mt-1">
-                  • Level 1: Same Format (1-2, III-IV, 五-六) - Physical property
-                </p>
-                <p className="text-xs text-blue-200">
-                  • Level 2: Same Meaning (2-二-II) - Semantic property
-                </p>
-                <p className="text-xs text-blue-200 mt-1">
+                <div className="text-xs text-blue-200 mt-2 space-y-1">
+                  <p><strong>Level 1:</strong> Same Format (1-2, III-IV, 五-六) - Physical property</p>
+                  <p><strong>Level 2:</strong> Same Meaning (2-二-II) - Semantic property</p>
+                  <p><strong>Level 3:</strong> Both Odd/Even - Same Format (1-3, 二-四) - Conceptual</p>
+                  <p><strong>Level 4:</strong> Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
+                </div>
+                <p className="text-xs text-blue-200 mt-2">
                   • Uses numbers 1-9 in Arabic, Chinese (一~九), and Roman numerals (I-IX)
                 </p>
                 <p className="text-xs text-blue-200">
                   • Difficulty increases through time pressure only (2000ms → 87.5ms)
-                </p>
-                <p className="text-xs text-blue-400 mt-2 italic">
-                  Note: Level 3-4 tasks (odd/even parity) were used only for pre/post testing, not training
                 </p>
               </div>
             )}
