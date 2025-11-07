@@ -311,6 +311,14 @@ const CognitiveTaskGame = () => {
     };
   }, []); // Only run once on mount
 
+  // Load leaderboard data when modal opens
+  useEffect(() => {
+    if (showLeaderboard && isSupabaseConfigured()) {
+      console.log('📊 Leaderboard opened - loading data...');
+      loadLeaderboard();
+    }
+  }, [showLeaderboard, loadLeaderboard]);
+
   // Toggle sound setting
   const toggleSound = () => {
     const newSoundState = !soundEnabled;
