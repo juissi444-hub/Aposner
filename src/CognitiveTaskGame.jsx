@@ -4605,7 +4605,10 @@ const CognitiveTaskGame = () => {
           <div className="text-8xl font-bold text-red-400">⚠️</div>
           <h2 className="text-5xl font-bold text-red-400">Too Many Errors!</h2>
           <div className="text-3xl text-white">
-            You got 6 incorrect.
+            You made {wrongCount}/6 mistakes
+          </div>
+          <div className="text-2xl text-gray-400">
+            (6 is the threshold)
           </div>
           <div className="text-2xl text-gray-400">
             Decreasing level to {Math.max(1, level - 1)}...
