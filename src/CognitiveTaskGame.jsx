@@ -3678,11 +3678,6 @@ const CognitiveTaskGame = () => {
   };
 
   const prepareNextTask = () => {
-    // Safety guard: Don't prepare next task if we're in menu state
-    if (gameStateRef.current === 'menu') {
-      console.log('⚠️ prepareNextTask called while in menu state - ignoring');
-      return;
-    }
     // Get available relation types based on mode, level, and experimental setting
     let availableRelations = getRelationTypesForLevel(level, mode, experimentalMode);
 
@@ -3862,6 +3857,11 @@ const CognitiveTaskGame = () => {
           }
 
           setTimeout(() => {
+            // Check if we're still in game state (not returned to menu)
+            if (gameStateRef.current === 'menu') {
+              console.log('⚠️ Timeout fired but already returned to menu - ignoring');
+              return;
+            }
             setFeedback(null);
             setUserAnswered(false); // Reset for next task
             if (currentTask + 1 < numTasks) {
@@ -3941,6 +3941,11 @@ const CognitiveTaskGame = () => {
     }]);
 
     setTimeout(() => {
+      // Check if we're still in game state (not returned to menu)
+      if (gameStateRef.current === 'menu') {
+        console.log('⚠️ Timeout fired but already returned to menu - ignoring');
+        return;
+      }
       setFeedback(null);
       if (currentTask + 1 < numTasks) {
         setCurrentTask(prev => prev + 1);
