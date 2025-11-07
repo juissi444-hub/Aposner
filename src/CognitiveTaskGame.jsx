@@ -102,6 +102,8 @@ const CognitiveTaskGame = () => {
   const [autoContinueDelay, setAutoContinueDelay] = useState(3); // 1-20 seconds
   const [experimentalMode, setExperimentalMode] = useState(false); // Enable experimental relation types
   const [numTasks, setNumTasks] = useState(32);
+  const [matchPercentage, setMatchPercentage] = useState(50); // Percentage of tasks that should be matches (manual mode only)
+  const [taskMatchSequence, setTaskMatchSequence] = useState([]); // Pre-determined sequence of match/no-match for current game
   const [currentTask, setCurrentTask] = useState(0);
   const [currentRelation, setCurrentRelation] = useState('');
   const [currentWords, setCurrentWords] = useState(['', '']);
@@ -3754,13 +3756,46 @@ const CognitiveTaskGame = () => {
     return selectedPair;
   };
 
+  // Helper function to generate match/no-match sequence
+  const generateTaskMatchSequence = useCallback((totalTasks, matchPercent) => {
+    const numMatches = Math.round((totalTasks * matchPercent) / 100);
+    const numNonMatches = totalTasks - numMatches;
+
+    const sequence = [
+      ...Array(numMatches).fill(true),
+      ...Array(numNonMatches).fill(false)
+    ];
+
+    // Shuffle the sequence using Fisher-Yates algorithm
+    for (let i = sequence.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+    }
+
+    console.log(`🎯 Task sequence created: ${numMatches} matches (${matchPercent}%), ${numNonMatches} non-matches`);
+    console.log(`📋 Sequence: ${sequence.map(m => m ? 'M' : 'N').join('')}`);
+    return sequence;
+  }, []);
+
   const startGame = (selectedMode) => {
     console.log('🎮 Starting new game session');
     setMode(selectedMode);
+
+    let totalTasks = numTasks;
+    let matchPercent = matchPercentage;
+
     if (selectedMode === 'adaptive') {
       setLevel(savedAdaptiveLevel);
+      totalTasks = 32;
       setNumTasks(32);
+      matchPercent = 50; // Standard adaptive mode always uses 50/50 split
     }
+
+    // Create a sequence of matches and non-matches
+    // This ensures exact distribution (e.g., exactly 16 matches and 16 non-matches for 50%)
+    const sequence = generateTaskMatchSequence(totalTasks, matchPercent);
+    setTaskMatchSequence(sequence);
+
     setScore(0);
     setWrongCount(0);
     setCurrentTask(0);
@@ -3817,11 +3852,14 @@ const CognitiveTaskGame = () => {
       setCurrentTask(0);
       setTaskHistory([]);
       setUsedPairs(new Set()); // Clear used pairs for new level
-      console.log('🔄 Level decreased - used pairs cleared');
+      // Regenerate task match sequence for new level (always 50/50 in adaptive mode)
+      const sequence = generateTaskMatchSequence(32, 50);
+      setTaskMatchSequence(sequence);
+      console.log('🔄 Level decreased - used pairs and task sequence regenerated');
       prepareNextTask();
       levelTransitionTimerRef.current = null;
     }, 2000);
-  }, [saveProgress, stopAllSounds, score, level]);
+  }, [saveProgress, stopAllSounds, score, level, generateTaskMatchSequence]);
 
   const handleGameEnd = useCallback(() => {
     // Safety guard: Don't handle game end if we're in menu state
@@ -3887,7 +3925,10 @@ const CognitiveTaskGame = () => {
           setCurrentTask(0);
           setTaskHistory([]);
           setUsedPairs(new Set()); // Clear used pairs for new level
-          console.log('🔄 New level - used pairs cleared');
+          // Regenerate task match sequence for new level (always 50/50 in adaptive mode)
+          const sequence = generateTaskMatchSequence(32, 50);
+          setTaskMatchSequence(sequence);
+          console.log('🔄 New level - used pairs and task sequence regenerated');
           prepareNextTask();
           levelTransitionTimerRef.current = null;
         }, 3000);
@@ -3911,11 +3952,12 @@ const CognitiveTaskGame = () => {
         levelTransitionTimerRef.current = null;
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds, level]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds, level, generateTaskMatchSequence]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
-      const willBeActual = Math.random() < 0.5;
+      // Use pre-determined sequence for match/no-match to ensure exact distribution
+      const willBeActual = taskMatchSequence[currentTask] ?? (Math.random() < 0.5);
       setIsActualRelation(willBeActual);
 
       if (willBeActual) {
@@ -3969,7 +4011,7 @@ const CognitiveTaskGame = () => {
         }
       }, getTimeForLevel(level));
     }
-  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease]);
+  }, [gameState, currentRelation, level, currentTask, numTasks, currentWords, userAnswered, handleGameEnd, mode, wrongCount, handleLevelDecrease, taskMatchSequence]);
 
   const handleResponse = useCallback((userSaysYes) => {
     if (gameState !== 'showWords' || userAnswered) return;
@@ -4547,6 +4589,24 @@ const CognitiveTaskGame = () => {
                 onChange={(e) => setNumTasks(parseInt(e.target.value))}
                 className="w-full"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Match Percentage: {matchPercentage}% (matches) / {100 - matchPercentage}% (non-matches)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={matchPercentage}
+                onChange={(e) => setMatchPercentage(parseInt(e.target.value))}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Controls the proportion of matching vs non-matching tasks. Standard adaptive mode always uses 50/50.
+              </p>
             </div>
 
             <div className="mt-4">
