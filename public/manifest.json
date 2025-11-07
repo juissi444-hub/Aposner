@@ -1,0 +1,40 @@
+{
+  "name": "Cognitive Task Trainer",
+  "short_name": "CogTask",
+  "description": "Improve your attention, focus, and cognitive skills through adaptive training exercises",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "health", "productivity"],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "scope": "/",
+  "dir": "ltr",
+  "lang": "en",
+  "shortcuts": [
+    {
+      "name": "Start Training",
+      "short_name": "Train",
+      "description": "Start a new cognitive training session",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
