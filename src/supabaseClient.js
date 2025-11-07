@@ -42,11 +42,12 @@ const createCustomStorage = () => {
   return {
     getItem: (key) => {
       try {
+        const keyStr = String(key || '');
         // Try localStorage first (persists across browser restarts)
         if (localStorageAvailable) {
           const item = window.localStorage.getItem(key);
           if (item !== null) {
-            console.log('✅ Retrieved from localStorage:', key.substring(0, 20) + '...');
+            console.log('✅ Retrieved from localStorage:', keyStr.substring(0, 20) + '...');
             return item;
           }
         }
@@ -55,7 +56,7 @@ const createCustomStorage = () => {
         if (sessionStorageAvailable) {
           const item = window.sessionStorage.getItem(key);
           if (item !== null) {
-            console.log('✅ Retrieved from sessionStorage:', key.substring(0, 20) + '...');
+            console.log('✅ Retrieved from sessionStorage:', keyStr.substring(0, 20) + '...');
             // Copy to localStorage for future persistence
             if (localStorageAvailable) {
               try {
@@ -71,7 +72,7 @@ const createCustomStorage = () => {
         // Last resort: memory store (only lasts until page refresh)
         const item = memoryStore.get(key);
         if (item !== null && item !== undefined) {
-          console.warn('⚠️ Retrieved from memory store (will not persist refresh):', key.substring(0, 20) + '...');
+          console.warn('⚠️ Retrieved from memory store (will not persist refresh):', keyStr.substring(0, 20) + '...');
         }
         return item || null;
       } catch (e) {
@@ -81,13 +82,14 @@ const createCustomStorage = () => {
     },
     setItem: (key, value) => {
       try {
+        const keyStr = String(key || '');
         let stored = false;
 
         // Try localStorage first
         if (localStorageAvailable) {
           try {
             window.localStorage.setItem(key, value);
-            console.log('✅ Stored in localStorage:', key.substring(0, 20) + '...');
+            console.log('✅ Stored in localStorage:', keyStr.substring(0, 20) + '...');
             stored = true;
           } catch (e) {
             console.warn('⚠️ localStorage write failed:', e.message);
@@ -99,7 +101,7 @@ const createCustomStorage = () => {
           try {
             window.sessionStorage.setItem(key, value);
             if (!stored) {
-              console.log('✅ Stored in sessionStorage:', key.substring(0, 20) + '...');
+              console.log('✅ Stored in sessionStorage:', keyStr.substring(0, 20) + '...');
             }
             stored = true;
           } catch (e) {
@@ -110,7 +112,7 @@ const createCustomStorage = () => {
         // Always store in memory as last resort
         memoryStore.set(key, value);
         if (!stored) {
-          console.warn('⚠️ Only stored in memory (will not persist refresh):', key.substring(0, 20) + '...');
+          console.warn('⚠️ Only stored in memory (will not persist refresh):', keyStr.substring(0, 20) + '...');
         }
       } catch (e) {
         console.error('❌ Storage write error:', e);
@@ -119,6 +121,7 @@ const createCustomStorage = () => {
     },
     removeItem: (key) => {
       try {
+        const keyStr = String(key || '');
         if (localStorageAvailable) {
           window.localStorage.removeItem(key);
         }
@@ -126,7 +129,7 @@ const createCustomStorage = () => {
           window.sessionStorage.removeItem(key);
         }
         memoryStore.delete(key);
-        console.log('✅ Removed from all storage:', key.substring(0, 20) + '...');
+        console.log('✅ Removed from all storage:', keyStr.substring(0, 20) + '...');
       } catch (e) {
         console.error('❌ Storage remove error:', e);
         memoryStore.delete(key);
