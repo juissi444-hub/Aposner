@@ -3924,7 +3924,7 @@ const CognitiveTaskGame = () => {
           </div>
 
           {isSupabaseConfigured() && (
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-4 rounded-lg">
               {user ? (
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <div>
@@ -4029,7 +4029,7 @@ const CognitiveTaskGame = () => {
             </div>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
             <div className="flex items-center justify-between">
               <div>
@@ -4051,7 +4051,7 @@ const CognitiveTaskGame = () => {
             </div>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Auto Continue</h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -4097,7 +4097,7 @@ const CognitiveTaskGame = () => {
             </div>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Experimental Mode</h2>
             <div className="flex items-center justify-between">
               <div>
@@ -4145,7 +4145,7 @@ const CognitiveTaskGame = () => {
             )}
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">How to Train</h2>
             <p className="text-gray-300">
               You will be shown a possible relationship, then two words. Decide if the words match the relationship before time runs out!
@@ -4175,7 +4175,7 @@ const CognitiveTaskGame = () => {
             </div>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Select Mode</h2>
             <div className="grid grid-cols-2 gap-4">
               <button
@@ -4205,7 +4205,7 @@ const CognitiveTaskGame = () => {
             </div>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Manual Mode Settings</h2>
             <div>
               <label className="block text-sm font-medium mb-2">
