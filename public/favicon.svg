@@ -1,55 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Background circle with gradient -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
   <defs>
-    <linearGradient id="brainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    <!-- Beautiful gradient for background -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1b4b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4c1d95;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#581c87;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="focusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+
+    <!-- Stunning gradient for text -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
     </linearGradient>
+
+    <!-- Glow effect for text -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Shadow for depth -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
   </defs>
 
-  <!-- Background circle -->
-  <circle cx="64" cy="64" r="60" fill="url(#brainGradient)"/>
+  <!-- Background with gradient -->
+  <rect width="400" height="400" fill="url(#bgGradient)" rx="60"/>
 
-  <!-- Stylized brain outline made of connected nodes (representing neural network) -->
-  <!-- Left hemisphere nodes -->
-  <circle cx="35" cy="45" r="8" fill="#ffffff" opacity="0.9"/>
-  <circle cx="28" cy="64" r="7" fill="#ffffff" opacity="0.85"/>
-  <circle cx="35" cy="83" r="8" fill="#ffffff" opacity="0.9"/>
-  <circle cx="48" cy="35" r="6" fill="#ffffff" opacity="0.8"/>
-  <circle cx="48" cy="93" r="6" fill="#ffffff" opacity="0.8"/>
+  <!-- Decorative accent lines -->
+  <line x1="30" y1="30" x2="30" y2="100" stroke="#fbbf24" stroke-width="4" opacity="0.4" stroke-linecap="round"/>
+  <line x1="30" y1="30" x2="100" y2="30" stroke="#fbbf24" stroke-width="4" opacity="0.4" stroke-linecap="round"/>
+  <line x1="370" y1="370" x2="370" y2="300" stroke="#fbbf24" stroke-width="4" opacity="0.4" stroke-linecap="round"/>
+  <line x1="370" y1="370" x2="300" y2="370" stroke="#fbbf24" stroke-width="4" opacity="0.4" stroke-linecap="round"/>
 
-  <!-- Right hemisphere nodes -->
-  <circle cx="93" cy="45" r="8" fill="#ffffff" opacity="0.9"/>
-  <circle cx="100" cy="64" r="7" fill="#ffffff" opacity="0.85"/>
-  <circle cx="93" cy="83" r="8" fill="#ffffff" opacity="0.9"/>
-  <circle cx="80" cy="35" r="6" fill="#ffffff" opacity="0.8"/>
-  <circle cx="80" cy="93" r="6" fill="#ffffff" opacity="0.8"/>
+  <!-- Main text "APOSNER" with beautiful styling -->
+  <text
+    x="200"
+    y="180"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="72"
+    font-weight="900"
+    fill="url(#textGradient)"
+    text-anchor="middle"
+    filter="url(#shadow)"
+    letter-spacing="-2">
+    APOSNER
+  </text>
 
-  <!-- Connection lines (synapses) -->
-  <line x1="35" y1="45" x2="48" y2="35" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="35" y1="45" x2="28" y2="64" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="28" y1="64" x2="35" y2="83" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="35" y1="83" x2="48" y2="93" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="93" y1="45" x2="80" y2="35" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="93" y1="45" x2="100" y2="64" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="100" y1="64" x2="93" y2="83" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
-  <line x1="93" y1="83" x2="80" y2="93" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+  <!-- Subtle tagline -->
+  <text
+    x="200"
+    y="250"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="24"
+    font-weight="300"
+    fill="#cbd5e1"
+    text-anchor="middle"
+    opacity="0.8"
+    letter-spacing="4">
+    COGNITIVE TRAINER
+  </text>
 
-  <!-- Cross-hemisphere connections -->
-  <line x1="35" y1="45" x2="64" y2="64" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
-  <line x1="93" y1="45" x2="64" y2="64" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
-  <line x1="35" y1="83" x2="64" y2="64" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
-  <line x1="93" y1="83" x2="64" y2="64" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
+  <!-- Decorative underline -->
+  <line x1="80" y1="265" x2="320" y2="265" stroke="url(#textGradient)" stroke-width="3" opacity="0.6" stroke-linecap="round"/>
 
-  <!-- Central focus point (represents attention/Posner task) -->
-  <circle cx="64" cy="64" r="14" fill="url(#focusGradient)"/>
-  <circle cx="64" cy="64" r="10" fill="#ffffff" opacity="0.3"/>
-  <circle cx="64" cy="64" r="4" fill="#ffffff"/>
-
-  <!-- Outer glow effect -->
-  <circle cx="64" cy="64" r="60" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.2"/>
+  <!-- Small accent dots for style -->
+  <circle cx="60" cy="200" r="4" fill="#fbbf24" opacity="0.6"/>
+  <circle cx="340" cy="200" r="4" fill="#fbbf24" opacity="0.6"/>
 </svg>
