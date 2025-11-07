@@ -3779,6 +3779,12 @@ const CognitiveTaskGame = () => {
       // Manual mode - just show results
       setGameState('results');
       setTimeout(() => {
+        // Clear auto-continue timer when auto-returning to menu
+        if (autoContinueTimerRef.current) {
+          clearTimeout(autoContinueTimerRef.current);
+          autoContinueTimerRef.current = null;
+          console.log('⏱️ Auto-continue timer cleared on auto menu return');
+        }
         setGameState('menu');
       }, 5000);
     }
@@ -3954,6 +3960,12 @@ const CognitiveTaskGame = () => {
       if (e.key === 'Escape' && gameState !== 'menu') {
         e.preventDefault();
         stopAllSounds();
+        // Clear auto-continue timer
+        if (autoContinueTimerRef.current) {
+          clearTimeout(autoContinueTimerRef.current);
+          autoContinueTimerRef.current = null;
+          console.log('⏱️ Auto-continue timer cleared on ESC menu return');
+        }
         // Save current progress before returning to menu
         if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore') {
           console.log(`🔴 ESC PRESSED - Current state:`);
@@ -4473,6 +4485,12 @@ const CognitiveTaskGame = () => {
             <button
               onClick={() => {
                 stopAllSounds();
+                // Clear auto-continue timer
+                if (autoContinueTimerRef.current) {
+                  clearTimeout(autoContinueTimerRef.current);
+                  autoContinueTimerRef.current = null;
+                  console.log('⏱️ Auto-continue timer cleared on menu return');
+                }
                 // Save progress before returning to menu
                 if (mode === 'adaptive') {
                   console.log(`🔴 BACK TO MENU clicked - Current state:`);
@@ -4538,6 +4556,12 @@ const CognitiveTaskGame = () => {
           <button
             onClick={() => {
               stopAllSounds();
+              // Clear auto-continue timer
+              if (autoContinueTimerRef.current) {
+                clearTimeout(autoContinueTimerRef.current);
+                autoContinueTimerRef.current = null;
+                console.log('⏱️ Auto-continue timer cleared on menu return');
+              }
               setGameState('menu');
             }}
             className="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
@@ -4623,7 +4647,15 @@ const CognitiveTaskGame = () => {
                 You need 90% (27/30) to advance to the next level
               </div>
               <button
-                onClick={() => setGameState('menu')}
+                onClick={() => {
+                  // Clear auto-continue timer
+                  if (autoContinueTimerRef.current) {
+                    clearTimeout(autoContinueTimerRef.current);
+                    autoContinueTimerRef.current = null;
+                    console.log('⏱️ Auto-continue timer cleared on menu return');
+                  }
+                  setGameState('menu');
+                }}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
               >
                 Back to main menu
@@ -4642,7 +4674,15 @@ const CognitiveTaskGame = () => {
                 Returning to menu in 5 seconds...
               </div>
               <button
-                onClick={() => setGameState('menu')}
+                onClick={() => {
+                  // Clear auto-continue timer
+                  if (autoContinueTimerRef.current) {
+                    clearTimeout(autoContinueTimerRef.current);
+                    autoContinueTimerRef.current = null;
+                    console.log('⏱️ Auto-continue timer cleared on menu return');
+                  }
+                  setGameState('menu');
+                }}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg"
               >
                 Back to main menu
