@@ -80,18 +80,22 @@ const CognitiveTaskGame = () => {
   const [savedAdaptiveLevel, setSavedAdaptiveLevel] = useState(1);
   const [highestLevel, setHighestLevel] = useState(1);
   const [selectedRelationTypes, setSelectedRelationTypes] = useState({
+    'same-format': true,
+    'meaning': true,
+    'parity-same-format': true,
+    'parity-mixed-format': true,
     'whole-part': true,
     'antonym': true,
     'same-color': true,
     'followup-numerical': true,
     'physical-numerical': true,
-    'meaning': true,
     'same-time': true,
     'even': true,
     'odd': true,
     'doubled': true,
     'tripled': true
   });
+  const [showManualModeOptions, setShowManualModeOptions] = useState(false); // Toggle for showing manual mode options
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [autoContinueEnabled, setAutoContinueEnabled] = useState(false);
   const [autoContinueDelay, setAutoContinueDelay] = useState(3); // 1-20 seconds
@@ -3418,6 +3422,127 @@ const CognitiveTaskGame = () => {
       const format2 = formats[Math.floor(Math.random() * formats.length)];
 
       return [format1(num1), format2(num2)];
+    } else if (relationType === 'parity-same-format') {
+      // For parity-same-format, generate pairs with DIFFERENT parity (one odd, one even) in the SAME format
+      const numberToChinese = (n) => {
+        const chinese = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+        return chinese[n] || String(n);
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0';
+        const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      // Pick one even (2,4,6,8) and one odd (1,3,5,7,9) number from 1-9
+      const evenNums = [2, 4, 6, 8];
+      const oddNums = [1, 3, 5, 7, 9];
+      const evenNum = evenNums[Math.floor(Math.random() * evenNums.length)];
+      const oddNum = oddNums[Math.floor(Math.random() * oddNums.length)];
+
+      // Choose one format (Arabic, Chinese, or Roman)
+      const formats = [
+        (n) => String(n), // Arabic
+        (n) => numberToChinese(n), // Chinese
+        (n) => numberToRoman(n) // Roman
+      ];
+      const format = formats[Math.floor(Math.random() * formats.length)];
+
+      // Randomly decide which comes first
+      return Math.random() < 0.5 ? [format(evenNum), format(oddNum)] : [format(oddNum), format(evenNum)];
+    } else if (relationType === 'parity-mixed-format') {
+      // For parity-mixed-format, generate pairs with DIFFERENT parity (one odd, one even) in DIFFERENT formats
+      const numberToChinese = (n) => {
+        const chinese = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+        return chinese[n] || String(n);
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0';
+        const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      // Pick one even (2,4,6,8) and one odd (1,3,5,7,9) number from 1-9
+      const evenNums = [2, 4, 6, 8];
+      const oddNums = [1, 3, 5, 7, 9];
+      const evenNum = evenNums[Math.floor(Math.random() * evenNums.length)];
+      const oddNum = oddNums[Math.floor(Math.random() * oddNums.length)];
+
+      // Choose two DIFFERENT formats
+      const formats = [
+        (n) => String(n), // Arabic
+        (n) => numberToChinese(n), // Chinese
+        (n) => numberToRoman(n) // Roman
+      ];
+      let format1 = formats[Math.floor(Math.random() * formats.length)];
+      let format2 = formats[Math.floor(Math.random() * formats.length)];
+      // Ensure formats are different
+      while (format1 === format2) {
+        format2 = formats[Math.floor(Math.random() * formats.length)];
+      }
+
+      // Randomly decide which comes first
+      return Math.random() < 0.5 ? [format1(evenNum), format2(oddNum)] : [format1(oddNum), format2(evenNum)];
+    } else if (relationType === 'same-format') {
+      // For same-format, generate pairs in DIFFERENT formats (not matching)
+      const numberToChinese = (n) => {
+        const chinese = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+        return chinese[n] || String(n);
+      };
+
+      const numberToRoman = (n) => {
+        if (n === 0) return '0';
+        const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const syms = ['IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
+        let roman = '';
+        for (let i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            roman += syms[i];
+            n -= vals[i];
+          }
+        }
+        return roman;
+      };
+
+      // Pick two different numbers from 1-9
+      let num1 = Math.floor(Math.random() * 9) + 1;
+      let num2 = Math.floor(Math.random() * 9) + 1;
+      while (num1 === num2) {
+        num2 = Math.floor(Math.random() * 9) + 1;
+      }
+
+      // Choose two DIFFERENT formats
+      const formats = [
+        (n) => String(n), // Arabic
+        (n) => numberToChinese(n), // Chinese
+        (n) => numberToRoman(n) // Roman
+      ];
+      let format1 = formats[Math.floor(Math.random() * formats.length)];
+      let format2 = formats[Math.floor(Math.random() * formats.length)];
+      // Ensure formats are different
+      while (format1 === format2) {
+        format2 = formats[Math.floor(Math.random() * formats.length)];
+      }
+
+      return [format1(num1), format2(num2)];
     }
 
     return ['error', 'error'];
@@ -4265,55 +4390,69 @@ const CognitiveTaskGame = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-3">
-                Relationship Types to Include:
+            <div className="mt-4">
+              <label className="flex items-center space-x-3 cursor-pointer bg-indigo-800/50 p-3 rounded-lg hover:bg-indigo-800/70 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={showManualModeOptions}
+                  onChange={(e) => setShowManualModeOptions(e.target.checked)}
+                  className="w-5 h-5 cursor-pointer"
+                />
+                <span className="text-base font-medium">Enable Manual Mode Options (Select Specific Relationship Types)</span>
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {Object.keys(relationTypes).map(key => (
-                  <label key={key} className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedRelationTypes[key]}
-                      onChange={(e) => {
-                        setSelectedRelationTypes(prev => ({
-                          ...prev,
-                          [key]: e.target.checked
-                        }));
-                      }}
-                      className="w-4 h-4 cursor-pointer"
-                    />
-                    <span className="text-sm">{relationTypes[key]}</span>
-                  </label>
-                ))}
-              </div>
-              <div className="mt-2 flex gap-2">
-                <button
-                  onClick={() => {
-                    const allSelected = {};
-                    Object.keys(relationTypes).forEach(key => {
-                      allSelected[key] = true;
-                    });
-                    setSelectedRelationTypes(allSelected);
-                  }}
-                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
-                >
-                  Select All
-                </button>
-                <button
-                  onClick={() => {
-                    const noneSelected = {};
-                    Object.keys(relationTypes).forEach(key => {
-                      noneSelected[key] = false;
-                    });
-                    setSelectedRelationTypes(noneSelected);
-                  }}
-                  className="text-xs bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded"
-                >
-                  Deselect All
-                </button>
-              </div>
             </div>
+
+            {showManualModeOptions && (
+              <div className="mt-4 p-4 bg-indigo-800/30 rounded-lg border border-indigo-600/50">
+                <label className="block text-sm font-medium mb-3">
+                  Relationship Types to Include:
+                </label>
+                <div className="grid grid-cols-1 gap-3">
+                  {Object.keys(relationTypes).map(key => (
+                    <label key={key} className="flex items-start space-x-2 cursor-pointer hover:bg-indigo-700/30 p-2 rounded transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={selectedRelationTypes[key]}
+                        onChange={(e) => {
+                          setSelectedRelationTypes(prev => ({
+                            ...prev,
+                            [key]: e.target.checked
+                          }));
+                        }}
+                        className="w-4 h-4 cursor-pointer mt-1 flex-shrink-0"
+                      />
+                      <span className="text-sm leading-tight">{relationTypes[key]}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      const allSelected = {};
+                      Object.keys(relationTypes).forEach(key => {
+                        allSelected[key] = true;
+                      });
+                      setSelectedRelationTypes(allSelected);
+                    }}
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => {
+                      const noneSelected = {};
+                      Object.keys(relationTypes).forEach(key => {
+                        noneSelected[key] = false;
+                      });
+                      setSelectedRelationTypes(noneSelected);
+                    }}
+                    className="text-xs bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Deselect All
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
