@@ -262,21 +262,35 @@ const CognitiveTaskGame = () => {
 
     let mounted = true;
 
-    // Restore session on mount with retry for Chrome compatibility
+    // Restore session on mount with extended retry for Chrome/Samsung compatibility
     const restoreSession = async (retryCount = 0) => {
+      const maxRetries = 3; // Increased from 1 to 3 for Samsung Chrome
+      const retryDelays = [500, 1000, 2000]; // Exponential backoff delays
+
       try {
-        console.log('🔐 Attempting to restore session...', retryCount > 0 ? `(retry ${retryCount})` : '');
+        console.log('🔐 Attempting to restore session...', retryCount > 0 ? `(retry ${retryCount}/${maxRetries})` : '');
+
+        // Add delay before attempting if this is a retry, to allow storage to stabilize
+        if (retryCount > 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('❌ Session restore error:', error.message);
-          // Retry once after a short delay for Chrome
-          if (retryCount === 0) {
+          console.error('❌ Session restore error:', error.message, error.code || '');
+
+          // Retry with exponential backoff for Chrome/Samsung
+          if (retryCount < maxRetries) {
+            const delay = retryDelays[retryCount] || 2000;
+            console.log(`⏳ Retrying session restore in ${delay}ms...`);
             setTimeout(() => {
-              if (mounted) restoreSession(1);
-            }, 500);
+              if (mounted) restoreSession(retryCount + 1);
+            }, delay);
             return;
           }
+
+          console.error('❌ Session restore failed after', maxRetries, 'retries');
           setUser(null);
           return;
         }
@@ -291,14 +305,19 @@ const CognitiveTaskGame = () => {
           setUser(null);
         }
       } catch (error) {
-        console.error('❌ Session restore exception:', error);
-        // Retry once after a short delay for Chrome
-        if (retryCount === 0) {
+        console.error('❌ Session restore exception:', error.message || error);
+
+        // Retry with exponential backoff for Chrome/Samsung
+        if (retryCount < maxRetries) {
+          const delay = retryDelays[retryCount] || 2000;
+          console.log(`⏳ Retrying session restore in ${delay}ms after exception...`);
           setTimeout(() => {
-            if (mounted) restoreSession(1);
-          }, 500);
+            if (mounted) restoreSession(retryCount + 1);
+          }, delay);
           return;
         }
+
+        console.error('❌ Session restore failed after', maxRetries, 'retries (exception)');
         setUser(null);
       }
     };
@@ -306,20 +325,35 @@ const CognitiveTaskGame = () => {
     restoreSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
+      console.log('🔔 Auth state change:', event, session?.user?.email || 'no user');
+
       if (event === 'SIGNED_IN' && session?.user) {
+        console.log('✅ User signed in:', session.user.email);
         setUser(session.user);
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
         loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 User signed out');
         setUser(null);
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        console.log('🔄 Token refreshed successfully for:', session.user.email);
         setUser(session.user);
+      } else if (event === 'TOKEN_REFRESH_FAILED') {
+        console.error('❌ Token refresh failed - attempting to restore session');
+        // Try to restore session with extended retry logic
+        setTimeout(() => {
+          if (mounted) {
+            console.log('🔄 Attempting session restore after token refresh failure...');
+            restoreSession(0);
+          }
+        }, 1000);
       } else if (event === 'USER_UPDATED' && session?.user) {
+        console.log('👤 User updated:', session.user.email);
         setUser(session.user);
       }
     });
@@ -632,13 +666,37 @@ const CognitiveTaskGame = () => {
   }, []);
 
   // Leaderboard loading
-  const loadLeaderboard = useCallback(async () => {
+  const loadLeaderboard = useCallback(async (retryCount = 0) => {
     if (!isSupabaseConfigured()) {
       console.warn('⚠️ Leaderboard load skipped - Supabase not configured');
       return;
     }
 
-    console.log('📊 Loading leaderboard data...');
+    console.log('📊 Loading leaderboard data...', retryCount > 0 ? `(retry ${retryCount})` : '');
+
+    // Check if we have a valid session first
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.warn('⚠️ Session check failed before leaderboard load:', sessionError.message);
+        // Try to restore session if this is the first attempt
+        if (retryCount === 0) {
+          console.log('🔄 Attempting to restore session before loading leaderboard...');
+          setTimeout(() => loadLeaderboard(1), 1000);
+          return;
+        }
+      }
+
+      if (!session && retryCount === 0) {
+        console.log('ℹ️ No active session - will load public leaderboard data');
+      } else if (session?.user) {
+        console.log('✅ Valid session found for:', session.user.email);
+      }
+    } catch (sessionCheckError) {
+      console.warn('⚠️ Session check exception:', sessionCheckError);
+    }
+
     try {
       const { data, error } = await supabase
         .from('leaderboard')
@@ -652,6 +710,14 @@ const CognitiveTaskGame = () => {
         console.error('   Error code:', error.code);
         console.error('   Error message:', error.message);
         console.error('   Error details:', error.details);
+
+        // If it's an auth error and we haven't retried yet, try again after refreshing session
+        if ((error.code === 'PGRST301' || error.message?.includes('JWT')) && retryCount === 0) {
+          console.log('🔄 Auth error detected - retrying leaderboard load after session refresh...');
+          setTimeout(() => loadLeaderboard(1), 1500);
+          return;
+        }
+
         setLeaderboard([]);
       } else {
         console.log(`✅ Leaderboard loaded: ${data?.length || 0} entries`);
@@ -662,6 +728,14 @@ const CognitiveTaskGame = () => {
       }
     } catch (error) {
       console.error('❌ Leaderboard load exception:', error);
+
+      // Retry once if network or auth issue
+      if (retryCount === 0 && (error.message?.includes('JWT') || error.message?.includes('network'))) {
+        console.log('🔄 Retrying leaderboard load after exception...');
+        setTimeout(() => loadLeaderboard(1), 1500);
+        return;
+      }
+
       setLeaderboard([]);
     }
   }, []); // No dependencies - this function doesn't need to be recreated
