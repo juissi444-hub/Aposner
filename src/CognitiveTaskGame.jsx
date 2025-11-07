@@ -957,13 +957,19 @@ const CognitiveTaskGame = () => {
   };
 
   const relationTypes = {
+    // Level 1-2 tasks (used in adaptive mode training - from study)
+    'same-format': 'Same Format (1-2, V-VI, 三-四) - Physical property',
+    'meaning': 'Same Meaning (2-two-II-二) - Semantic property',
+
+    // Experimental tasks (all other relation types)
     'whole-part': 'Whole-Part (fish-pike, world-France)',
     'antonym': 'Antonym/Opposite (dark-light, cold-warm)',
     'same-color': 'Same Color (grass-emerald, paper-snow)',
     'followup-numerical': 'Sequential Numbers (3-4, 24-25)',
     'physical-numerical': 'Sequential Number Forms (one-two, II-III, 3-4)',
-    'meaning': 'Same Meaning Numbers (2-two, V-5, five-5)',
     'same-time': 'Same Time (🕐-1:00, 3:30-half past three)',
+
+    // Level 3-4 tasks (testing/transfer measurement only)
     'even': 'Both Even (2-4, IV-VIII, two-six)',
     'odd': 'Both Odd (3-5, VII-IX, three-nine)',
     'doubled': 'Doubled (2-4, II-IV, two-four)',
@@ -984,7 +990,9 @@ const CognitiveTaskGame = () => {
     // Difficulty increases through time pressure, NOT task type changes
     if (mode === 'adaptive') {
       // Training used ONLY these task types throughout all 12 days
-      return ['whole-part', 'antonym', 'same-color', 'meaning'];
+      // Level 1: Physical property (same format)
+      // Level 2: Semantic property (same meaning)
+      return ['same-format', 'meaning'];
     }
 
     // Default: all types
@@ -992,6 +1000,45 @@ const CognitiveTaskGame = () => {
   };
 
   const wordPairs = {
+    // Level 1-2 tasks from study (using numbers 1-9 in different formats)
+    'same-format': [
+      // Arabic-Arabic pairs
+      ['1', '2'], ['3', '4'], ['5', '6'], ['7', '8'], ['1', '9'],
+      ['2', '3'], ['4', '5'], ['6', '7'], ['8', '9'], ['1', '3'],
+      ['2', '4'], ['3', '5'], ['4', '6'], ['5', '7'], ['6', '8'],
+      ['7', '9'], ['1', '4'], ['2', '5'], ['3', '6'], ['4', '7'],
+
+      // Chinese-Chinese pairs (一~九)
+      ['一', '二'], ['三', '四'], ['五', '六'], ['七', '八'], ['一', '九'],
+      ['二', '三'], ['四', '五'], ['六', '七'], ['八', '九'], ['一', '三'],
+      ['二', '四'], ['三', '五'], ['四', '六'], ['五', '七'], ['六', '八'],
+      ['七', '九'], ['一', '四'], ['二', '五'], ['三', '六'], ['四', '七'],
+
+      // Roman-Roman pairs (I-IX)
+      ['I', 'II'], ['III', 'IV'], ['V', 'VI'], ['VII', 'VIII'], ['I', 'IX'],
+      ['II', 'III'], ['IV', 'V'], ['VI', 'VII'], ['VIII', 'IX'], ['I', 'III'],
+      ['II', 'IV'], ['III', 'V'], ['IV', 'VI'], ['V', 'VII'], ['VI', 'VIII'],
+      ['VII', 'IX'], ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII']
+    ],
+
+    'meaning': [
+      // Same meaning across different formats
+      ['1', '一'], ['2', '二'], ['3', '三'], ['4', '四'], ['5', '五'],
+      ['6', '六'], ['7', '七'], ['8', '八'], ['9', '九'],
+      ['1', 'I'], ['2', 'II'], ['3', 'III'], ['4', 'IV'], ['5', 'V'],
+      ['6', 'VI'], ['7', 'VII'], ['8', 'VIII'], ['9', 'IX'],
+      ['一', 'I'], ['二', 'II'], ['三', 'III'], ['四', 'IV'], ['五', 'V'],
+      ['六', 'VI'], ['七', 'VII'], ['八', 'VIII'], ['九', 'IX'],
+
+      // Matching numbers in same format
+      ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'],
+      ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'],
+      ['一', '一'], ['二', '二'], ['三', '三'], ['四', '四'], ['五', '五'],
+      ['六', '六'], ['七', '七'], ['八', '八'], ['九', '九'],
+      ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'],
+      ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX']
+    ],
+
     'whole-part': [
       ['animal', 'dog'], ['tree', 'oak'], ['fish', 'salmon'], ['bird', 'eagle'], ['flower', 'rose'],
       ['vehicle', 'car'], ['fruit', 'apple'], ['furniture', 'chair'], ['building', 'house'], ['color', 'red'],
@@ -2078,37 +2125,6 @@ const CognitiveTaskGame = () => {
       ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92'],
       // Roman numeral C (100) - final Roman numeral
       ['C', '100'], ['99', 'C'], ['XCIX', 'C'], ['ninety-nine', 'C']
-    ],
-    'meaning': [
-      // Digit to word
-      ['1', 'one'], ['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five'],
-      ['6', 'six'], ['7', 'seven'], ['8', 'eight'], ['9', 'nine'], ['10', 'ten'],
-      ['11', 'eleven'], ['12', 'twelve'], ['13', 'thirteen'], ['14', 'fourteen'], ['15', 'fifteen'],
-      ['16', 'sixteen'], ['17', 'seventeen'], ['18', 'eighteen'], ['19', 'nineteen'], ['20', 'twenty'],
-      ['21', 'twenty-one'], ['22', 'twenty-two'], ['23', 'twenty-three'], ['24', 'twenty-four'], ['25', 'twenty-five'],
-      ['26', 'twenty-six'], ['27', 'twenty-seven'], ['28', 'twenty-eight'], ['29', 'twenty-nine'], ['30', 'thirty'],
-      ['31', 'thirty-one'], ['32', 'thirty-two'], ['33', 'thirty-three'], ['40', 'forty'], ['50', 'fifty'],
-      // Word to Roman
-      ['one', 'I'], ['two', 'II'], ['three', 'III'], ['four', 'IV'], ['five', 'V'],
-      ['six', 'VI'], ['seven', 'VII'], ['eight', 'VIII'], ['nine', 'IX'], ['ten', 'X'],
-      ['eleven', 'XI'], ['twelve', 'XII'], ['thirteen', 'XIII'], ['fourteen', 'XIV'], ['fifteen', 'XV'],
-      ['sixteen', 'XVI'], ['seventeen', 'XVII'], ['eighteen', 'XVIII'], ['nineteen', 'XIX'], ['twenty', 'XX'],
-      ['twenty-one', 'XXI'], ['twenty-two', 'XXII'], ['twenty-three', 'XXIII'], ['twenty-four', 'XXIV'], ['twenty-five', 'XXV'],
-      ['twenty-six', 'XXVI'], ['twenty-seven', 'XXVII'], ['twenty-eight', 'XXVIII'], ['twenty-nine', 'XXIX'], ['thirty', 'XXX'],
-      // Roman to digit
-      ['I', '1'], ['II', '2'], ['III', '3'], ['IV', '4'], ['V', '5'],
-      ['VI', '6'], ['VII', '7'], ['VIII', '8'], ['IX', '9'], ['X', '10'],
-      ['XI', '11'], ['XII', '12'], ['XIII', '13'], ['XIV', '14'], ['XV', '15'],
-      ['XVI', '16'], ['XVII', '17'], ['XVIII', '18'], ['XIX', '19'], ['XX', '20'],
-      ['XXI', '21'], ['XXII', '22'], ['XXIII', '23'], ['XXIV', '24'], ['XXV', '25'],
-      ['XXVI', '26'], ['XXVII', '27'], ['XXVIII', '28'], ['XXIX', '29'], ['XXX', '30'],
-      ['XL', '40'], ['L', '50'], ['LX', '60'], ['LXX', '70'], ['LXXX', '80'], ['XC', '90'], ['C', '100'],
-      // More combinations
-      ['forty', 'XL'], ['fifty', 'L'], ['sixty', 'LX'], ['seventy', 'LXX'], ['eighty', 'LXXX'],
-      ['ninety', 'XC'], ['hundred', 'C'], ['100', 'hundred'], ['60', 'sixty'], ['70', 'seventy'],
-      ['80', 'eighty'], ['90', 'ninety'],
-      // C (100) is the final Roman numeral
-      ['C', '100'], ['one hundred', 'C'], ['100', 'one hundred']
     ],
     'same-time': [
       // Clock emoji to digital
@@ -4003,13 +4019,19 @@ const CognitiveTaskGame = () => {
                   <strong>Standard Adaptive Mode (Study Design):</strong>
                 </p>
                 <p className="text-xs text-blue-200 mt-1">
-                  • ALL levels use ONLY Level 1-2 type tasks (whole-part, antonym, same-color, meaning)
+                  • Level 1: Same Format (1-2, III-IV, 五-六) - Physical property
+                </p>
+                <p className="text-xs text-blue-200">
+                  • Level 2: Same Meaning (2-二-II) - Semantic property
                 </p>
                 <p className="text-xs text-blue-200 mt-1">
-                  • Difficulty increases through time pressure, not task type changes
+                  • Uses numbers 1-9 in Arabic, Chinese (一~九), and Roman numerals (I-IX)
+                </p>
+                <p className="text-xs text-blue-200">
+                  • Difficulty increases through time pressure only (2000ms → 87.5ms)
                 </p>
                 <p className="text-xs text-blue-400 mt-2 italic">
-                  Note: Level 3-4 tasks (even, odd, doubled, etc.) were used only for pre/post testing in the study, not during training
+                  Note: Level 3-4 tasks (odd/even parity) were used only for pre/post testing, not training
                 </p>
               </div>
             )}
