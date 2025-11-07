@@ -13,113 +13,52 @@ const isValidCredentials = () => {
   return true;
 };
 
-// Enhanced storage adapter for mobile Chrome compatibility
-// Provides fallback chain: localStorage -> sessionStorage -> memory
-// This ensures authentication persists across page refreshes even on problematic browsers
+// Simple localStorage adapter with Chrome compatibility
+// Uses standard localStorage API with proper error handling
 const createCustomStorage = () => {
-  const memoryStore = new Map(); // Last resort fallback
-
-  // Test if storage APIs are available
-  const testStorage = (storage) => {
+  // Test if localStorage is available
+  const testStorage = () => {
     try {
       const testKey = '__storage_test__';
-      storage.setItem(testKey, 'test');
-      storage.removeItem(testKey);
+      window.localStorage.setItem(testKey, 'test');
+      window.localStorage.removeItem(testKey);
       return true;
     } catch (e) {
+      console.error('❌ localStorage not available:', e);
       return false;
     }
   };
 
-  const localStorageAvailable = testStorage(window.localStorage);
-  const sessionStorageAvailable = testStorage(window.sessionStorage);
+  const isAvailable = testStorage();
 
-  console.log('🔐 Storage availability:', {
-    localStorage: localStorageAvailable,
-    sessionStorage: sessionStorageAvailable
-  });
+  if (!isAvailable) {
+    console.warn('⚠️ localStorage not available - auth will not persist across refreshes');
+  }
 
   return {
     getItem: (key) => {
+      if (!isAvailable) return null;
       try {
-        // Try localStorage first (persists across browser restarts)
-        if (localStorageAvailable) {
-          const item = window.localStorage.getItem(key);
-          if (item !== null) {
-            return item;
-          }
-        }
-
-        // Try sessionStorage second (persists across page refreshes)
-        if (sessionStorageAvailable) {
-          const item = window.sessionStorage.getItem(key);
-          if (item !== null) {
-            // Copy to localStorage for future persistence
-            if (localStorageAvailable) {
-              try {
-                window.localStorage.setItem(key, item);
-              } catch (e) {
-                // Ignore if localStorage is full
-              }
-            }
-            return item;
-          }
-        }
-
-        // Last resort: memory store (only lasts until page refresh)
-        const item = memoryStore.get(key);
-        return item || null;
+        return window.localStorage.getItem(key);
       } catch (e) {
         console.error('❌ Storage read error:', e);
-        return memoryStore.get(key) || null;
+        return null;
       }
     },
     setItem: (key, value) => {
+      if (!isAvailable) return;
       try {
-        let stored = false;
-
-        // Try localStorage first
-        if (localStorageAvailable) {
-          try {
-            window.localStorage.setItem(key, value);
-            stored = true;
-          } catch (e) {
-            console.warn('⚠️ localStorage write failed:', e.message);
-          }
-        }
-
-        // Try sessionStorage as backup
-        if (sessionStorageAvailable) {
-          try {
-            window.sessionStorage.setItem(key, value);
-            stored = true;
-          } catch (e) {
-            console.warn('⚠️ sessionStorage write failed:', e.message);
-          }
-        }
-
-        // Always store in memory as last resort
-        memoryStore.set(key, value);
-        if (!stored) {
-          console.warn('⚠️ Only stored in memory (will not persist refresh)');
-        }
+        window.localStorage.setItem(key, value);
       } catch (e) {
         console.error('❌ Storage write error:', e);
-        memoryStore.set(key, value);
       }
     },
     removeItem: (key) => {
+      if (!isAvailable) return;
       try {
-        if (localStorageAvailable) {
-          window.localStorage.removeItem(key);
-        }
-        if (sessionStorageAvailable) {
-          window.sessionStorage.removeItem(key);
-        }
-        memoryStore.delete(key);
+        window.localStorage.removeItem(key);
       } catch (e) {
         console.error('❌ Storage remove error:', e);
-        memoryStore.delete(key);
       }
     }
   };
@@ -127,16 +66,14 @@ const createCustomStorage = () => {
 
 // Create Supabase client with persistent session storage
 // This ensures login persists across page refreshes
-// Uses custom storage adapter for Samsung Chrome compatibility
+// Uses simple localStorage adapter for Chrome compatibility
 export const supabase = isValidCredentials()
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true, // CRITICAL: Keep user logged in across refreshes
         autoRefreshToken: true, // Auto-refresh tokens to keep session alive
         detectSessionInUrl: false, // Don't check URL for auth callbacks
-        storage: createCustomStorage(), // Custom storage for Samsung Chrome
-        storageKey: 'aposner-auth-session', // Custom key for session storage
-        flowType: 'pkce' // Use PKCE flow for better security
+        storage: createCustomStorage() // Simple localStorage for Chrome compatibility
       }
     })
   : null;

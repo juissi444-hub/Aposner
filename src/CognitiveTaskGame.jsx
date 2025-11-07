@@ -262,24 +262,43 @@ const CognitiveTaskGame = () => {
 
     let mounted = true;
 
-    // Restore session on mount
-    const restoreSession = async () => {
+    // Restore session on mount with retry for Chrome compatibility
+    const restoreSession = async (retryCount = 0) => {
       try {
+        console.log('🔐 Attempting to restore session...', retryCount > 0 ? `(retry ${retryCount})` : '');
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
+          console.error('❌ Session restore error:', error.message);
+          // Retry once after a short delay for Chrome
+          if (retryCount === 0) {
+            setTimeout(() => {
+              if (mounted) restoreSession(1);
+            }, 500);
+            return;
+          }
           setUser(null);
           return;
         }
 
         if (session?.user) {
+          console.log('✅ Session restored successfully:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
           loadUserProgress(session.user.id);
         } else {
+          console.log('ℹ️ No active session found');
           setUser(null);
         }
       } catch (error) {
+        console.error('❌ Session restore exception:', error);
+        // Retry once after a short delay for Chrome
+        if (retryCount === 0) {
+          setTimeout(() => {
+            if (mounted) restoreSession(1);
+          }, 500);
+          return;
+        }
         setUser(null);
       }
     };
@@ -625,7 +644,8 @@ const CognitiveTaskGame = () => {
         .from('leaderboard')
         .select('*')
         .order('highest_level', { ascending: false })
-        .order('best_score', { ascending: false });
+        .order('best_score', { ascending: false })
+        .limit(100); // Limit to top 100 to improve performance
 
       if (error) {
         console.error('❌ Leaderboard query error:', error);
