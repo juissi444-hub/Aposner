@@ -836,17 +836,61 @@ const CognitiveTaskGame = () => {
             .eq('user_id', userId)
             .single();
 
-          // If query failed due to missing columns, retry with ONLY base schema columns
-          if (leaderboardError && leaderboardError.message && leaderboardError.message.includes('does not exist')) {
-            console.log('⚠️ Extended columns not found, retrying with minimal base schema only');
+          // If query failed due to missing columns (400 error or "does not exist" message),
+          // try without newest columns (korean_numerals_enabled)
+          if (leaderboardError && (leaderboardError.code === '42703' || leaderboardError.code === 'PGRST204' ||
+              (leaderboardError.message && (leaderboardError.message.includes('does not exist') || leaderboardError.message.includes('column'))))) {
+            console.log('⚠️ korean_numerals_enabled column not found, retrying without it');
+            const { data: retryData, error: retryError } = await supabase
+              .from('leaderboard')
+              .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode, chinese_numerals_enabled')
+              .eq('user_id', userId)
+              .single();
+
+            leaderboardData = retryData;
+            leaderboardError = retryError;
+          }
+
+          // If still failing, try without chinese_numerals_enabled too
+          if (leaderboardError && (leaderboardError.code === '42703' || leaderboardError.code === 'PGRST204' ||
+              (leaderboardError.message && (leaderboardError.message.includes('does not exist') || leaderboardError.message.includes('column'))))) {
+            console.log('⚠️ chinese_numerals_enabled column not found, retrying without it');
+            const { data: retryData2, error: retryError2 } = await supabase
+              .from('leaderboard')
+              .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode')
+              .eq('user_id', userId)
+              .single();
+
+            leaderboardData = retryData2;
+            leaderboardError = retryError2;
+          }
+
+          // If still failing, try with just training columns
+          if (leaderboardError && (leaderboardError.code === '42703' || leaderboardError.code === 'PGRST204' ||
+              (leaderboardError.message && (leaderboardError.message.includes('does not exist') || leaderboardError.message.includes('column'))))) {
+            console.log('⚠️ Extended columns not found, retrying with training columns only');
             const { data: baseData, error: baseError } = await supabase
               .from('leaderboard')
-              .select('highest_level, best_score')
+              .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes')
               .eq('user_id', userId)
               .single();
 
             leaderboardData = baseData;
             leaderboardError = baseError;
+          }
+
+          // Last resort: try with ONLY base schema columns
+          if (leaderboardError && (leaderboardError.code === '42703' || leaderboardError.code === 'PGRST204' ||
+              (leaderboardError.message && (leaderboardError.message.includes('does not exist') || leaderboardError.message.includes('column'))))) {
+            console.log('⚠️ Training columns not found, retrying with minimal base schema only');
+            const { data: finalData, error: finalError } = await supabase
+              .from('leaderboard')
+              .select('highest_level, best_score')
+              .eq('user_id', userId)
+              .single();
+
+            leaderboardData = finalData;
+            leaderboardError = finalError;
           }
 
           if (leaderboardError && leaderboardError.code !== 'PGRST116') {
