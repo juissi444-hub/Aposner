@@ -1549,12 +1549,10 @@ const CognitiveTaskGame = () => {
       ['이', '사'], ['삼', '오'], ['사', '육'], ['오', '칠'], ['육', '팔'],
       ['칠', '구'], ['일', '사'], ['이', '오'], ['삼', '육'], ['사', '칠'],
 
-      // Roman-Roman pairs (I-L / 1-50)
+      // Roman-Roman pairs (I-XXX / 1-30)
       ['I', 'II'], ['II', 'III'], ['III', 'IV'], ['IV', 'V'], ['V', 'VI'], ['VI', 'VII'], ['VII', 'VIII'], ['VIII', 'IX'], ['IX', 'X'],
       ['X', 'XI'], ['XI', 'XII'], ['XII', 'XIII'], ['XIII', 'XIV'], ['XIV', 'XV'], ['XV', 'XVI'], ['XVI', 'XVII'], ['XVII', 'XVIII'], ['XVIII', 'XIX'], ['XIX', 'XX'],
       ['XX', 'XXI'], ['XXI', 'XXII'], ['XXII', 'XXIII'], ['XXIII', 'XXIV'], ['XXIV', 'XXV'], ['XXV', 'XXVI'], ['XXVI', 'XXVII'], ['XXVII', 'XXVIII'], ['XXVIII', 'XXIX'], ['XXIX', 'XXX'],
-      ['XXX', 'XXXI'], ['XXXI', 'XXXII'], ['XXXII', 'XXXIII'], ['XXXIII', 'XXXIV'], ['XXXIV', 'XXXV'], ['XXXV', 'XXXVI'], ['XXXVI', 'XXXVII'], ['XXXVII', 'XXXVIII'], ['XXXVIII', 'XXXIX'], ['XXXIX', 'XL'],
-      ['XL', 'XLI'], ['XLI', 'XLII'], ['XLII', 'XLIII'], ['XLIII', 'XLIV'], ['XLIV', 'XLV'], ['XLV', 'XLVI'], ['XLVI', 'XLVII'], ['XLVII', 'XLVIII'], ['XLVIII', 'XLIX'], ['XLIX', 'L'],
       // Non-consecutive Roman pairs
       ['I', 'III'], ['II', 'IV'], ['III', 'V'], ['IV', 'VI'], ['V', 'VII'], ['VI', 'VIII'], ['VII', 'IX'], ['VIII', 'X'],
       ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII'], ['V', 'VIII'], ['VI', 'IX'], ['VII', 'X'],
@@ -1562,10 +1560,6 @@ const CognitiveTaskGame = () => {
       ['X', 'XIII'], ['XI', 'XIV'], ['XII', 'XV'], ['XIII', 'XVI'], ['XIV', 'XVII'], ['XV', 'XVIII'], ['XVI', 'XIX'], ['XVII', 'XX'],
       ['XX', 'XXII'], ['XXI', 'XXIII'], ['XXII', 'XXIV'], ['XXIII', 'XXV'], ['XXIV', 'XXVI'], ['XXV', 'XXVII'], ['XXVI', 'XXVIII'], ['XXVII', 'XXIX'], ['XXVIII', 'XXX'],
       ['XX', 'XXIII'], ['XXI', 'XXIV'], ['XXII', 'XXV'], ['XXIII', 'XXVI'], ['XXIV', 'XXVII'], ['XXV', 'XXVIII'], ['XXVI', 'XXIX'], ['XXVII', 'XXX'],
-      ['XXX', 'XXXII'], ['XXXI', 'XXXIII'], ['XXXII', 'XXXIV'], ['XXXIII', 'XXXV'], ['XXXIV', 'XXXVI'], ['XXXV', 'XXXVII'], ['XXXVI', 'XXXVIII'], ['XXXVII', 'XXXIX'], ['XXXVIII', 'XL'],
-      ['XXX', 'XXXIII'], ['XXXI', 'XXXIV'], ['XXXII', 'XXXV'], ['XXXIII', 'XXXVI'], ['XXXIV', 'XXXVII'], ['XXXV', 'XXXVIII'], ['XXXVI', 'XXXIX'], ['XXXVII', 'XL'],
-      ['XL', 'XLII'], ['XLI', 'XLIII'], ['XLII', 'XLIV'], ['XLIII', 'XLV'], ['XLIV', 'XLVI'], ['XLV', 'XLVII'], ['XLVI', 'XLVIII'], ['XLVII', 'XLIX'], ['XLVIII', 'L'],
-      ['XL', 'XLIII'], ['XLI', 'XLIV'], ['XLII', 'XLV'], ['XLIII', 'XLVI'], ['XLIV', 'XLVII'], ['XLV', 'XLVIII'], ['XLVI', 'XLIX'], ['XLVII', 'L'],
 
       // Verbal-Verbal pairs (English number words 1-1000)
       // 1-9
@@ -1602,13 +1596,11 @@ const CognitiveTaskGame = () => {
       // Same meaning across different formats
       // Arabic to Chinese (LIMITED TO 1-9 ONLY)
       ['1', '一'], ['2', '二'], ['3', '三'], ['4', '四'], ['5', '五'], ['6', '六'], ['7', '七'], ['8', '八'], ['9', '九'],
-      // Arabic to Roman (1-50)
+      // Arabic to Roman (1-30)
       ['1', 'I'], ['2', 'II'], ['3', 'III'], ['4', 'IV'], ['5', 'V'], ['6', 'VI'], ['7', 'VII'], ['8', 'VIII'], ['9', 'IX'],
       ['10', 'X'], ['11', 'XI'], ['12', 'XII'], ['13', 'XIII'], ['14', 'XIV'], ['15', 'XV'], ['16', 'XVI'], ['17', 'XVII'], ['18', 'XVIII'], ['19', 'XIX'],
       ['20', 'XX'], ['21', 'XXI'], ['22', 'XXII'], ['23', 'XXIII'], ['24', 'XXIV'], ['25', 'XXV'], ['26', 'XXVI'], ['27', 'XXVII'], ['28', 'XXVIII'], ['29', 'XXIX'],
-      ['30', 'XXX'], ['31', 'XXXI'], ['32', 'XXXII'], ['33', 'XXXIII'], ['34', 'XXXIV'], ['35', 'XXXV'], ['36', 'XXXVI'], ['37', 'XXXVII'], ['38', 'XXXVIII'], ['39', 'XXXIX'],
-      ['40', 'XL'], ['41', 'XLI'], ['42', 'XLII'], ['43', 'XLIII'], ['44', 'XLIV'], ['45', 'XLV'], ['46', 'XLVI'], ['47', 'XLVII'], ['48', 'XLVIII'], ['49', 'XLIX'],
-      ['50', 'L'],
+      ['30', 'XXX'],
       // Korean to Chinese (1-9 only)
       ['일', '一'], ['이', '二'], ['삼', '三'], ['사', '四'], ['오', '五'],
       ['육', '六'], ['칠', '七'], ['팔', '八'], ['구', '九'],
@@ -1637,9 +1629,7 @@ const CognitiveTaskGame = () => {
       ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'], ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX'],
       ['X', 'X'], ['XI', 'XI'], ['XII', 'XII'], ['XIII', 'XIII'], ['XIV', 'XIV'], ['XV', 'XV'], ['XVI', 'XVI'], ['XVII', 'XVII'], ['XVIII', 'XVIII'], ['XIX', 'XIX'],
       ['XX', 'XX'], ['XXI', 'XXI'], ['XXII', 'XXII'], ['XXIII', 'XXIII'], ['XXIV', 'XXIV'], ['XXV', 'XXV'], ['XXVI', 'XXVI'], ['XXVII', 'XXVII'], ['XXVIII', 'XXVIII'], ['XXIX', 'XXIX'],
-      ['XXX', 'XXX'], ['XXXI', 'XXXI'], ['XXXII', 'XXXII'], ['XXXIII', 'XXXIII'], ['XXXIV', 'XXXIV'], ['XXXV', 'XXXV'], ['XXXVI', 'XXXVI'], ['XXXVII', 'XXXVII'], ['XXXVIII', 'XXXVIII'], ['XXXIX', 'XXXIX'],
-      ['XL', 'XL'], ['XLI', 'XLI'], ['XLII', 'XLII'], ['XLIII', 'XLIII'], ['XLIV', 'XLIV'], ['XLV', 'XLV'], ['XLVI', 'XLVI'], ['XLVII', 'XLVII'], ['XLVIII', 'XLVIII'], ['XLIX', 'XLIX'],
-      ['L', 'L']
+      ['XXX', 'XXX']
     ],
 
     // Level 3 task: Parity judgment - same format
@@ -1676,21 +1666,11 @@ const CognitiveTaskGame = () => {
       ['XV', 'XVII'], ['XV', 'XIX'], ['XV', 'XXI'], ['XV', 'XXIII'], ['XV', 'XXV'],
       ['XVII', 'XIX'], ['XVII', 'XXI'], ['XVII', 'XXIII'], ['XVII', 'XXV'],
       ['XIX', 'XXI'], ['XIX', 'XXIII'], ['XIX', 'XXV'],
-      ['XXI', 'XXIII'], ['XXI', 'XXV'], ['XXI', 'XXVII'], ['XXI', 'XXIX'], ['XXI', 'XXXI'],
-      ['XXIII', 'XXV'], ['XXIII', 'XXVII'], ['XXIII', 'XXIX'], ['XXIII', 'XXXI'],
-      ['XXV', 'XXVII'], ['XXV', 'XXIX'], ['XXV', 'XXXI'],
-      ['XXVII', 'XXIX'], ['XXVII', 'XXXI'],
-      ['XXIX', 'XXXI'], ['XXIX', 'XXXIII'], ['XXIX', 'XXXV'],
-      ['XXXI', 'XXXIII'], ['XXXI', 'XXXV'], ['XXXI', 'XXXVII'], ['XXXI', 'XXXIX'],
-      ['XXXIII', 'XXXV'], ['XXXIII', 'XXXVII'], ['XXXIII', 'XXXIX'],
-      ['XXXV', 'XXXVII'], ['XXXV', 'XXXIX'],
-      ['XXXVII', 'XXXIX'],
-      ['XXXIX', 'XLI'], ['XXXIX', 'XLIII'], ['XXXIX', 'XLV'],
-      ['XLI', 'XLIII'], ['XLI', 'XLV'], ['XLI', 'XLVII'], ['XLI', 'XLIX'],
-      ['XLIII', 'XLV'], ['XLIII', 'XLVII'], ['XLIII', 'XLIX'],
-      ['XLV', 'XLVII'], ['XLV', 'XLIX'],
-      ['XLVII', 'XLIX'],
-      // Both even - Roman (1-50)
+      ['XXI', 'XXIII'], ['XXI', 'XXV'], ['XXI', 'XXVII'], ['XXI', 'XXIX'],
+      ['XXIII', 'XXV'], ['XXIII', 'XXVII'], ['XXIII', 'XXIX'],
+      ['XXV', 'XXVII'], ['XXV', 'XXIX'],
+      ['XXVII', 'XXIX'],
+      // Both even - Roman (1-30)
       ['II', 'IV'], ['II', 'VI'], ['II', 'VIII'], ['II', 'X'], ['II', 'XII'], ['II', 'XIV'], ['II', 'XVI'], ['II', 'XVIII'],
       ['IV', 'VI'], ['IV', 'VIII'], ['IV', 'X'], ['IV', 'XII'], ['IV', 'XIV'], ['IV', 'XVI'], ['IV', 'XVIII'],
       ['VI', 'VIII'], ['VI', 'X'], ['VI', 'XII'], ['VI', 'XIV'], ['VI', 'XVI'], ['VI', 'XVIII'],
@@ -1704,17 +1684,7 @@ const CognitiveTaskGame = () => {
       ['XXII', 'XXIV'], ['XXII', 'XXVI'], ['XXII', 'XXVIII'], ['XXII', 'XXX'],
       ['XXIV', 'XXVI'], ['XXIV', 'XXVIII'], ['XXIV', 'XXX'],
       ['XXVI', 'XXVIII'], ['XXVI', 'XXX'],
-      ['XXVIII', 'XXX'], ['XXVIII', 'XXXII'], ['XXVIII', 'XXXIV'],
-      ['XXX', 'XXXII'], ['XXX', 'XXXIV'], ['XXX', 'XXXVI'], ['XXX', 'XXXVIII'],
-      ['XXXII', 'XXXIV'], ['XXXII', 'XXXVI'], ['XXXII', 'XXXVIII'],
-      ['XXXIV', 'XXXVI'], ['XXXIV', 'XXXVIII'],
-      ['XXXVI', 'XXXVIII'],
-      ['XXXVIII', 'XL'], ['XXXVIII', 'XLII'], ['XXXVIII', 'XLIV'],
-      ['XL', 'XLII'], ['XL', 'XLIV'], ['XL', 'XLVI'], ['XL', 'XLVIII'], ['XL', 'L'],
-      ['XLII', 'XLIV'], ['XLII', 'XLVI'], ['XLII', 'XLVIII'], ['XLII', 'L'],
-      ['XLIV', 'XLVI'], ['XLIV', 'XLVIII'], ['XLIV', 'L'],
-      ['XLVI', 'XLVIII'], ['XLVI', 'L'],
-      ['XLVIII', 'L']
+      ['XXVIII', 'XXX']
     ],
 
     // Level 4 task: Parity judgment - mixed format
@@ -1740,7 +1710,7 @@ const CognitiveTaskGame = () => {
       ['이', '四'], ['사', '六'], ['육', '八'], ['이', '六'], ['사', '二'],
       ['육', '四'], ['팔', '六'], ['팔', '二'],
 
-      // Both odd - Arabic-Roman (1-50)
+      // Both odd - Arabic-Roman (1-30)
       ['1', 'III'], ['1', 'V'], ['1', 'VII'], ['1', 'IX'], ['1', 'XI'], ['1', 'XIII'], ['1', 'XV'],
       ['3', 'I'], ['3', 'V'], ['3', 'VII'], ['3', 'IX'], ['3', 'XI'], ['3', 'XIII'], ['3', 'XV'],
       ['5', 'I'], ['5', 'III'], ['5', 'VII'], ['5', 'IX'], ['5', 'XI'], ['5', 'XIII'], ['5', 'XV'],
@@ -1756,17 +1726,7 @@ const CognitiveTaskGame = () => {
       ['25', 'I'], ['25', 'V'], ['25', 'IX'], ['25', 'XIII'], ['25', 'XVII'], ['25', 'XXI'], ['25', 'XXIII'],
       ['27', 'I'], ['27', 'V'], ['27', 'IX'], ['27', 'XIII'], ['27', 'XVII'], ['27', 'XXI'], ['27', 'XXV'],
       ['29', 'I'], ['29', 'V'], ['29', 'IX'], ['29', 'XIII'], ['29', 'XVII'], ['29', 'XXI'], ['29', 'XXV'],
-      ['31', 'I'], ['31', 'V'], ['31', 'IX'], ['31', 'XIII'], ['31', 'XXI'], ['31', 'XXV'], ['31', 'XXIX'],
-      ['33', 'I'], ['33', 'V'], ['33', 'IX'], ['33', 'XIII'], ['33', 'XXI'], ['33', 'XXV'], ['33', 'XXIX'],
-      ['35', 'I'], ['35', 'V'], ['35', 'IX'], ['35', 'XIII'], ['35', 'XXI'], ['35', 'XXV'], ['35', 'XXIX'],
-      ['37', 'I'], ['37', 'V'], ['37', 'IX'], ['37', 'XIII'], ['37', 'XXI'], ['37', 'XXV'], ['37', 'XXIX'],
-      ['39', 'I'], ['39', 'V'], ['39', 'IX'], ['39', 'XIII'], ['39', 'XXI'], ['39', 'XXV'], ['39', 'XXIX'],
-      ['41', 'I'], ['41', 'V'], ['41', 'IX'], ['41', 'XIII'], ['41', 'XXI'], ['41', 'XXV'], ['41', 'XXIX'], ['41', 'XXXIII'], ['41', 'XXXVII'],
-      ['43', 'I'], ['43', 'V'], ['43', 'IX'], ['43', 'XIII'], ['43', 'XXI'], ['43', 'XXV'], ['43', 'XXXIII'], ['43', 'XXXVII'],
-      ['45', 'I'], ['45', 'V'], ['45', 'IX'], ['45', 'XIII'], ['45', 'XXI'], ['45', 'XXV'], ['45', 'XXXIII'], ['45', 'XXXVII'],
-      ['47', 'I'], ['47', 'V'], ['47', 'IX'], ['47', 'XIII'], ['47', 'XXI'], ['47', 'XXV'], ['47', 'XXXIII'], ['47', 'XXXVII'],
-      ['49', 'I'], ['49', 'V'], ['49', 'IX'], ['49', 'XIII'], ['49', 'XXI'], ['49', 'XXV'], ['49', 'XXXIII'], ['49', 'XXXVII'],
-      // Both even - Arabic-Roman (1-50)
+      // Both even - Arabic-Roman (1-30)
       ['2', 'II'], ['2', 'IV'], ['2', 'VI'], ['2', 'VIII'], ['2', 'X'], ['2', 'XII'], ['2', 'XIV'], ['2', 'XVI'],
       ['4', 'II'], ['4', 'VI'], ['4', 'VIII'], ['4', 'X'], ['4', 'XII'], ['4', 'XIV'], ['4', 'XVI'],
       ['6', 'II'], ['6', 'IV'], ['6', 'VIII'], ['6', 'X'], ['6', 'XII'], ['6', 'XIV'], ['6', 'XVI'],
@@ -1782,16 +1742,6 @@ const CognitiveTaskGame = () => {
       ['26', 'II'], ['26', 'IV'], ['26', 'VIII'], ['26', 'XII'], ['26', 'XVI'], ['26', 'XX'], ['26', 'XXIV'],
       ['28', 'II'], ['28', 'IV'], ['28', 'VIII'], ['28', 'XII'], ['28', 'XVI'], ['28', 'XX'], ['28', 'XXIV'],
       ['30', 'II'], ['30', 'IV'], ['30', 'VIII'], ['30', 'XII'], ['30', 'XX'], ['30', 'XXIV'], ['30', 'XXVIII'],
-      ['32', 'II'], ['32', 'IV'], ['32', 'VIII'], ['32', 'XII'], ['32', 'XX'], ['32', 'XXIV'], ['32', 'XXVIII'],
-      ['34', 'II'], ['34', 'IV'], ['34', 'VIII'], ['34', 'XII'], ['34', 'XX'], ['34', 'XXIV'], ['34', 'XXVIII'],
-      ['36', 'II'], ['36', 'IV'], ['36', 'VIII'], ['36', 'XII'], ['36', 'XX'], ['36', 'XXIV'], ['36', 'XXVIII'],
-      ['38', 'II'], ['38', 'IV'], ['38', 'VIII'], ['38', 'XII'], ['38', 'XX'], ['38', 'XXIV'], ['38', 'XXVIII'],
-      ['40', 'II'], ['40', 'IV'], ['40', 'VIII'], ['40', 'XII'], ['40', 'XX'], ['40', 'XXIV'], ['40', 'XXVIII'], ['40', 'XXXII'], ['40', 'XXXVI'],
-      ['42', 'II'], ['42', 'IV'], ['42', 'VIII'], ['42', 'XII'], ['42', 'XX'], ['42', 'XXIV'], ['42', 'XXXII'], ['42', 'XXXVI'],
-      ['44', 'II'], ['44', 'IV'], ['44', 'VIII'], ['44', 'XII'], ['44', 'XX'], ['44', 'XXIV'], ['44', 'XXXII'], ['44', 'XXXVI'],
-      ['46', 'II'], ['46', 'IV'], ['46', 'VIII'], ['46', 'XII'], ['46', 'XX'], ['46', 'XXIV'], ['46', 'XXXII'], ['46', 'XXXVI'],
-      ['48', 'II'], ['48', 'IV'], ['48', 'VIII'], ['48', 'XII'], ['48', 'XX'], ['48', 'XXIV'], ['48', 'XXXII'], ['48', 'XXXVI'],
-      ['50', 'II'], ['50', 'IV'], ['50', 'VIII'], ['50', 'XII'], ['50', 'XX'], ['50', 'XXIV'], ['50', 'XXXII'], ['50', 'XXXVI'], ['50', 'XL'],
 
       // Both odd - Korean-Roman (1-9 only)
       ['일', 'III'], ['삼', 'V'], ['오', 'VII'], ['칠', 'IX'], ['일', 'V'],
@@ -2831,34 +2781,18 @@ const CognitiveTaskGame = () => {
       ['seventeen', 'sixteen'], ['eighteen', 'seventeen'], ['nineteen', 'eighteen'], ['twenty', 'nineteen'], ['thirty', 'twenty-nine'],
       ['forty', 'thirty-nine'], ['fifty', 'forty-nine'], ['sixty', 'fifty-nine'], ['seventy', 'sixty-nine'], ['eighty', 'seventy-nine'],
       ['ninety', 'eighty-nine'], ['one hundred', 'ninety-nine'],
-      // Ascending Roman numerals (up to 100)
+      // Ascending Roman numerals (up to 30)
       ['I', 'II'], ['II', 'III'], ['III', 'IV'], ['IV', 'V'], ['V', 'VI'],
       ['VI', 'VII'], ['VII', 'VIII'], ['VIII', 'IX'], ['IX', 'X'], ['X', 'XI'],
       ['XI', 'XII'], ['XII', 'XIII'], ['XIII', 'XIV'], ['XIV', 'XV'], ['XV', 'XVI'],
       ['XVI', 'XVII'], ['XVII', 'XVIII'], ['XVIII', 'XIX'], ['XIX', 'XX'], ['XX', 'XXI'],
       ['XXI', 'XXII'], ['XXII', 'XXIII'], ['XXIII', 'XXIV'], ['XXIV', 'XXV'], ['XXV', 'XXVI'],
-      ['XXVI', 'XXVII'], ['XXVII', 'XXVIII'], ['XXVIII', 'XXIX'], ['XXIX', 'XXX'], ['XXX', 'XXXI'],
-      ['XXXI', 'XXXII'], ['XXXII', 'XXXIII'], ['XXXIII', 'XXXIV'], ['XXXIV', 'XXXV'], ['XXXV', 'XXXVI'],
-      ['XXXVI', 'XXXVII'], ['XXXVII', 'XXXVIII'], ['XXXVIII', 'XXXIX'], ['XXXIX', 'XL'], ['XL', 'XLI'],
-      ['XLI', 'XLII'], ['XLII', 'XLIII'], ['XLIII', 'XLIV'], ['XLIV', 'XLV'], ['XLV', 'XLVI'],
-      ['XLVI', 'XLVII'], ['XLVII', 'XLVIII'], ['XLVIII', 'XLIX'], ['XLIX', 'L'], ['L', 'LI'],
-      ['LI', 'LII'], ['LII', 'LIII'], ['LIII', 'LIV'], ['LIV', 'LV'], ['LV', 'LVI'],
-      ['LVI', 'LVII'], ['LVII', 'LVIII'], ['LVIII', 'LIX'], ['LIX', 'LX'], ['LX', 'LXI'],
-      ['LXI', 'LXII'], ['LXII', 'LXIII'], ['LXIII', 'LXIV'], ['LXIV', 'LXV'], ['LXV', 'LXVI'],
-      ['LXVI', 'LXVII'], ['LXVII', 'LXVIII'], ['LXVIII', 'LXIX'], ['LXIX', 'LXX'], ['LXX', 'LXXI'],
-      ['LXXI', 'LXXII'], ['LXXII', 'LXXIII'], ['LXXIII', 'LXXIV'], ['LXXIV', 'LXXV'], ['LXXV', 'LXXVI'],
-      ['LXXVI', 'LXXVII'], ['LXXVII', 'LXXVIII'], ['LXXVIII', 'LXXIX'], ['LXXIX', 'LXXX'], ['LXXX', 'LXXXI'],
-      ['LXXXI', 'LXXXII'], ['LXXXII', 'LXXXIII'], ['LXXXIII', 'LXXXIV'], ['LXXXIV', 'LXXXV'], ['LXXXV', 'LXXXVI'],
-      ['LXXXVI', 'LXXXVII'], ['LXXXVII', 'LXXXVIII'], ['LXXXVIII', 'LXXXIX'], ['LXXXIX', 'XC'], ['XC', 'XCI'],
-      ['XCI', 'XCII'], ['XCII', 'XCIII'], ['XCIII', 'XCIV'], ['XCIV', 'XCV'], ['XCV', 'XCVI'],
-      ['XCVI', 'XCVII'], ['XCVII', 'XCVIII'], ['XCVIII', 'XCIX'], ['XCIX', 'C'],
+      ['XXVI', 'XXVII'], ['XXVII', 'XXVIII'], ['XXVIII', 'XXIX'], ['XXIX', 'XXX'],
       // Descending Roman numerals
       ['II', 'I'], ['III', 'II'], ['IV', 'III'], ['V', 'IV'], ['VI', 'V'],
       ['VII', 'VI'], ['VIII', 'VII'], ['IX', 'VIII'], ['X', 'IX'], ['XI', 'X'],
       ['XII', 'XI'], ['XIII', 'XII'], ['XIV', 'XIII'], ['XV', 'XIV'], ['XVI', 'XV'],
       ['XVII', 'XVI'], ['XVIII', 'XVII'], ['XIX', 'XVIII'], ['XX', 'XIX'], ['XXX', 'XXIX'],
-      ['XL', 'XXXIX'], ['L', 'XLIX'], ['LX', 'LIX'], ['LXX', 'LXIX'], ['LXXX', 'LXXIX'],
-      ['XC', 'LXXXIX'], ['C', 'XCIX'],
       // Ascending Digits (up to 100)
       ['1', '2'], ['2', '3'], ['3', '4'], ['4', '5'], ['5', '6'],
       ['6', '7'], ['7', '8'], ['8', '9'], ['9', '10'], ['10', '11'],
@@ -2894,11 +2828,7 @@ const CognitiveTaskGame = () => {
       ['six', '7'], ['7', 'eight'], ['eight', '9'], ['9', 'ten'], ['ten', '11'],
       ['I', '2'], ['2', 'III'], ['III', '4'], ['4', 'V'], ['V', '6'],
       ['6', 'VII'], ['VII', '8'], ['8', 'IX'], ['IX', '10'], ['10', 'XI'],
-      ['twenty', 'XXI'], ['XXI', '22'], ['22', 'twenty-three'], ['thirty', '31'], ['31', 'XXXII'],
-      ['forty', 'XLI'], ['XLI', '42'], ['fifty', 'LI'], ['LI', 'fifty-two'], ['sixty', 'LXI'],
-      ['seventy', 'LXXI'], ['eighty', 'LXXXI'], ['ninety', 'XCI'], ['XCI', '92'],
-      // Roman numeral C (100) - final Roman numeral
-      ['C', '100'], ['99', 'C'], ['XCIX', 'C'], ['ninety-nine', 'C']
+      ['twenty', 'XXI'], ['XXI', '22'], ['22', 'twenty-three'], ['thirty', 'XXX'], ['30', 'XXX']
     ],
     'same-time': [
       // Clock emoji to digital
@@ -2953,12 +2883,10 @@ const CognitiveTaskGame = () => {
       // Both even - Roman numerals
       ['II', 'IV'], ['IV', 'VI'], ['VI', 'VIII'], ['VIII', 'X'], ['X', 'XII'],
       ['XII', 'XIV'], ['XIV', 'XVI'], ['XVI', 'XVIII'], ['XVIII', 'XX'], ['XX', 'XXX'],
-      ['XXX', 'XL'], ['XL', 'L'], ['L', 'LX'], ['LX', 'LXX'], ['LXX', 'LXXX'],
-      ['LXXX', 'XC'], ['XC', 'C'],
       // Both even - mixed formats
       ['2', 'four'], ['4', 'VI'], ['VI', 'eight'], ['8', 'X'], ['ten', '12'],
       ['12', 'XIV'], ['XIV', 'sixteen'], ['16', 'XVIII'], ['twenty', '22'], ['24', 'XXVI'],
-      ['30', 'forty'], ['L', 'sixty'], ['70', 'LXXX'], ['ninety', '92']
+      ['30', 'XXX']
     ],
     'odd': [
       // Both numbers are odd (1-99) - digits
@@ -2983,7 +2911,7 @@ const CognitiveTaskGame = () => {
       // Both odd - mixed formats
       ['1', 'three'], ['3', 'V'], ['V', 'seven'], ['7', 'IX'], ['nine', '11'],
       ['11', 'XIII'], ['XIII', 'fifteen'], ['15', 'XVII'], ['nineteen', '21'], ['23', 'XXV'],
-      ['31', 'thirty-three'], ['41', 'XLIII'], ['51', 'fifty-three'], ['61', 'LXIII']
+      ['29', 'XXIX']
     ],
     'doubled': [
       // Number is doubled (0-50 range so doubled stays within 100) - digits
@@ -3006,11 +2934,10 @@ const CognitiveTaskGame = () => {
       ['I', 'II'], ['II', 'IV'], ['III', 'VI'], ['IV', 'VIII'], ['V', 'X'],
       ['VI', 'XII'], ['VII', 'XIV'], ['VIII', 'XVI'], ['IX', 'XVIII'], ['X', 'XX'],
       ['XI', 'XXII'], ['XII', 'XXIV'], ['XIII', 'XXVI'], ['XIV', 'XXVIII'], ['XV', 'XXX'],
-      ['XX', 'XL'], ['XXV', 'L'], ['XXX', 'LX'], ['XL', 'LXXX'], ['L', 'C'],
       // Doubled - mixed formats
       ['1', 'two'], ['2', 'IV'], ['III', 'six'], ['4', 'VIII'], ['five', '10'],
       ['6', 'XII'], ['VII', 'fourteen'], ['8', 'XVI'], ['ten', '20'], ['12', 'XXIV'],
-      ['fifteen', '30'], ['20', 'forty'], ['XXV', '50'], ['thirty', '60'], ['XL', 'eighty']
+      ['fifteen', '30']
     ],
     'tripled': [
       // Number is tripled (0-33 range so tripled stays within 100) - digits
@@ -3029,12 +2956,9 @@ const CognitiveTaskGame = () => {
       // Tripled - Roman numerals
       ['I', 'III'], ['II', 'VI'], ['III', 'IX'], ['IV', 'XII'], ['V', 'XV'],
       ['VI', 'XVIII'], ['VII', 'XXI'], ['VIII', 'XXIV'], ['IX', 'XXVII'], ['X', 'XXX'],
-      ['XI', 'XXXIII'], ['XII', 'XXXVI'], ['XIII', 'XXXIX'], ['XIV', 'XLII'], ['XV', 'XLV'],
-      ['XX', 'LX'], ['XXX', 'XC'],
       // Tripled - mixed formats
       ['1', 'three'], ['2', 'VI'], ['III', 'nine'], ['4', 'XII'], ['five', '15'],
-      ['6', 'XVIII'], ['VII', 'twenty-one'], ['8', 'XXIV'], ['ten', '30'], ['12', 'XXXVI'],
-      ['fifteen', '45'], ['20', 'sixty'], ['XXX', 'ninety']
+      ['6', 'XVIII'], ['VII', 'twenty-one'], ['8', 'XXIV'], ['ten', '30']
     ],
     'synonym': [
       // Advanced vocabulary - similar meanings
@@ -3814,7 +3738,7 @@ const CognitiveTaskGame = () => {
       };
 
       const numberToRoman = (n) => {
-        if (n > 100) n = 100; // Cap at 100
+        if (n > 30) n = 30; // Cap at 30
         const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
         const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
         let roman = '';
@@ -3866,7 +3790,7 @@ const CognitiveTaskGame = () => {
       };
 
       const numberToRoman = (n) => {
-        if (n > 100) n = 100; // Cap at 100
+        if (n > 30) n = 30; // Cap at 30
         const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
         const syms = ['C', 'XC', 'LXXX', 'LXX', 'LX', 'L', 'XL', 'XXX', 'XX', 'X', 'IX', 'VIII', 'VII', 'VI', 'V', 'IV', 'III', 'II', 'I'];
         let roman = '';
