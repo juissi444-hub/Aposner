@@ -1195,9 +1195,8 @@ const CognitiveTaskGame = () => {
           }
         }
 
-        // Reset session start time after tracking is complete
-        setSessionStartTime(null);
-        console.log('⏱️ Session start time reset');
+        // Note: Don't reset sessionStartTime here - it will be reset when returning to menu
+        // This allows multiple level completions in one session to all be tracked
       }
 
       console.log(`💾 Data being saved:`, dataToSave);
@@ -1476,6 +1475,24 @@ const CognitiveTaskGame = () => {
     if (j === 2 && k !== 12) return num + 'nd';
     if (j === 3 && k !== 13) return num + 'rd';
     return num + 'th';
+  };
+
+  // Helper function to format time smartly (only show units when needed)
+  const formatTime = (totalMinutes, totalSeconds = 0) => {
+    // Convert everything to total seconds for calculation
+    const allSeconds = (totalMinutes * 60) + (totalSeconds || 0);
+
+    const hours = Math.floor(allSeconds / 3600);
+    const minutes = Math.floor((allSeconds % 3600) / 60);
+    const seconds = allSeconds % 60;
+
+    // Build time string: only show hours if > 0, only show minutes if > 0 or hours > 0
+    let parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0 || hours > 0) parts.push(`${minutes}m`);
+    parts.push(`${seconds}s`);
+
+    return parts.join(' ');
   };
 
   const relationTypes = {
@@ -4722,6 +4739,9 @@ const CognitiveTaskGame = () => {
         }
         setUsedPairs(new Set()); // Clear used pairs when returning to menu
         console.log('🔄 Returned to menu - used pairs cleared');
+        // Reset session start time when returning to menu
+        setSessionStartTime(null);
+        console.log('⏱️ Session timer reset (returned to menu)');
         setGameState('menu');
         setFeedback(null);
       } else if (e.key === ' ' && gameState === 'showRelation') {
@@ -4900,13 +4920,13 @@ const CognitiveTaskGame = () => {
               <div className="bg-blue-950/50 p-4 rounded-lg border border-cyan-700">
                 <p className="text-sm text-gray-400 mb-1">Today's Training</p>
                 <p className="text-2xl font-bold text-green-400">
-                  {totalSessionMinutes}m {totalSessionSeconds}s
+                  {formatTime(totalSessionMinutes, totalSessionSeconds)}
                 </p>
               </div>
               <div className="bg-blue-950/50 p-4 rounded-lg border border-blue-700">
                 <p className="text-sm text-gray-400 mb-1">Total Training Time</p>
                 <p className="text-2xl font-bold text-blue-400">
-                  {totalTrainingMinutes} {totalTrainingMinutes === 1 ? 'minute' : 'minutes'}
+                  {formatTime(totalTrainingMinutes, 0)}
                 </p>
                 {savedAdaptiveLevel > 1 && totalTrainingMinutes > 0 && (
                   <p className="text-xs text-gray-400 mt-1">
@@ -5214,7 +5234,7 @@ const CognitiveTaskGame = () => {
               {totalTrainingMinutes > 0 && (
                 <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
                   <p className="text-sm text-blue-300">
-                    <strong>Total Training Time:</strong> {totalTrainingMinutes} minutes
+                    <strong>Total Training Time:</strong> {formatTime(totalTrainingMinutes, 0)}
                   </p>
                   {trainingGoalMinutes > 0 && (
                     <div className="mt-2">
@@ -5225,7 +5245,7 @@ const CognitiveTaskGame = () => {
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
-                        Today: {totalSessionMinutes}m {totalSessionSeconds}s / {trainingGoalMinutes} minutes ({Math.round((totalSessionMinutes / trainingGoalMinutes) * 100)}%)
+                        Today: {formatTime(totalSessionMinutes, totalSessionSeconds)} / {trainingGoalMinutes} minutes ({Math.round((totalSessionMinutes / trainingGoalMinutes) * 100)}%)
                       </p>
                     </div>
                   )}
@@ -5504,6 +5524,9 @@ const CognitiveTaskGame = () => {
                 }
                 setUsedPairs(new Set()); // Clear used pairs when returning to menu
                 console.log('🔄 Returned to menu - used pairs cleared');
+                // Reset session start time when returning to menu
+                setSessionStartTime(null);
+                console.log('⏱️ Session timer reset (returned to menu)');
                 setGameState('menu');
               }}
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg order-2 sm:order-1"
@@ -5938,10 +5961,12 @@ const CognitiveTaskGame = () => {
                               const today = new Date();
                               const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                               const todaySession = entry.training_sessions.find(s => s.date === todayString);
-                              if (!todaySession) return <span className="text-gray-500">0m 0s</span>;
+                              if (!todaySession) return <span className="text-gray-500">-</span>;
                               const minutes = todaySession.minutes || 0;
                               const seconds = todaySession.seconds || 0;
-                              return `${minutes}m ${seconds}s`;
+                              // Don't show if both are 0
+                              if (minutes === 0 && seconds === 0) return <span className="text-gray-500">-</span>;
+                              return formatTime(minutes, seconds);
                             })()}
                           </div>
                           <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{getOrdinalSuffix(percentile)} percentile</div>
@@ -5976,20 +6001,18 @@ const CognitiveTaskGame = () => {
                           {(() => {
                             // Calculate today's training time from training_sessions
                             if (!entry.training_sessions || entry.training_sessions.length === 0) {
-                              return (
-                                <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-green-400`}>
-                                  Today: 0m 0s
-                                </div>
-                              );
+                              return null;
                             }
                             const today = new Date();
                             const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                             const todaySession = entry.training_sessions.find(s => s.date === todayString);
                             const minutes = todaySession ? (todaySession.minutes || 0) : 0;
                             const seconds = todaySession ? (todaySession.seconds || 0) : 0;
+                            // Don't show if both are 0
+                            if (minutes === 0 && seconds === 0) return null;
                             return (
                               <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-green-400`}>
-                                Today: {minutes}m {seconds}s
+                                Today: {formatTime(minutes, seconds)}
                               </div>
                             );
                           })()}
