@@ -130,6 +130,13 @@ const CognitiveTaskGame = () => {
   const [authError, setAuthError] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
 
+  // Training time tracking states
+  const [sessionStartTime, setSessionStartTime] = useState(null); // Track when training session starts
+  const [totalSessionMinutes, setTotalSessionMinutes] = useState(0); // Total minutes trained today
+  const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
+  const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, level_reached}
+  const [totalTrainingMinutes, setTotalTrainingMinutes] = useState(0); // Total training time across all sessions
+
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
@@ -611,7 +618,7 @@ const CognitiveTaskGame = () => {
         try {
           const { data: leaderboardData, error: leaderboardError } = await supabase
             .from('leaderboard')
-            .select('highest_level, best_score')
+            .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes')
             .eq('user_id', userId)
             .single();
 
@@ -621,6 +628,21 @@ const CognitiveTaskGame = () => {
             serverHighestLevel = Math.max(serverHighestLevel, leaderboardData.highest_level || 0);
             serverBestScore = leaderboardData.best_score || 0;
             console.log('📥 Loaded from leaderboard:', { serverHighestLevel, serverBestScore });
+
+            // Load training data
+            if (leaderboardData.total_training_minutes) {
+              setTotalTrainingMinutes(leaderboardData.total_training_minutes);
+              console.log('📥 Loaded training minutes:', leaderboardData.total_training_minutes);
+            }
+            if (leaderboardData.training_sessions) {
+              setTrainingSessions(leaderboardData.training_sessions);
+              console.log('📥 Loaded training sessions:', leaderboardData.training_sessions.length);
+            }
+            if (leaderboardData.training_goal_minutes) {
+              setTrainingGoalMinutes(leaderboardData.training_goal_minutes);
+              localStorage.setItem('trainingGoalMinutes', String(leaderboardData.training_goal_minutes));
+              console.log('📥 Loaded training goal:', leaderboardData.training_goal_minutes);
+            }
           }
         } catch (err) {
           console.warn('⚠️ Error loading leaderboard:', err.message);
@@ -889,6 +911,36 @@ const CognitiveTaskGame = () => {
         dataToSave.average_answer_time = averageAnswerTime;
       }
 
+      // Calculate training time for this session
+      if (sessionStartTime) {
+        const sessionEndTime = Date.now();
+        const sessionMinutes = Math.round((sessionEndTime - sessionStartTime) / 60000);
+        if (sessionMinutes > 0) {
+          console.log(`⏱️ Training session duration: ${sessionMinutes} minutes`);
+
+          // Update training time via database function
+          try {
+            const { error: trainingError } = await supabase
+              .rpc('update_training_time', {
+                p_user_id: userId,
+                p_minutes: sessionMinutes,
+                p_level_reached: highestLevel
+              });
+
+            if (trainingError) {
+              console.warn('⚠️ Error updating training time:', trainingError.message);
+            } else {
+              console.log('✅ Training time updated successfully');
+              // Update local state
+              setTotalSessionMinutes(prev => prev + sessionMinutes);
+              setTotalTrainingMinutes(prev => prev + sessionMinutes);
+            }
+          } catch (err) {
+            console.warn('⚠️ Failed to call update_training_time function:', err.message);
+          }
+        }
+      }
+
       console.log(`💾 Data being saved:`, dataToSave);
 
       // Use upsert with onConflict to specify which column to check for duplicates
@@ -1013,6 +1065,45 @@ const CognitiveTaskGame = () => {
       return null;
     }
   }, [user]);
+
+  // Save training goal to database
+  const saveTrainingGoal = useCallback(async (goalMinutes) => {
+    if (!isSupabaseConfigured() || !user) {
+      console.log('⚠️ Skipping training goal save - not configured or not logged in');
+      localStorage.setItem('trainingGoalMinutes', String(goalMinutes));
+      return;
+    }
+
+    try {
+      console.log('💾 Saving training goal:', goalMinutes, 'minutes');
+
+      const { error } = await supabase
+        .from('leaderboard')
+        .update({ training_goal_minutes: goalMinutes })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.warn('⚠️ Could not save training goal to server:', error.message);
+      } else {
+        console.log('✅ Training goal saved successfully');
+        localStorage.setItem('trainingGoalMinutes', String(goalMinutes));
+      }
+    } catch (error) {
+      console.warn('⚠️ Error saving training goal:', error.message);
+    }
+  }, [user]);
+
+  // Load training goal from localStorage on mount
+  useEffect(() => {
+    const savedGoal = localStorage.getItem('trainingGoalMinutes');
+    if (savedGoal) {
+      const goalValue = parseInt(savedGoal);
+      if (!isNaN(goalValue)) {
+        setTrainingGoalMinutes(goalValue);
+        console.log('📥 Loaded training goal from localStorage:', goalValue);
+      }
+    }
+  }, []);
 
   // Play success sound on perfect score
   useEffect(() => {
@@ -3781,6 +3872,10 @@ const CognitiveTaskGame = () => {
     console.log('🎮 Starting new game session');
     setMode(selectedMode);
 
+    // Start training session timer
+    setSessionStartTime(Date.now());
+    console.log('⏱️ Training session started');
+
     let totalTasks = numTasks;
     let matchPercent = matchPercentage;
 
@@ -4454,6 +4549,70 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold mb-4">Training Goal</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex-1">
+                  <p className="text-lg font-medium">Daily Training Goal: {trainingGoalMinutes} minutes</p>
+                  <p className="text-sm text-gray-400">Set your daily training time target (0-500 minutes)</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="500"
+                    value={trainingGoalMinutes}
+                    onChange={(e) => {
+                      const value = Math.max(0, Math.min(500, parseInt(e.target.value) || 0));
+                      setTrainingGoalMinutes(value);
+                      saveTrainingGoal(value);
+                    }}
+                    className="w-20 px-3 py-2 bg-gray-700 text-white rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-400">min</span>
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="500"
+                value={trainingGoalMinutes}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  setTrainingGoalMinutes(value);
+                  saveTrainingGoal(value);
+                }}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>0 min</span>
+                <span>250 min</span>
+                <span>500 min</span>
+              </div>
+              {totalTrainingMinutes > 0 && (
+                <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
+                  <p className="text-sm text-blue-300">
+                    <strong>Total Training Time:</strong> {totalTrainingMinutes} minutes
+                  </p>
+                  {trainingGoalMinutes > 0 && (
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all"
+                          style={{ width: `${Math.min(100, (totalSessionMinutes / trainingGoalMinutes) * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Today: {totalSessionMinutes} / {trainingGoalMinutes} minutes ({Math.round((totalSessionMinutes / trainingGoalMinutes) * 100)}%)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold mb-4">Experimental Mode</h2>
             <div className="flex items-center justify-between">
               <div>
@@ -5048,10 +5207,11 @@ const CognitiveTaskGame = () => {
               ) : (
                 <>
                   {/* Desktop header - hidden on mobile */}
-                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
+                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2" style={{gridTemplateColumns: '60px 1fr 200px 120px 120px'}}>
                     <div>Rank</div>
                     <div>Username</div>
                     <div>Highest Level</div>
+                    <div>Training Time</div>
                     <div className="text-right">Ranking</div>
                   </div>
                   {(() => {
@@ -5119,7 +5279,7 @@ const CognitiveTaskGame = () => {
                         className={`rounded-lg ${rankStyle} ${index === 0 ? 'first-place-glow' : ''}`}
                       >
                         {/* Desktop layout */}
-                        <div className="hidden sm:grid gap-4 px-4 py-3" style={{gridTemplateColumns: '60px 1fr 200px 120px'}}>
+                        <div className="hidden sm:grid gap-4 px-4 py-3" style={{gridTemplateColumns: '60px 1fr 200px 120px 120px'}}>
                           <div className="font-bold text-lg">
                             {index === 0 && '🥇'}
                             {index === 1 && '🥈'}
@@ -5133,6 +5293,18 @@ const CognitiveTaskGame = () => {
                           <div className="font-semibold">
                             <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-2">- {levelProgress}% completed</span>
+                          </div>
+                          <div className="font-semibold text-blue-400">
+                            {entry.total_training_minutes ? (
+                              <>
+                                {entry.total_training_minutes} min
+                                <div className="text-xs text-gray-400 mt-1">
+                                  {(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
                           </div>
                           <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{getOrdinalSuffix(percentile)} percentile</div>
                         </div>
@@ -5158,6 +5330,11 @@ const CognitiveTaskGame = () => {
                             <span className="text-white">Level {entry.highest_level}</span>
                             <span className="text-green-400 ml-1">- {levelProgress}%</span>
                           </div>
+                          {entry.total_training_minutes && (
+                            <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-blue-400`}>
+                              Training: {entry.total_training_minutes} min ({(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level)
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
