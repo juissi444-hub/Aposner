@@ -132,31 +132,16 @@ const CognitiveTaskGame = () => {
 
   // Training time tracking states
   const [sessionStartTime, setSessionStartTime] = useState(null); // Track when training session starts
-  const [totalSessionSeconds, setTotalSessionSeconds] = useState(0); // Total seconds trained today
-  const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500 minutes)
-  const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, seconds, level_reached}
-  const [totalTrainingSeconds, setTotalTrainingSeconds] = useState(0); // Total training time in seconds across all sessions
+  const [totalSessionMinutes, setTotalSessionMinutes] = useState(0); // Total minutes trained today
+  const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
+  const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, level_reached}
+  const [totalTrainingMinutes, setTotalTrainingMinutes] = useState(0); // Total training time across all sessions
 
   // Numeral system enable states
   const [chineseNumeralsEnabled, setChineseNumeralsEnabled] = useState(false);
   const [koreanNumeralsEnabled, setKoreanNumeralsEnabled] = useState(false);
   const [showChineseReference, setShowChineseReference] = useState(false);
   const [showKoreanReference, setShowKoreanReference] = useState(false);
-
-  // Helper function to format seconds into readable time string
-  const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${seconds}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    } else {
-      return `${seconds}s`;
-    }
-  };
 
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
@@ -290,7 +275,7 @@ const CognitiveTaskGame = () => {
   // Calculate today's training time from sessions
   useEffect(() => {
     if (!trainingSessions || trainingSessions.length === 0) {
-      setTotalSessionSeconds(0);
+      setTotalSessionMinutes(0);
       return;
     }
 
@@ -298,13 +283,13 @@ const CognitiveTaskGame = () => {
     const today = new Date();
     const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    // Sum up all seconds from today's sessions
-    const todaySeconds = trainingSessions
+    // Sum up all minutes from today's sessions
+    const todayMinutes = trainingSessions
       .filter(session => session.date === todayString)
-      .reduce((total, session) => total + (session.seconds || 0), 0);
+      .reduce((total, session) => total + (session.minutes || 0), 0);
 
-    setTotalSessionSeconds(todaySeconds);
-    console.log(`📊 Today's training time calculated: ${todaySeconds} seconds (${formatTime(todaySeconds)}) from ${trainingSessions.length} total sessions`);
+    setTotalSessionMinutes(todayMinutes);
+    console.log(`📊 Today's training time calculated: ${todayMinutes} minutes from ${trainingSessions.length} total sessions`);
   }, [trainingSessions]);
 
   // Separate effect for authentication
@@ -779,20 +764,12 @@ const CognitiveTaskGame = () => {
 
             // Load training data
             if (leaderboardData.total_training_minutes) {
-              // Convert minutes to seconds for backward compatibility
-              setTotalTrainingSeconds(leaderboardData.total_training_minutes * 60);
-              console.log('📥 Loaded training time:', leaderboardData.total_training_minutes, 'minutes (converted to seconds)');
+              setTotalTrainingMinutes(leaderboardData.total_training_minutes);
+              console.log('📥 Loaded training minutes:', leaderboardData.total_training_minutes);
             }
             if (leaderboardData.training_sessions) {
-              // Convert old minutes format to seconds if needed
-              const sessions = leaderboardData.training_sessions.map(session => {
-                if (session.minutes && !session.seconds) {
-                  return { ...session, seconds: session.minutes * 60 };
-                }
-                return session;
-              });
-              setTrainingSessions(sessions);
-              console.log('📥 Loaded training sessions:', sessions.length);
+              setTrainingSessions(leaderboardData.training_sessions);
+              console.log('📥 Loaded training sessions:', leaderboardData.training_sessions.length);
             }
             if (leaderboardData.training_goal_minutes) {
               setTrainingGoalMinutes(leaderboardData.training_goal_minutes);
@@ -1102,12 +1079,11 @@ const CognitiveTaskGame = () => {
       // Calculate training time for this session
       if (sessionStartTime) {
         const sessionEndTime = Date.now();
-        const sessionSeconds = Math.round((sessionEndTime - sessionStartTime) / 1000);
-        if (sessionSeconds > 0) {
-          console.log(`⏱️ Training session duration: ${sessionSeconds} seconds (${formatTime(sessionSeconds)})`);
+        const sessionMinutes = Math.round((sessionEndTime - sessionStartTime) / 60000);
+        if (sessionMinutes > 0) {
+          console.log(`⏱️ Training session duration: ${sessionMinutes} minutes`);
 
-          // Update training time via database function (still uses minutes for backward compatibility)
-          const sessionMinutes = Math.round(sessionSeconds / 60);
+          // Update training time via database function
           try {
             const { error: trainingError } = await supabase
               .rpc('update_training_time', {
@@ -1120,7 +1096,7 @@ const CognitiveTaskGame = () => {
               console.warn('⚠️ Error updating training time:', trainingError.message);
             } else {
               console.log('✅ Training time updated successfully');
-              // Update local state with seconds
+              // Update local state
               const today = new Date();
               const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
@@ -1133,18 +1109,18 @@ const CognitiveTaskGame = () => {
                   const updated = [...prev];
                   updated[existingTodayIndex] = {
                     ...updated[existingTodayIndex],
-                    seconds: (updated[existingTodayIndex].seconds || 0) + sessionSeconds,
+                    minutes: updated[existingTodayIndex].minutes + sessionMinutes,
                     level_reached: Math.max(updated[existingTodayIndex].level_reached, highestLevel)
                   };
                   return updated;
                 } else {
                   // Add new session
-                  return [...prev, { date: todayString, seconds: sessionSeconds, level_reached: highestLevel }];
+                  return [...prev, { date: todayString, minutes: sessionMinutes, level_reached: highestLevel }];
                 }
               });
 
-              setTotalTrainingSeconds(prev => prev + sessionSeconds);
-              // totalSessionSeconds will be updated automatically by the useEffect
+              setTotalTrainingMinutes(prev => prev + sessionMinutes);
+              // totalSessionMinutes will be updated automatically by the useEffect
             }
           } catch (err) {
             console.warn('⚠️ Failed to call update_training_time function:', err.message);
@@ -4741,40 +4717,6 @@ const CognitiveTaskGame = () => {
             </>
           )}
 
-          {/* Training Time Display */}
-          {(totalTrainingSeconds > 0 || totalSessionSeconds > 0) && (
-            <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-6 rounded-lg border-2 border-purple-500">
-              <h2 className="text-2xl font-bold text-center mb-4 text-purple-300">⏱️ Training Time</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-black/30 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-400 mb-1">Today</p>
-                  <p className="text-3xl font-bold text-green-400">{formatTime(totalSessionSeconds)}</p>
-                </div>
-                <div className="bg-black/30 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-400 mb-1">Total All Time</p>
-                  <p className="text-3xl font-bold text-blue-400">{formatTime(totalTrainingSeconds)}</p>
-                </div>
-              </div>
-              {trainingGoalMinutes > 0 && (
-                <div className="mt-4">
-                  <div className="flex justify-between text-sm text-gray-300 mb-2">
-                    <span>Daily Goal Progress</span>
-                    <span>{Math.round((totalSessionSeconds / 60) / trainingGoalMinutes * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-3">
-                    <div
-                      className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all"
-                      style={{ width: `${Math.min(100, (totalSessionSeconds / 60) / trainingGoalMinutes * 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2 text-center">
-                    {formatTime(totalSessionSeconds)} / {trainingGoalMinutes} minutes
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
           {savedAdaptiveLevel > 1 && (
             <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-4 sm:p-6 rounded-lg space-y-3">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -4794,7 +4736,7 @@ const CognitiveTaskGame = () => {
           )}
 
           {/* Congratulations for reaching training goal */}
-          {trainingGoalMinutes > 0 && (totalSessionSeconds / 60) >= trainingGoalMinutes && (
+          {trainingGoalMinutes > 0 && totalSessionMinutes >= trainingGoalMinutes && (
             <div className="bg-gradient-to-r from-green-900 to-emerald-900 p-6 rounded-lg space-y-4 border-2 border-green-500">
               <div className="text-center">
                 <div className="text-5xl mb-3">🎉</div>
@@ -5087,21 +5029,21 @@ const CognitiveTaskGame = () => {
                 <span>250 min</span>
                 <span>500 min</span>
               </div>
-              {totalTrainingSeconds > 0 && (
+              {totalTrainingMinutes > 0 && (
                 <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
                   <p className="text-sm text-blue-300">
-                    <strong>Total Training Time:</strong> {formatTime(totalTrainingSeconds)}
+                    <strong>Total Training Time:</strong> {totalTrainingMinutes} minutes
                   </p>
                   {trainingGoalMinutes > 0 && (
                     <div className="mt-2">
                       <div className="w-full bg-gray-700 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all"
-                          style={{ width: `${Math.min(100, (totalSessionSeconds / 60) / trainingGoalMinutes * 100)}%` }}
+                          style={{ width: `${Math.min(100, (totalSessionMinutes / trainingGoalMinutes) * 100)}%` }}
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
-                        Today: {formatTime(totalSessionSeconds)} / {trainingGoalMinutes} minutes ({Math.round((totalSessionSeconds / 60) / trainingGoalMinutes * 100)}%)
+                        Today: {totalSessionMinutes} / {trainingGoalMinutes} minutes ({Math.round((totalSessionMinutes / trainingGoalMinutes) * 100)}%)
                       </p>
                     </div>
                   )}
@@ -5796,7 +5738,7 @@ const CognitiveTaskGame = () => {
                           <div className="font-semibold text-blue-400">
                             {entry.total_training_minutes ? (
                               <>
-                                {formatTime(entry.total_training_minutes * 60)}
+                                {entry.total_training_minutes} min
                                 <div className="text-xs text-gray-400 mt-1">
                                   {(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level
                                 </div>
@@ -5814,9 +5756,7 @@ const CognitiveTaskGame = () => {
                               const today = new Date();
                               const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                               const todaySession = entry.training_sessions.find(s => s.date === todayString);
-                              if (!todaySession) return <span className="text-gray-500">0s</span>;
-                              const todaySeconds = todaySession.seconds || (todaySession.minutes * 60) || 0;
-                              return todaySeconds > 0 ? formatTime(todaySeconds) : <span className="text-gray-500">0s</span>;
+                              return todaySession ? `${todaySession.minutes} min` : <span className="text-gray-500">0 min</span>;
                             })()}
                           </div>
                           <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{getOrdinalSuffix(percentile)} percentile</div>
@@ -5845,7 +5785,7 @@ const CognitiveTaskGame = () => {
                           </div>
                           {entry.total_training_minutes && (
                             <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-blue-400`}>
-                              Total: {formatTime(entry.total_training_minutes * 60)} ({(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level)
+                              Total: {entry.total_training_minutes} min ({(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level)
                             </div>
                           )}
                           {(() => {
@@ -5856,12 +5796,10 @@ const CognitiveTaskGame = () => {
                             const today = new Date();
                             const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                             const todaySession = entry.training_sessions.find(s => s.date === todayString);
-                            if (!todaySession) return null;
-                            const todaySeconds = todaySession.seconds || (todaySession.minutes * 60) || 0;
-                            if (todaySeconds === 0) return null;
+                            if (!todaySession || todaySession.minutes === 0) return null;
                             return (
                               <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-green-400`}>
-                                Today: {formatTime(todaySeconds)}
+                                Today: {todaySession.minutes} min
                               </div>
                             );
                           })()}
