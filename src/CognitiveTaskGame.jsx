@@ -133,8 +133,9 @@ const CognitiveTaskGame = () => {
   // Training time tracking states
   const [sessionStartTime, setSessionStartTime] = useState(null); // Track when training session starts
   const [totalSessionMinutes, setTotalSessionMinutes] = useState(0); // Total minutes trained today
+  const [totalSessionSeconds, setTotalSessionSeconds] = useState(0); // Total seconds trained today (remainder after minutes)
   const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
-  const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, level_reached}
+  const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, seconds, level_reached}
   const [totalTrainingMinutes, setTotalTrainingMinutes] = useState(0); // Total training time across all sessions
 
   // Numeral system enable states
@@ -276,6 +277,7 @@ const CognitiveTaskGame = () => {
   useEffect(() => {
     if (!trainingSessions || trainingSessions.length === 0) {
       setTotalSessionMinutes(0);
+      setTotalSessionSeconds(0);
       return;
     }
 
@@ -283,13 +285,17 @@ const CognitiveTaskGame = () => {
     const today = new Date();
     const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    // Sum up all minutes from today's sessions
-    const todayMinutes = trainingSessions
-      .filter(session => session.date === todayString)
-      .reduce((total, session) => total + (session.minutes || 0), 0);
+    // Sum up all minutes and seconds from today's sessions
+    const todaySessions = trainingSessions.filter(session => session.date === todayString);
+    const totalSeconds = todaySessions.reduce((total, session) =>
+      total + (session.minutes || 0) * 60 + (session.seconds || 0), 0);
+
+    const todayMinutes = Math.floor(totalSeconds / 60);
+    const todaySeconds = totalSeconds % 60;
 
     setTotalSessionMinutes(todayMinutes);
-    console.log(`📊 Today's training time calculated: ${todayMinutes} minutes from ${trainingSessions.length} total sessions`);
+    setTotalSessionSeconds(todaySeconds);
+    console.log(`📊 Today's training time calculated: ${todayMinutes}m ${todaySeconds}s from ${todaySessions.length} sessions`);
   }, [trainingSessions]);
 
   // Separate effect for authentication
@@ -335,7 +341,14 @@ const CognitiveTaskGame = () => {
           console.log('✅ Session restored successfully:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
-          loadUserProgress(session.user.id);
+
+          // Add a small delay to ensure auth context is fully ready before loading data
+          // This prevents 400/406 errors on mobile Chrome when making authenticated requests
+          setTimeout(() => {
+            if (mounted) {
+              loadUserProgress(session.user.id);
+            }
+          }, 300);
         } else {
           console.log('ℹ️ No active session found');
           setUser(null);
@@ -372,7 +385,13 @@ const CognitiveTaskGame = () => {
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
-        loadUserProgress(session.user.id);
+
+        // Add a small delay to ensure auth context is fully ready before loading data
+        setTimeout(() => {
+          if (mounted) {
+            loadUserProgress(session.user.id);
+          }
+        }, 300);
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 User signed out');
         setUser(null);
@@ -1079,11 +1098,14 @@ const CognitiveTaskGame = () => {
       // Calculate training time for this session
       if (sessionStartTime) {
         const sessionEndTime = Date.now();
-        const sessionMinutes = Math.round((sessionEndTime - sessionStartTime) / 60000);
-        if (sessionMinutes > 0) {
-          console.log(`⏱️ Training session duration: ${sessionMinutes} minutes`);
+        const sessionTotalSeconds = Math.floor((sessionEndTime - sessionStartTime) / 1000);
+        const sessionMinutes = Math.floor(sessionTotalSeconds / 60);
+        const sessionSeconds = sessionTotalSeconds % 60;
 
-          // Update training time via database function
+        if (sessionMinutes > 0 || sessionSeconds > 0) {
+          console.log(`⏱️ Training session duration: ${sessionMinutes}m ${sessionSeconds}s`);
+
+          // Update training time via database function (database only tracks minutes)
           try {
             const { error: trainingError } = await supabase
               .rpc('update_training_time', {
@@ -1110,17 +1132,18 @@ const CognitiveTaskGame = () => {
                   updated[existingTodayIndex] = {
                     ...updated[existingTodayIndex],
                     minutes: updated[existingTodayIndex].minutes + sessionMinutes,
+                    seconds: (updated[existingTodayIndex].seconds || 0) + sessionSeconds,
                     level_reached: Math.max(updated[existingTodayIndex].level_reached, highestLevel)
                   };
                   return updated;
                 } else {
                   // Add new session
-                  return [...prev, { date: todayString, minutes: sessionMinutes, level_reached: highestLevel }];
+                  return [...prev, { date: todayString, minutes: sessionMinutes, seconds: sessionSeconds, level_reached: highestLevel }];
                 }
               });
 
               setTotalTrainingMinutes(prev => prev + sessionMinutes);
-              // totalSessionMinutes will be updated automatically by the useEffect
+              // totalSessionMinutes and totalSessionSeconds will be updated automatically by the useEffect
             }
           } catch (err) {
             console.warn('⚠️ Failed to call update_training_time function:', err.message);
@@ -5043,7 +5066,7 @@ const CognitiveTaskGame = () => {
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
-                        Today: {totalSessionMinutes} / {trainingGoalMinutes} minutes ({Math.round((totalSessionMinutes / trainingGoalMinutes) * 100)}%)
+                        Today: {totalSessionMinutes}m {totalSessionSeconds}s / {trainingGoalMinutes} minutes ({Math.round((totalSessionMinutes / trainingGoalMinutes) * 100)}%)
                       </p>
                     </div>
                   )}
