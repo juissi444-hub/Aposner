@@ -341,14 +341,8 @@ const CognitiveTaskGame = () => {
           console.log('✅ Session restored successfully:', session.user.email);
           setUser(session.user);
           setShowAuth(false);
-
-          // Add a small delay to ensure auth context is fully ready before loading data
-          // This prevents 400/406 errors on mobile Chrome when making authenticated requests
-          setTimeout(() => {
-            if (mounted) {
-              loadUserProgress(session.user.id);
-            }
-          }, 300);
+          // loadUserProgress now handles waiting for auth to be fully ready internally
+          loadUserProgress(session.user.id);
         } else {
           console.log('ℹ️ No active session found');
           setUser(null);
@@ -385,13 +379,8 @@ const CognitiveTaskGame = () => {
         setShowAuth(false);
         const username = session.user.user_metadata?.username || session.user.email;
         migrateAnonymousToAccount(session.user.id, username);
-
-        // Add a small delay to ensure auth context is fully ready before loading data
-        setTimeout(() => {
-          if (mounted) {
-            loadUserProgress(session.user.id);
-          }
-        }, 300);
+        // loadUserProgress now handles waiting for auth to be fully ready internally
+        loadUserProgress(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 User signed out');
         setUser(null);
@@ -734,6 +723,39 @@ const CognitiveTaskGame = () => {
     try {
       console.log('═'.repeat(80));
       console.log('📥 Loading user progress from server for user:', userId);
+
+      // CRITICAL: Wait for auth session to be fully ready on mobile Chrome
+      // Mobile Chrome needs extra time for auth context to initialize
+      let sessionReady = false;
+      let retries = 0;
+      const maxRetries = 5;
+
+      while (!sessionReady && retries < maxRetries) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (session && session.user && session.user.id === userId) {
+            console.log('✅ Auth session confirmed ready for queries');
+            sessionReady = true;
+          } else if (error) {
+            console.warn(`⚠️ Session check attempt ${retries + 1} failed:`, error.message);
+          } else {
+            console.warn(`⚠️ Session not ready yet, attempt ${retries + 1}/${maxRetries}`);
+          }
+        } catch (err) {
+          console.warn(`⚠️ Session check error attempt ${retries + 1}:`, err.message);
+        }
+
+        if (!sessionReady) {
+          retries++;
+          // Exponential backoff: 200ms, 400ms, 800ms, 1600ms, 3200ms
+          await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, retries - 1)));
+        }
+      }
+
+      if (!sessionReady) {
+        console.error('❌ Auth session never became ready after', maxRetries, 'attempts');
+        return;
+      }
 
       // Get current local values first (these are the fallback)
       const localLevel = parseInt(localStorage.getItem('adaptivePosnerLevel') || '0');
