@@ -137,6 +137,12 @@ const CognitiveTaskGame = () => {
   const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, level_reached}
   const [totalTrainingMinutes, setTotalTrainingMinutes] = useState(0); // Total training time across all sessions
 
+  // Numeral system enable states
+  const [chineseNumeralsEnabled, setChineseNumeralsEnabled] = useState(false);
+  const [koreanNumeralsEnabled, setKoreanNumeralsEnabled] = useState(false);
+  const [showChineseReference, setShowChineseReference] = useState(false);
+  const [showKoreanReference, setShowKoreanReference] = useState(false);
+
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
@@ -173,7 +179,8 @@ const CognitiveTaskGame = () => {
     const numberMap = {
       '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
       '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9,
-      'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9
+      'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9,
+      '일': 1, '이': 2, '삼': 3, '사': 4, '오': 5, '육': 6, '칠': 7, '팔': 8, '구': 9
     };
 
     const value = numberMap[char];
@@ -402,6 +409,22 @@ const CognitiveTaskGame = () => {
     const newState = !experimentalMode;
     setExperimentalMode(newState);
     localStorage.setItem('adaptivePosnerExperimental', String(newState));
+  };
+
+  // Toggle Chinese numerals
+  const toggleChineseNumerals = () => {
+    const newState = !chineseNumeralsEnabled;
+    setChineseNumeralsEnabled(newState);
+    localStorage.setItem('chineseNumeralsEnabled', String(newState));
+    console.log('🇨🇳 Chinese numerals', newState ? 'enabled' : 'disabled');
+  };
+
+  // Toggle Korean numerals
+  const toggleKoreanNumerals = () => {
+    const newState = !koreanNumeralsEnabled;
+    setKoreanNumeralsEnabled(newState);
+    localStorage.setItem('koreanNumeralsEnabled', String(newState));
+    console.log('🇰🇷 Korean numerals', newState ? 'enabled' : 'disabled');
   };
 
   // Stop all currently playing sounds
@@ -1093,7 +1116,7 @@ const CognitiveTaskGame = () => {
     }
   }, [user]);
 
-  // Load training goal from localStorage on mount
+  // Load training goal and numeral settings from localStorage on mount
   useEffect(() => {
     const savedGoal = localStorage.getItem('trainingGoalMinutes');
     if (savedGoal) {
@@ -1103,6 +1126,13 @@ const CognitiveTaskGame = () => {
         console.log('📥 Loaded training goal from localStorage:', goalValue);
       }
     }
+
+    // Load numeral system settings
+    const chineseEnabled = localStorage.getItem('chineseNumeralsEnabled') === 'true';
+    const koreanEnabled = localStorage.getItem('koreanNumeralsEnabled') === 'true';
+    setChineseNumeralsEnabled(chineseEnabled);
+    setKoreanNumeralsEnabled(koreanEnabled);
+    console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled);
   }, []);
 
   // Play success sound on perfect score
@@ -1270,6 +1300,12 @@ const CognitiveTaskGame = () => {
       ['二', '四'], ['三', '五'], ['四', '六'], ['五', '七'], ['六', '八'],
       ['七', '九'], ['一', '四'], ['二', '五'], ['三', '六'], ['四', '七'],
 
+      // Sino-Korean pairs (일~구)
+      ['일', '이'], ['삼', '사'], ['오', '육'], ['칠', '팔'], ['일', '구'],
+      ['이', '삼'], ['사', '오'], ['육', '칠'], ['팔', '구'], ['일', '삼'],
+      ['이', '사'], ['삼', '오'], ['사', '육'], ['오', '칠'], ['육', '팔'],
+      ['칠', '구'], ['일', '사'], ['이', '오'], ['삼', '육'], ['사', '칠'],
+
       // Roman-Roman pairs (I-IX)
       ['I', 'II'], ['III', 'IV'], ['V', 'VI'], ['VII', 'VIII'], ['I', 'IX'],
       ['II', 'III'], ['IV', 'V'], ['VI', 'VII'], ['VIII', 'IX'], ['I', 'III'],
@@ -1283,12 +1319,20 @@ const CognitiveTaskGame = () => {
       ['6', '六'], ['7', '七'], ['8', '八'], ['9', '九'],
       ['1', 'I'], ['2', 'II'], ['3', 'III'], ['4', 'IV'], ['5', 'V'],
       ['6', 'VI'], ['7', 'VII'], ['8', 'VIII'], ['9', 'IX'],
+      ['일', '一'], ['이', '二'], ['삼', '三'], ['사', '四'], ['오', '五'],
+      ['육', '六'], ['칠', '七'], ['팔', '八'], ['구', '九'],
+      ['1', '일'], ['2', '이'], ['3', '삼'], ['4', '사'], ['5', '오'],
+      ['6', '육'], ['7', '칠'], ['8', '팔'], ['9', '구'],
+      ['일', 'I'], ['이', 'II'], ['삼', 'III'], ['사', 'IV'], ['오', 'V'],
+      ['육', 'VI'], ['칠', 'VII'], ['팔', 'VIII'], ['구', 'IX'],
       ['一', 'I'], ['二', 'II'], ['三', 'III'], ['四', 'IV'], ['五', 'V'],
       ['六', 'VI'], ['七', 'VII'], ['八', 'VIII'], ['九', 'IX'],
 
       // Matching numbers in same format
       ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'],
       ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'],
+      ['일', '일'], ['이', '이'], ['삼', '삼'], ['사', '사'], ['오', '오'],
+      ['육', '육'], ['칠', '칠'], ['팔', '팔'], ['구', '구'],
       ['一', '一'], ['二', '二'], ['三', '三'], ['四', '四'], ['五', '五'],
       ['六', '六'], ['七', '七'], ['八', '八'], ['九', '九'],
       ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'],
@@ -1303,6 +1347,13 @@ const CognitiveTaskGame = () => {
       // Both even - Arabic
       ['2', '4'], ['4', '6'], ['6', '8'], ['2', '6'], ['2', '8'],
       ['4', '8'],
+
+      // Both odd - Chinese
+      ['일', '삼'], ['삼', '오'], ['오', '칠'], ['칠', '구'], ['일', '오'],
+      ['일', '칠'], ['일', '구'], ['삼', '칠'], ['삼', '구'], ['오', '구'],
+      // Both even - Korean
+      ['이', '사'], ['사', '육'], ['육', '팔'], ['이', '육'], ['이', '팔'],
+      ['사', '팔'],
 
       // Both odd - Chinese
       ['一', '三'], ['三', '五'], ['五', '七'], ['七', '九'], ['一', '五'],
@@ -1328,12 +1379,33 @@ const CognitiveTaskGame = () => {
       ['2', '四'], ['4', '六'], ['6', '八'], ['2', '六'], ['4', '二'],
       ['6', '四'], ['8', '六'], ['8', '二'],
 
+      // Both odd - Arabic-Korean
+      ['1', '삼'], ['3', '오'], ['5', '칠'], ['7', '구'], ['1', '오'],
+      ['3', '일'], ['5', '삼'], ['7', '오'], ['9', '칠'], ['9', '일'],
+      // Both even - Arabic-Korean
+      ['2', '사'], ['4', '육'], ['6', '팔'], ['2', '육'], ['4', '이'],
+      ['6', '사'], ['8', '육'], ['8', '이'],
+
+      // Both odd - Korean-Chinese
+      ['일', '三'], ['삼', '五'], ['오', '七'], ['칠', '九'], ['일', '五'],
+      ['삼', '一'], ['오', '三'], ['칠', '五'], ['구', '七'], ['구', '一'],
+      // Both even - Korean-Chinese
+      ['이', '四'], ['사', '六'], ['육', '八'], ['이', '六'], ['사', '二'],
+      ['육', '四'], ['팔', '六'], ['팔', '二'],
+
       // Both odd - Arabic-Roman
       ['1', 'III'], ['3', 'V'], ['5', 'VII'], ['7', 'IX'], ['1', 'V'],
       ['3', 'I'], ['5', 'III'], ['7', 'V'], ['9', 'VII'], ['9', 'I'],
       // Both even - Arabic-Roman
       ['2', 'IV'], ['4', 'VI'], ['6', 'VIII'], ['2', 'VI'], ['4', 'II'],
       ['6', 'IV'], ['8', 'VI'], ['8', 'II'],
+
+      // Both odd - Korean-Roman
+      ['일', 'III'], ['삼', 'V'], ['오', 'VII'], ['칠', 'IX'], ['일', 'V'],
+      ['삼', 'I'], ['오', 'III'], ['칠', 'V'], ['구', 'VII'], ['구', 'I'],
+      // Both even - Korean-Roman
+      ['이', 'IV'], ['사', 'VI'], ['육', 'VIII'], ['이', 'VI'], ['사', 'II'],
+      ['육', 'IV'], ['팔', 'VI'], ['팔', 'II'],
 
       // Both odd - Chinese-Roman
       ['一', 'III'], ['三', 'V'], ['五', 'VII'], ['七', 'IX'], ['一', 'V'],
@@ -3812,7 +3884,28 @@ const CognitiveTaskGame = () => {
     }
 
     // Original logic for other relation types
-    const pairs = wordPairs[relationType];
+    let pairs = wordPairs[relationType];
+
+    // Filter pairs based on Chinese and Korean numeral settings
+    const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+    const koreanNumerals = ['일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+
+    pairs = pairs.filter(pair => {
+      const hasChineseNumeral = pair.some(word => chineseNumerals.includes(word));
+      const hasKoreanNumeral = pair.some(word => koreanNumerals.includes(word));
+
+      // If pair contains Chinese numeral and Chinese is disabled, exclude it
+      if (hasChineseNumeral && !chineseNumeralsEnabled) {
+        return false;
+      }
+
+      // If pair contains Korean numeral and Korean is disabled, exclude it
+      if (hasKoreanNumeral && !koreanNumeralsEnabled) {
+        return false;
+      }
+
+      return true;
+    });
 
     // Filter out already used pairs
     const availablePairs = pairs.filter(pair => {
@@ -4432,51 +4525,188 @@ const CognitiveTaskGame = () => {
             </div>
           )}
 
-          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4 text-yellow-400">📚 Chinese Numerals Reference</h2>
-            <p className="text-sm text-gray-300 mb-3">The adaptive mode uses Arabic, Chinese, and Roman numerals. Learn the Chinese characters:</p>
-            <div className="grid grid-cols-3 gap-3 text-center" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>一</div>
-                <div className="text-sm text-gray-400">1 (yī)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>二</div>
-                <div className="text-sm text-gray-400">2 (èr)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>三</div>
-                <div className="text-sm text-gray-400">3 (sān)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>四</div>
-                <div className="text-sm text-gray-400">4 (sì)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>五</div>
-                <div className="text-sm text-gray-400">5 (wǔ)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>六</div>
-                <div className="text-sm text-gray-400">6 (liù)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>七</div>
-                <div className="text-sm text-gray-400">7 (qī)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>八</div>
-                <div className="text-sm text-gray-400">8 (bā)</div>
-              </div>
-              <div className="bg-black/30 p-3 rounded-lg">
-                <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>九</div>
-                <div className="text-sm text-gray-400">9 (jiǔ)</div>
+          {/* Congratulations for reaching training goal */}
+          {trainingGoalMinutes > 0 && totalSessionMinutes >= trainingGoalMinutes && (
+            <div className="bg-gradient-to-r from-green-900 to-emerald-900 p-6 rounded-lg space-y-4 border-2 border-green-500">
+              <div className="text-center">
+                <div className="text-5xl mb-3">🎉</div>
+                <h2 className="text-2xl font-bold text-green-300 mb-2">Congratulations!</h2>
+                <p className="text-lg text-white">You've reached your daily training goal of {trainingGoalMinutes} minutes!</p>
+                <p className="text-sm text-green-200 mt-2">Keep up the excellent work! 💪</p>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
-              <p className="text-xs text-blue-200" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
-                <strong>Tip:</strong> Odd numbers (奇数): 一三五七九 | Even numbers (偶数): 二四六八
+          )}
+
+          {/* Chinese and Korean Numerals Enable Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Chinese Numerals Section */}
+            <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-yellow-400">🇨🇳 Chinese Numerals</h2>
+                <button
+                  onClick={toggleChineseNumerals}
+                  className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                    chineseNumeralsEnabled
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-gray-600 hover:bg-gray-700 text-white'
+                  }`}
+                >
+                  {chineseNumeralsEnabled ? 'Enabled ✓' : 'Enable'}
+                </button>
+              </div>
+              <p className="text-sm text-gray-300">
+                Ready to implement Chinese numerals in your training? This can potentially make training more effective by engaging multiple cognitive pathways.
               </p>
+              <button
+                onClick={() => setShowChineseReference(!showChineseReference)}
+                className="text-blue-400 hover:text-blue-300 text-sm underline"
+              >
+                {showChineseReference ? '▼ Hide Reference' : '▶ Click to Learn More'}
+              </button>
+
+              {showChineseReference && (
+                <div className="mt-4 p-4 bg-black/30 rounded-lg space-y-3">
+                  <p className="text-sm text-gray-300 mb-3">The adaptive mode uses Arabic, Chinese, and Roman numerals. Learn the Chinese characters:</p>
+                  <div className="grid grid-cols-3 gap-3 text-center" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>一</div>
+                      <div className="text-sm text-gray-400">1 (yī)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>二</div>
+                      <div className="text-sm text-gray-400">2 (èr)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>三</div>
+                      <div className="text-sm text-gray-400">3 (sān)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>四</div>
+                      <div className="text-sm text-gray-400">4 (sì)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>五</div>
+                      <div className="text-sm text-gray-400">5 (wǔ)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>六</div>
+                      <div className="text-sm text-gray-400">6 (liù)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>七</div>
+                      <div className="text-sm text-gray-400">7 (qī)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>八</div>
+                      <div className="text-sm text-gray-400">8 (bā)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>九</div>
+                      <div className="text-sm text-gray-400">9 (jiǔ)</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
+                    <p className="text-xs text-blue-200" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
+                      <strong>Tip:</strong> Odd numbers (奇数): 一三五七九 | Even numbers (偶数): 二四六八
+                    </p>
+                  </div>
+                  <button
+                    onClick={toggleChineseNumerals}
+                    className={`w-full px-4 py-2 rounded-lg font-bold transition-colors ${
+                      chineseNumeralsEnabled
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
+                    {chineseNumeralsEnabled ? 'Enabled ✓' : 'Enable Chinese Numerals'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Sino-Korean Numerals Section */}
+            <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-yellow-400">🇰🇷 Sino-Korean Numerals</h2>
+                <button
+                  onClick={toggleKoreanNumerals}
+                  className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                    koreanNumeralsEnabled
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-gray-600 hover:bg-gray-700 text-white'
+                  }`}
+                >
+                  {koreanNumeralsEnabled ? 'Enabled ✓' : 'Enable'}
+                </button>
+              </div>
+              <p className="text-sm text-gray-300">
+                Ready to implement Sino-Korean numerals in your training? This can potentially make training more effective by engaging multiple cognitive pathways.
+              </p>
+              <button
+                onClick={() => setShowKoreanReference(!showKoreanReference)}
+                className="text-blue-400 hover:text-blue-300 text-sm underline"
+              >
+                {showKoreanReference ? '▼ Hide Reference' : '▶ Click to Learn More'}
+              </button>
+
+              {showKoreanReference && (
+                <div className="mt-4 p-4 bg-black/30 rounded-lg space-y-3">
+                  <p className="text-sm text-gray-300 mb-3">Sino-Korean numerals are used in formal contexts and share roots with Chinese numerals:</p>
+                  <div className="grid grid-cols-3 gap-3 text-center" style={{fontFamily: 'Noto Sans KR, Malgun Gothic, sans-serif'}}>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>일</div>
+                      <div className="text-sm text-gray-400">1 (il)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>이</div>
+                      <div className="text-sm text-gray-400">2 (i)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-400 mb-1" style={{fontFamily: 'inherit'}}>삼</div>
+                      <div className="text-sm text-gray-400">3 (sam)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>사</div>
+                      <div className="text-sm text-gray-400">4 (sa)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>오</div>
+                      <div className="text-sm text-gray-400">5 (o)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-green-400 mb-1" style={{fontFamily: 'inherit'}}>육</div>
+                      <div className="text-sm text-gray-400">6 (yuk)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>칠</div>
+                      <div className="text-sm text-gray-400">7 (chil)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>팔</div>
+                      <div className="text-sm text-gray-400">8 (pal)</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-purple-400 mb-1" style={{fontFamily: 'inherit'}}>구</div>
+                      <div className="text-sm text-gray-400">9 (gu)</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
+                    <p className="text-xs text-blue-200" style={{fontFamily: 'Noto Sans KR, Malgun Gothic, sans-serif'}}>
+                      <strong>Tip:</strong> Odd numbers: 일삼오칠구 | Even numbers: 이사육팔
+                    </p>
+                  </div>
+                  <button
+                    onClick={toggleKoreanNumerals}
+                    className={`w-full px-4 py-2 rounded-lg font-bold transition-colors ${
+                      koreanNumeralsEnabled
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
+                    {koreanNumeralsEnabled ? 'Enabled ✓' : 'Enable Sino-Korean Numerals'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
