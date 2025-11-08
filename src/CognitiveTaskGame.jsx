@@ -402,49 +402,127 @@ const CognitiveTaskGame = () => {
   }, []); // Only run once on mount
 
   // Toggle sound setting
-  const toggleSound = () => {
+  const toggleSound = async () => {
     const newSoundState = !soundEnabled;
     setSoundEnabled(newSoundState);
     localStorage.setItem('adaptivePosnerSound', String(newSoundState));
+
+    // Save to server
+    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+      try {
+        await supabase
+          .from('leaderboard')
+          .update({ sound_enabled: newSoundState })
+          .eq('user_id', user.id);
+        console.log('✅ Sound setting saved to server:', newSoundState);
+      } catch (err) {
+        console.warn('⚠️ Failed to save sound setting to server:', err.message);
+      }
+    }
   };
 
   // Toggle auto-continue setting
-  const toggleAutoContinue = () => {
+  const toggleAutoContinue = async () => {
     const newState = !autoContinueEnabled;
     setAutoContinueEnabled(newState);
     localStorage.setItem('adaptivePosnerAutoContinue', String(newState));
+
+    // Save to server
+    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+      try {
+        await supabase
+          .from('leaderboard')
+          .update({ auto_continue_enabled: newState })
+          .eq('user_id', user.id);
+        console.log('✅ Auto-continue setting saved to server:', newState);
+      } catch (err) {
+        console.warn('⚠️ Failed to save auto-continue setting to server:', err.message);
+      }
+    }
   };
 
   // Update auto-continue delay
-  const updateAutoContinueDelay = (delay) => {
+  const updateAutoContinueDelay = async (delay) => {
     const delayNum = parseInt(delay);
     if (delayNum >= 1 && delayNum <= 20) {
       setAutoContinueDelay(delayNum);
       localStorage.setItem('adaptivePosnerAutoContinueDelay', String(delayNum));
+
+      // Save to server
+      if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+        try {
+          await supabase
+            .from('leaderboard')
+            .update({ auto_continue_delay: delayNum })
+            .eq('user_id', user.id);
+          console.log('✅ Auto-continue delay saved to server:', delayNum);
+        } catch (err) {
+          console.warn('⚠️ Failed to save auto-continue delay to server:', err.message);
+        }
+      }
     }
   };
 
   // Toggle experimental mode
-  const toggleExperimentalMode = () => {
+  const toggleExperimentalMode = async () => {
     const newState = !experimentalMode;
     setExperimentalMode(newState);
     localStorage.setItem('adaptivePosnerExperimental', String(newState));
+
+    // Save to server
+    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+      try {
+        await supabase
+          .from('leaderboard')
+          .update({ experimental_mode: newState })
+          .eq('user_id', user.id);
+        console.log('✅ Experimental mode setting saved to server:', newState);
+      } catch (err) {
+        console.warn('⚠️ Failed to save experimental mode setting to server:', err.message);
+      }
+    }
   };
 
   // Toggle Chinese numerals
-  const toggleChineseNumerals = () => {
+  const toggleChineseNumerals = async () => {
     const newState = !chineseNumeralsEnabled;
     setChineseNumeralsEnabled(newState);
     localStorage.setItem('chineseNumeralsEnabled', String(newState));
     console.log('🇨🇳 Chinese numerals', newState ? 'enabled' : 'disabled');
+
+    // Save to server
+    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+      try {
+        await supabase
+          .from('leaderboard')
+          .update({ chinese_numerals_enabled: newState })
+          .eq('user_id', user.id);
+        console.log('✅ Chinese numerals setting saved to server:', newState);
+      } catch (err) {
+        console.warn('⚠️ Failed to save Chinese numerals setting to server:', err.message);
+      }
+    }
   };
 
   // Toggle Korean numerals
-  const toggleKoreanNumerals = () => {
+  const toggleKoreanNumerals = async () => {
     const newState = !koreanNumeralsEnabled;
     setKoreanNumeralsEnabled(newState);
     localStorage.setItem('koreanNumeralsEnabled', String(newState));
     console.log('🇰🇷 Korean numerals', newState ? 'enabled' : 'disabled');
+
+    // Save to server
+    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+      try {
+        await supabase
+          .from('leaderboard')
+          .update({ korean_numerals_enabled: newState })
+          .eq('user_id', user.id);
+        console.log('✅ Korean numerals setting saved to server:', newState);
+      } catch (err) {
+        console.warn('⚠️ Failed to save Korean numerals setting to server:', err.message);
+      }
+    }
   };
 
   // Stop all currently playing sounds
@@ -480,6 +558,17 @@ const CognitiveTaskGame = () => {
         // Create leaderboard entry for new user
         if (data.user) {
           console.log('📝 Creating leaderboard entry for new user:', username);
+          // Get current settings from localStorage to preserve them
+          const currentSettings = {
+            sound_enabled: localStorage.getItem('adaptivePosnerSound') === 'true' || localStorage.getItem('adaptivePosnerSound') === null,
+            auto_continue_enabled: localStorage.getItem('adaptivePosnerAutoContinue') === 'true',
+            auto_continue_delay: parseInt(localStorage.getItem('adaptivePosnerAutoContinueDelay')) || 3,
+            experimental_mode: localStorage.getItem('adaptivePosnerExperimental') === 'true',
+            chinese_numerals_enabled: localStorage.getItem('chineseNumeralsEnabled') === 'true',
+            korean_numerals_enabled: localStorage.getItem('koreanNumeralsEnabled') === 'true',
+            training_goal_minutes: parseInt(localStorage.getItem('trainingGoalMinutes')) || 0
+          };
+
           const { error: insertError } = await supabase
             .from('leaderboard')
             .insert([
@@ -487,7 +576,8 @@ const CognitiveTaskGame = () => {
                 user_id: data.user.id,
                 username: username,
                 highest_level: 0,
-                best_score: 0
+                best_score: 0,
+                ...currentSettings
               }
             ]);
           if (insertError) {
@@ -661,7 +751,7 @@ const CognitiveTaskGame = () => {
         try {
           const { data: leaderboardData, error: leaderboardError } = await supabase
             .from('leaderboard')
-            .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes')
+            .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode, chinese_numerals_enabled, korean_numerals_enabled')
             .eq('user_id', userId)
             .single();
 
@@ -685,6 +775,38 @@ const CognitiveTaskGame = () => {
               setTrainingGoalMinutes(leaderboardData.training_goal_minutes);
               localStorage.setItem('trainingGoalMinutes', String(leaderboardData.training_goal_minutes));
               console.log('📥 Loaded training goal:', leaderboardData.training_goal_minutes);
+            }
+
+            // Load all user settings
+            if (leaderboardData.sound_enabled !== null && leaderboardData.sound_enabled !== undefined) {
+              setSoundEnabled(leaderboardData.sound_enabled);
+              localStorage.setItem('adaptivePosnerSound', String(leaderboardData.sound_enabled));
+              console.log('📥 Loaded sound setting:', leaderboardData.sound_enabled);
+            }
+            if (leaderboardData.auto_continue_enabled !== null && leaderboardData.auto_continue_enabled !== undefined) {
+              setAutoContinueEnabled(leaderboardData.auto_continue_enabled);
+              localStorage.setItem('adaptivePosnerAutoContinue', String(leaderboardData.auto_continue_enabled));
+              console.log('📥 Loaded auto-continue setting:', leaderboardData.auto_continue_enabled);
+            }
+            if (leaderboardData.auto_continue_delay) {
+              setAutoContinueDelay(leaderboardData.auto_continue_delay);
+              localStorage.setItem('adaptivePosnerAutoContinueDelay', String(leaderboardData.auto_continue_delay));
+              console.log('📥 Loaded auto-continue delay:', leaderboardData.auto_continue_delay);
+            }
+            if (leaderboardData.experimental_mode !== null && leaderboardData.experimental_mode !== undefined) {
+              setExperimentalMode(leaderboardData.experimental_mode);
+              localStorage.setItem('adaptivePosnerExperimental', String(leaderboardData.experimental_mode));
+              console.log('📥 Loaded experimental mode:', leaderboardData.experimental_mode);
+            }
+            if (leaderboardData.chinese_numerals_enabled !== null && leaderboardData.chinese_numerals_enabled !== undefined) {
+              setChineseNumeralsEnabled(leaderboardData.chinese_numerals_enabled);
+              localStorage.setItem('chineseNumeralsEnabled', String(leaderboardData.chinese_numerals_enabled));
+              console.log('📥 Loaded Chinese numerals setting:', leaderboardData.chinese_numerals_enabled);
+            }
+            if (leaderboardData.korean_numerals_enabled !== null && leaderboardData.korean_numerals_enabled !== undefined) {
+              setKoreanNumeralsEnabled(leaderboardData.korean_numerals_enabled);
+              localStorage.setItem('koreanNumeralsEnabled', String(leaderboardData.korean_numerals_enabled));
+              console.log('📥 Loaded Korean numerals setting:', leaderboardData.korean_numerals_enabled);
             }
           }
         } catch (err) {
