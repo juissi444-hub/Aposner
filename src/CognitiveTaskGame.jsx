@@ -272,6 +272,26 @@ const CognitiveTaskGame = () => {
     console.log('✅ localStorage load complete');
   }, []);
 
+  // Calculate today's training time from sessions
+  useEffect(() => {
+    if (!trainingSessions || trainingSessions.length === 0) {
+      setTotalSessionMinutes(0);
+      return;
+    }
+
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date();
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    // Sum up all minutes from today's sessions
+    const todayMinutes = trainingSessions
+      .filter(session => session.date === todayString)
+      .reduce((total, session) => total + (session.minutes || 0), 0);
+
+    setTotalSessionMinutes(todayMinutes);
+    console.log(`📊 Today's training time calculated: ${todayMinutes} minutes from ${trainingSessions.length} total sessions`);
+  }, [trainingSessions]);
+
   // Separate effect for authentication
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -955,8 +975,30 @@ const CognitiveTaskGame = () => {
             } else {
               console.log('✅ Training time updated successfully');
               // Update local state
-              setTotalSessionMinutes(prev => prev + sessionMinutes);
+              const today = new Date();
+              const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+              // Add this session to trainingSessions array
+              setTrainingSessions(prev => {
+                // Check if there's already a session for today
+                const existingTodayIndex = prev.findIndex(s => s.date === todayString);
+                if (existingTodayIndex >= 0) {
+                  // Update existing session
+                  const updated = [...prev];
+                  updated[existingTodayIndex] = {
+                    ...updated[existingTodayIndex],
+                    minutes: updated[existingTodayIndex].minutes + sessionMinutes,
+                    level_reached: Math.max(updated[existingTodayIndex].level_reached, highestLevel)
+                  };
+                  return updated;
+                } else {
+                  // Add new session
+                  return [...prev, { date: todayString, minutes: sessionMinutes, level_reached: highestLevel }];
+                }
+              });
+
               setTotalTrainingMinutes(prev => prev + sessionMinutes);
+              // totalSessionMinutes will be updated automatically by the useEffect
             }
           } catch (err) {
             console.warn('⚠️ Failed to call update_training_time function:', err.message);
@@ -1310,7 +1352,20 @@ const CognitiveTaskGame = () => {
       ['I', 'II'], ['III', 'IV'], ['V', 'VI'], ['VII', 'VIII'], ['I', 'IX'],
       ['II', 'III'], ['IV', 'V'], ['VI', 'VII'], ['VIII', 'IX'], ['I', 'III'],
       ['II', 'IV'], ['III', 'V'], ['IV', 'VI'], ['V', 'VII'], ['VI', 'VIII'],
-      ['VII', 'IX'], ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII']
+      ['VII', 'IX'], ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII'],
+
+      // Verbal-Verbal pairs (English number words)
+      ['one', 'two'], ['two', 'three'], ['three', 'four'], ['four', 'five'], ['five', 'six'],
+      ['six', 'seven'], ['seven', 'eight'], ['eight', 'nine'], ['one', 'three'], ['two', 'four'],
+      ['three', 'five'], ['four', 'six'], ['five', 'seven'], ['six', 'eight'], ['seven', 'nine'],
+      ['one', 'four'], ['two', 'five'], ['three', 'six'], ['four', 'seven'], ['five', 'eight'],
+      ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'],
+      ['fifteen', 'sixteen'], ['sixteen', 'seventeen'], ['seventeen', 'eighteen'], ['eighteen', 'nineteen'],
+      ['twenty', 'twenty-one'], ['twenty-one', 'twenty-two'], ['twenty-two', 'twenty-three'],
+      ['twenty-three', 'twenty-four'], ['twenty-four', 'twenty-five'], ['twenty-five', 'twenty-six'],
+      ['twenty-six', 'twenty-seven'], ['twenty-seven', 'twenty-eight'], ['twenty-eight', 'twenty-nine'],
+      ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'], ['thirty-two', 'thirty-three'],
+      ['thirty-three', 'thirty-four'], ['thirty-four', 'thirty-five'], ['thirty-five', 'thirty-six']
     ],
 
     'meaning': [
@@ -3708,6 +3763,11 @@ const CognitiveTaskGame = () => {
         return chinese[n] || String(n);
       };
 
+      const numberToKorean = (n) => {
+        const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        return korean[n] || String(n);
+      };
+
       const numberToRoman = (n) => {
         if (n === 0) return '0';
         const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -3728,12 +3788,18 @@ const CognitiveTaskGame = () => {
       const evenNum = evenNums[Math.floor(Math.random() * evenNums.length)];
       const oddNum = oddNums[Math.floor(Math.random() * oddNums.length)];
 
-      // Choose one format (Arabic, Chinese, or Roman)
+      // Choose one format (Arabic, Chinese, Korean, or Roman) - only include enabled formats
       const formats = [
-        (n) => String(n), // Arabic
-        (n) => numberToChinese(n), // Chinese
-        (n) => numberToRoman(n) // Roman
+        (n) => String(n) // Arabic
       ];
+      if (chineseNumeralsEnabled) {
+        formats.push((n) => numberToChinese(n)); // Chinese
+      }
+      if (koreanNumeralsEnabled) {
+        formats.push((n) => numberToKorean(n)); // Korean
+      }
+      formats.push((n) => numberToRoman(n)); // Roman
+
       const format = formats[Math.floor(Math.random() * formats.length)];
 
       // Randomly decide which comes first
@@ -3745,6 +3811,11 @@ const CognitiveTaskGame = () => {
         return chinese[n] || String(n);
       };
 
+      const numberToKorean = (n) => {
+        const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        return korean[n] || String(n);
+      };
+
       const numberToRoman = (n) => {
         if (n === 0) return '0';
         const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -3765,12 +3836,18 @@ const CognitiveTaskGame = () => {
       const evenNum = evenNums[Math.floor(Math.random() * evenNums.length)];
       const oddNum = oddNums[Math.floor(Math.random() * oddNums.length)];
 
-      // Choose two DIFFERENT formats
+      // Choose two DIFFERENT formats - only include enabled formats
       const formats = [
-        (n) => String(n), // Arabic
-        (n) => numberToChinese(n), // Chinese
-        (n) => numberToRoman(n) // Roman
+        (n) => String(n) // Arabic
       ];
+      if (chineseNumeralsEnabled) {
+        formats.push((n) => numberToChinese(n)); // Chinese
+      }
+      if (koreanNumeralsEnabled) {
+        formats.push((n) => numberToKorean(n)); // Korean
+      }
+      formats.push((n) => numberToRoman(n)); // Roman
+
       let format1 = formats[Math.floor(Math.random() * formats.length)];
       let format2 = formats[Math.floor(Math.random() * formats.length)];
       // Ensure formats are different
@@ -3785,6 +3862,11 @@ const CognitiveTaskGame = () => {
       const numberToChinese = (n) => {
         const chinese = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
         return chinese[n] || String(n);
+      };
+
+      const numberToKorean = (n) => {
+        const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        return korean[n] || String(n);
       };
 
       const numberToRoman = (n) => {
@@ -3808,12 +3890,18 @@ const CognitiveTaskGame = () => {
         num2 = Math.floor(Math.random() * 9) + 1;
       }
 
-      // Choose two DIFFERENT formats
+      // Choose two DIFFERENT formats - only include enabled formats
       const formats = [
-        (n) => String(n), // Arabic
-        (n) => numberToChinese(n), // Chinese
-        (n) => numberToRoman(n) // Roman
+        (n) => String(n) // Arabic
       ];
+      if (chineseNumeralsEnabled) {
+        formats.push((n) => numberToChinese(n)); // Chinese
+      }
+      if (koreanNumeralsEnabled) {
+        formats.push((n) => numberToKorean(n)); // Korean
+      }
+      formats.push((n) => numberToRoman(n)); // Roman
+
       let format1 = formats[Math.floor(Math.random() * formats.length)];
       let format2 = formats[Math.floor(Math.random() * formats.length)];
       // Ensure formats are different
@@ -5437,11 +5525,12 @@ const CognitiveTaskGame = () => {
               ) : (
                 <>
                   {/* Desktop header - hidden on mobile */}
-                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2" style={{gridTemplateColumns: '60px 1fr 200px 120px 120px'}}>
+                  <div className="hidden sm:grid gap-4 font-bold text-sm text-gray-400 px-4 py-2" style={{gridTemplateColumns: '60px 1fr 200px 120px 100px 120px'}}>
                     <div>Rank</div>
                     <div>Username</div>
                     <div>Highest Level</div>
-                    <div>Training Time</div>
+                    <div>Total Time</div>
+                    <div>Today</div>
                     <div className="text-right">Ranking</div>
                   </div>
                   {(() => {
@@ -5509,7 +5598,7 @@ const CognitiveTaskGame = () => {
                         className={`rounded-lg ${rankStyle} ${index === 0 ? 'first-place-glow' : ''}`}
                       >
                         {/* Desktop layout */}
-                        <div className="hidden sm:grid gap-4 px-4 py-3" style={{gridTemplateColumns: '60px 1fr 200px 120px 120px'}}>
+                        <div className="hidden sm:grid gap-4 px-4 py-3" style={{gridTemplateColumns: '60px 1fr 200px 120px 100px 120px'}}>
                           <div className="font-bold text-lg">
                             {index === 0 && '🥇'}
                             {index === 1 && '🥈'}
@@ -5535,6 +5624,18 @@ const CognitiveTaskGame = () => {
                             ) : (
                               <span className="text-gray-500">-</span>
                             )}
+                          </div>
+                          <div className="font-semibold text-green-400">
+                            {(() => {
+                              // Calculate today's training time from training_sessions
+                              if (!entry.training_sessions || entry.training_sessions.length === 0) {
+                                return <span className="text-gray-500">-</span>;
+                              }
+                              const today = new Date();
+                              const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                              const todaySession = entry.training_sessions.find(s => s.date === todayString);
+                              return todaySession ? `${todaySession.minutes} min` : <span className="text-gray-500">0 min</span>;
+                            })()}
                           </div>
                           <div className="font-semibold text-yellow-400 text-right whitespace-nowrap">{getOrdinalSuffix(percentile)} percentile</div>
                         </div>
@@ -5562,9 +5663,24 @@ const CognitiveTaskGame = () => {
                           </div>
                           {entry.total_training_minutes && (
                             <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-blue-400`}>
-                              Training: {entry.total_training_minutes} min ({(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level)
+                              Total: {entry.total_training_minutes} min ({(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level)
                             </div>
                           )}
+                          {(() => {
+                            // Calculate today's training time from training_sessions
+                            if (!entry.training_sessions || entry.training_sessions.length === 0) {
+                              return null;
+                            }
+                            const today = new Date();
+                            const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                            const todaySession = entry.training_sessions.find(s => s.date === todayString);
+                            if (!todaySession || todaySession.minutes === 0) return null;
+                            return (
+                              <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-green-400`}>
+                                Today: {todaySession.minutes} min
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     );
