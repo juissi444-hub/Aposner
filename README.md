@@ -24,7 +24,7 @@ A cognitive task game built with React to test your mental agility through vario
       - **Level 2**: Same Meaning (2-二-II) - Semantic property retrieval
       - **Level 3**: Both Odd/Even - Same Format (1-3, 二-四) - Conceptual retrieval
       - **Level 4**: Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual retrieval
-      - Uses numbers 1-9 in Arabic, Chinese (一~九), and Roman numerals (I-IX)
+      - Uses numbers 1-1000 in Arabic and verbal forms, 1-30 in Roman numerals (I-XXX), 1-9 in Chinese (一~九), and 1-9 in Korean (일~구)
       - Difficulty increases ONLY through time pressure (2000ms → 87.5ms), NOT task type changes
 
 - **Experimental Mode** (Optional):
