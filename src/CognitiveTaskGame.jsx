@@ -797,12 +797,12 @@ const CognitiveTaskGame = () => {
             .eq('user_id', userId)
             .single();
 
-          // If query failed due to missing columns, retry with base columns only
+          // If query failed due to missing columns, retry with ONLY base schema columns
           if (leaderboardError && leaderboardError.message && leaderboardError.message.includes('does not exist')) {
-            console.log('⚠️ Training columns not found, retrying with base columns only');
+            console.log('⚠️ Extended columns not found, retrying with minimal base schema only');
             const { data: baseData, error: baseError } = await supabase
               .from('leaderboard')
-              .select('highest_level, best_score, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode, chinese_numerals_enabled, korean_numerals_enabled')
+              .select('highest_level, best_score')
               .eq('user_id', userId)
               .single();
 
