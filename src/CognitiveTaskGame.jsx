@@ -797,12 +797,12 @@ const CognitiveTaskGame = () => {
             .eq('user_id', userId)
             .single();
 
-          // If query failed due to missing columns, retry with base columns only
+          // If query failed due to missing columns, retry with ONLY base schema columns
           if (leaderboardError && leaderboardError.message && leaderboardError.message.includes('does not exist')) {
-            console.log('⚠️ Training columns not found, retrying with base columns only');
+            console.log('⚠️ Extended columns not found, retrying with minimal base schema only');
             const { data: baseData, error: baseError } = await supabase
               .from('leaderboard')
-              .select('highest_level, best_score, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode, chinese_numerals_enabled, korean_numerals_enabled')
+              .select('highest_level, best_score')
               .eq('user_id', userId)
               .single();
 
@@ -1511,11 +1511,31 @@ const CognitiveTaskGame = () => {
   const wordPairs = {
     // Level 1-2 tasks from study (using numbers 1-9 in different formats)
     'same-format': [
-      // Arabic-Arabic pairs
-      ['1', '2'], ['3', '4'], ['5', '6'], ['7', '8'], ['1', '9'],
-      ['2', '3'], ['4', '5'], ['6', '7'], ['8', '9'], ['1', '3'],
-      ['2', '4'], ['3', '5'], ['4', '6'], ['5', '7'], ['6', '8'],
-      ['7', '9'], ['1', '4'], ['2', '5'], ['3', '6'], ['4', '7'],
+      // Arabic-Arabic pairs (1-1000)
+      // 1-9 consecutive and non-consecutive
+      ['1', '2'], ['2', '3'], ['3', '4'], ['4', '5'], ['5', '6'], ['6', '7'], ['7', '8'], ['8', '9'],
+      ['1', '3'], ['2', '4'], ['3', '5'], ['4', '6'], ['5', '7'], ['6', '8'], ['7', '9'],
+      ['1', '4'], ['2', '5'], ['3', '6'], ['4', '7'], ['5', '8'], ['6', '9'],
+      ['1', '5'], ['2', '6'], ['3', '7'], ['4', '8'], ['5', '9'],
+      // 10-99 range
+      ['10', '11'], ['11', '12'], ['12', '13'], ['13', '14'], ['14', '15'], ['15', '16'], ['16', '17'], ['17', '18'], ['18', '19'], ['19', '20'],
+      ['20', '21'], ['21', '22'], ['22', '23'], ['23', '24'], ['24', '25'], ['30', '31'], ['40', '41'], ['50', '51'], ['60', '61'], ['70', '71'], ['80', '81'], ['90', '91'],
+      ['10', '12'], ['11', '13'], ['20', '22'], ['30', '32'], ['40', '42'], ['50', '52'], ['60', '62'], ['70', '72'], ['80', '82'], ['90', '92'],
+      ['10', '15'], ['20', '25'], ['30', '35'], ['40', '45'], ['50', '55'], ['60', '65'], ['70', '75'], ['80', '85'], ['90', '95'],
+      ['10', '20'], ['20', '30'], ['30', '40'], ['40', '50'], ['50', '60'], ['60', '70'], ['70', '80'], ['80', '90'],
+      ['15', '25'], ['25', '35'], ['35', '45'], ['45', '55'], ['55', '65'], ['65', '75'], ['75', '85'], ['85', '95'],
+      // 100-999 range
+      ['100', '101'], ['100', '102'], ['100', '105'], ['100', '110'], ['100', '120'], ['100', '150'], ['100', '200'],
+      ['200', '201'], ['200', '205'], ['200', '210'], ['200', '250'], ['200', '300'],
+      ['300', '301'], ['300', '310'], ['300', '350'], ['300', '400'],
+      ['400', '401'], ['400', '450'], ['400', '500'],
+      ['500', '501'], ['500', '550'], ['500', '600'],
+      ['600', '601'], ['600', '650'], ['600', '700'],
+      ['700', '701'], ['700', '750'], ['700', '800'],
+      ['800', '801'], ['800', '850'], ['800', '900'],
+      ['900', '901'], ['900', '950'], ['900', '1000'],
+      ['150', '160'], ['250', '260'], ['350', '360'], ['450', '460'], ['550', '560'], ['650', '660'], ['750', '760'], ['850', '860'],
+      ['111', '112'], ['222', '223'], ['333', '334'], ['444', '445'], ['555', '556'], ['666', '667'], ['777', '778'], ['888', '889'], ['999', '1000'],
 
       // Chinese-Chinese pairs (一~九)
       ['一', '二'], ['三', '四'], ['五', '六'], ['七', '八'], ['一', '九'],
@@ -1529,50 +1549,97 @@ const CognitiveTaskGame = () => {
       ['이', '사'], ['삼', '오'], ['사', '육'], ['오', '칠'], ['육', '팔'],
       ['칠', '구'], ['일', '사'], ['이', '오'], ['삼', '육'], ['사', '칠'],
 
-      // Roman-Roman pairs (I-IX)
-      ['I', 'II'], ['III', 'IV'], ['V', 'VI'], ['VII', 'VIII'], ['I', 'IX'],
-      ['II', 'III'], ['IV', 'V'], ['VI', 'VII'], ['VIII', 'IX'], ['I', 'III'],
-      ['II', 'IV'], ['III', 'V'], ['IV', 'VI'], ['V', 'VII'], ['VI', 'VIII'],
-      ['VII', 'IX'], ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII'],
+      // Roman-Roman pairs (I-L / 1-50)
+      ['I', 'II'], ['II', 'III'], ['III', 'IV'], ['IV', 'V'], ['V', 'VI'], ['VI', 'VII'], ['VII', 'VIII'], ['VIII', 'IX'], ['IX', 'X'],
+      ['X', 'XI'], ['XI', 'XII'], ['XII', 'XIII'], ['XIII', 'XIV'], ['XIV', 'XV'], ['XV', 'XVI'], ['XVI', 'XVII'], ['XVII', 'XVIII'], ['XVIII', 'XIX'], ['XIX', 'XX'],
+      ['XX', 'XXI'], ['XXI', 'XXII'], ['XXII', 'XXIII'], ['XXIII', 'XXIV'], ['XXIV', 'XXV'], ['XXV', 'XXVI'], ['XXVI', 'XXVII'], ['XXVII', 'XXVIII'], ['XXVIII', 'XXIX'], ['XXIX', 'XXX'],
+      ['XXX', 'XXXI'], ['XXXI', 'XXXII'], ['XXXII', 'XXXIII'], ['XXXIII', 'XXXIV'], ['XXXIV', 'XXXV'], ['XXXV', 'XXXVI'], ['XXXVI', 'XXXVII'], ['XXXVII', 'XXXVIII'], ['XXXVIII', 'XXXIX'], ['XXXIX', 'XL'],
+      ['XL', 'XLI'], ['XLI', 'XLII'], ['XLII', 'XLIII'], ['XLIII', 'XLIV'], ['XLIV', 'XLV'], ['XLV', 'XLVI'], ['XLVI', 'XLVII'], ['XLVII', 'XLVIII'], ['XLVIII', 'XLIX'], ['XLIX', 'L'],
+      // Non-consecutive Roman pairs
+      ['I', 'III'], ['II', 'IV'], ['III', 'V'], ['IV', 'VI'], ['V', 'VII'], ['VI', 'VIII'], ['VII', 'IX'], ['VIII', 'X'],
+      ['I', 'IV'], ['II', 'V'], ['III', 'VI'], ['IV', 'VII'], ['V', 'VIII'], ['VI', 'IX'], ['VII', 'X'],
+      ['X', 'XII'], ['XI', 'XIII'], ['XII', 'XIV'], ['XIII', 'XV'], ['XIV', 'XVI'], ['XV', 'XVII'], ['XVI', 'XVIII'], ['XVII', 'XIX'], ['XVIII', 'XX'],
+      ['X', 'XIII'], ['XI', 'XIV'], ['XII', 'XV'], ['XIII', 'XVI'], ['XIV', 'XVII'], ['XV', 'XVIII'], ['XVI', 'XIX'], ['XVII', 'XX'],
+      ['XX', 'XXII'], ['XXI', 'XXIII'], ['XXII', 'XXIV'], ['XXIII', 'XXV'], ['XXIV', 'XXVI'], ['XXV', 'XXVII'], ['XXVI', 'XXVIII'], ['XXVII', 'XXIX'], ['XXVIII', 'XXX'],
+      ['XX', 'XXIII'], ['XXI', 'XXIV'], ['XXII', 'XXV'], ['XXIII', 'XXVI'], ['XXIV', 'XXVII'], ['XXV', 'XXVIII'], ['XXVI', 'XXIX'], ['XXVII', 'XXX'],
+      ['XXX', 'XXXII'], ['XXXI', 'XXXIII'], ['XXXII', 'XXXIV'], ['XXXIII', 'XXXV'], ['XXXIV', 'XXXVI'], ['XXXV', 'XXXVII'], ['XXXVI', 'XXXVIII'], ['XXXVII', 'XXXIX'], ['XXXVIII', 'XL'],
+      ['XXX', 'XXXIII'], ['XXXI', 'XXXIV'], ['XXXII', 'XXXV'], ['XXXIII', 'XXXVI'], ['XXXIV', 'XXXVII'], ['XXXV', 'XXXVIII'], ['XXXVI', 'XXXIX'], ['XXXVII', 'XL'],
+      ['XL', 'XLII'], ['XLI', 'XLIII'], ['XLII', 'XLIV'], ['XLIII', 'XLV'], ['XLIV', 'XLVI'], ['XLV', 'XLVII'], ['XLVI', 'XLVIII'], ['XLVII', 'XLIX'], ['XLVIII', 'L'],
+      ['XL', 'XLIII'], ['XLI', 'XLIV'], ['XLII', 'XLV'], ['XLIII', 'XLVI'], ['XLIV', 'XLVII'], ['XLV', 'XLVIII'], ['XLVI', 'XLIX'], ['XLVII', 'L'],
 
-      // Verbal-Verbal pairs (English number words)
+      // Verbal-Verbal pairs (English number words 1-1000)
+      // 1-9
       ['one', 'two'], ['two', 'three'], ['three', 'four'], ['four', 'five'], ['five', 'six'],
-      ['six', 'seven'], ['seven', 'eight'], ['eight', 'nine'], ['one', 'three'], ['two', 'four'],
-      ['three', 'five'], ['four', 'six'], ['five', 'seven'], ['six', 'eight'], ['seven', 'nine'],
-      ['one', 'four'], ['two', 'five'], ['three', 'six'], ['four', 'seven'], ['five', 'eight'],
-      ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'],
+      ['six', 'seven'], ['seven', 'eight'], ['eight', 'nine'],
+      ['one', 'three'], ['two', 'four'], ['three', 'five'], ['four', 'six'], ['five', 'seven'], ['six', 'eight'], ['seven', 'nine'],
+      ['one', 'four'], ['two', 'five'], ['three', 'six'], ['four', 'seven'], ['five', 'eight'], ['six', 'nine'],
+      // 10-19
+      ['ten', 'eleven'], ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'],
       ['fifteen', 'sixteen'], ['sixteen', 'seventeen'], ['seventeen', 'eighteen'], ['eighteen', 'nineteen'],
-      ['twenty', 'twenty-one'], ['twenty-one', 'twenty-two'], ['twenty-two', 'twenty-three'],
-      ['twenty-three', 'twenty-four'], ['twenty-four', 'twenty-five'], ['twenty-five', 'twenty-six'],
-      ['twenty-six', 'twenty-seven'], ['twenty-seven', 'twenty-eight'], ['twenty-eight', 'twenty-nine'],
-      ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'], ['thirty-two', 'thirty-three'],
-      ['thirty-three', 'thirty-four'], ['thirty-four', 'thirty-five'], ['thirty-five', 'thirty-six']
+      ['ten', 'twelve'], ['eleven', 'thirteen'], ['twelve', 'fourteen'], ['thirteen', 'fifteen'],
+      // 20-99
+      ['twenty', 'twenty-one'], ['twenty-one', 'twenty-two'], ['twenty-two', 'twenty-three'], ['twenty-three', 'twenty-four'], ['twenty-four', 'twenty-five'],
+      ['twenty-five', 'twenty-six'], ['twenty-six', 'twenty-seven'], ['twenty-seven', 'twenty-eight'], ['twenty-eight', 'twenty-nine'], ['twenty-nine', 'thirty'],
+      ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'], ['thirty-two', 'thirty-three'], ['thirty-three', 'thirty-four'], ['thirty-four', 'thirty-five'],
+      ['forty', 'forty-one'], ['forty-one', 'forty-two'], ['fifty', 'fifty-one'], ['sixty', 'sixty-one'], ['seventy', 'seventy-one'],
+      ['eighty', 'eighty-one'], ['ninety', 'ninety-one'],
+      ['twenty', 'thirty'], ['thirty', 'forty'], ['forty', 'fifty'], ['fifty', 'sixty'], ['sixty', 'seventy'], ['seventy', 'eighty'], ['eighty', 'ninety'],
+      ['twenty', 'twenty-five'], ['thirty', 'thirty-five'], ['forty', 'forty-five'], ['fifty', 'fifty-five'], ['sixty', 'sixty-five'], ['seventy', 'seventy-five'],
+      // 100-999
+      ['one hundred', 'one hundred one'], ['one hundred', 'one hundred ten'], ['one hundred', 'one hundred twenty'], ['one hundred', 'two hundred'],
+      ['two hundred', 'two hundred one'], ['two hundred', 'two hundred fifty'], ['two hundred', 'three hundred'],
+      ['three hundred', 'three hundred one'], ['three hundred', 'four hundred'],
+      ['four hundred', 'four hundred fifty'], ['four hundred', 'five hundred'],
+      ['five hundred', 'five hundred fifty'], ['five hundred', 'six hundred'],
+      ['six hundred', 'six hundred fifty'], ['six hundred', 'seven hundred'],
+      ['seven hundred', 'seven hundred fifty'], ['seven hundred', 'eight hundred'],
+      ['eight hundred', 'eight hundred fifty'], ['eight hundred', 'nine hundred'],
+      ['nine hundred', 'nine hundred fifty'], ['nine hundred', 'one thousand'],
+      ['one hundred fifty', 'one hundred sixty'], ['two hundred fifty', 'two hundred sixty'], ['five hundred fifty', 'five hundred sixty']
     ],
 
     'meaning': [
       // Same meaning across different formats
-      ['1', '一'], ['2', '二'], ['3', '三'], ['4', '四'], ['5', '五'],
-      ['6', '六'], ['7', '七'], ['8', '八'], ['9', '九'],
-      ['1', 'I'], ['2', 'II'], ['3', 'III'], ['4', 'IV'], ['5', 'V'],
-      ['6', 'VI'], ['7', 'VII'], ['8', 'VIII'], ['9', 'IX'],
+      // Arabic to Chinese (LIMITED TO 1-9 ONLY)
+      ['1', '一'], ['2', '二'], ['3', '三'], ['4', '四'], ['5', '五'], ['6', '六'], ['7', '七'], ['8', '八'], ['9', '九'],
+      // Arabic to Roman (1-50)
+      ['1', 'I'], ['2', 'II'], ['3', 'III'], ['4', 'IV'], ['5', 'V'], ['6', 'VI'], ['7', 'VII'], ['8', 'VIII'], ['9', 'IX'],
+      ['10', 'X'], ['11', 'XI'], ['12', 'XII'], ['13', 'XIII'], ['14', 'XIV'], ['15', 'XV'], ['16', 'XVI'], ['17', 'XVII'], ['18', 'XVIII'], ['19', 'XIX'],
+      ['20', 'XX'], ['21', 'XXI'], ['22', 'XXII'], ['23', 'XXIII'], ['24', 'XXIV'], ['25', 'XXV'], ['26', 'XXVI'], ['27', 'XXVII'], ['28', 'XXVIII'], ['29', 'XXIX'],
+      ['30', 'XXX'], ['31', 'XXXI'], ['32', 'XXXII'], ['33', 'XXXIII'], ['34', 'XXXIV'], ['35', 'XXXV'], ['36', 'XXXVI'], ['37', 'XXXVII'], ['38', 'XXXVIII'], ['39', 'XXXIX'],
+      ['40', 'XL'], ['41', 'XLI'], ['42', 'XLII'], ['43', 'XLIII'], ['44', 'XLIV'], ['45', 'XLV'], ['46', 'XLVI'], ['47', 'XLVII'], ['48', 'XLVIII'], ['49', 'XLIX'],
+      ['50', 'L'],
+      // Korean to Chinese (1-9 only)
       ['일', '一'], ['이', '二'], ['삼', '三'], ['사', '四'], ['오', '五'],
       ['육', '六'], ['칠', '七'], ['팔', '八'], ['구', '九'],
+      // Arabic to Korean (1-9 only)
       ['1', '일'], ['2', '이'], ['3', '삼'], ['4', '사'], ['5', '오'],
       ['6', '육'], ['7', '칠'], ['8', '팔'], ['9', '구'],
+      // Korean to Roman (1-9 only)
       ['일', 'I'], ['이', 'II'], ['삼', 'III'], ['사', 'IV'], ['오', 'V'],
       ['육', 'VI'], ['칠', 'VII'], ['팔', 'VIII'], ['구', 'IX'],
-      ['一', 'I'], ['二', 'II'], ['三', 'III'], ['四', 'IV'], ['五', 'V'],
-      ['六', 'VI'], ['七', 'VII'], ['八', 'VIII'], ['九', 'IX'],
+      // Chinese to Roman (LIMITED TO 1-9 ONLY)
+      ['一', 'I'], ['二', 'II'], ['三', 'III'], ['四', 'IV'], ['五', 'V'], ['六', 'VI'], ['七', 'VII'], ['八', 'VIII'], ['九', 'IX'],
 
       // Matching numbers in same format
-      ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'],
-      ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'],
+      // Arabic same (1-1000)
+      ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'],
+      ['10', '10'], ['11', '11'], ['12', '12'], ['13', '13'], ['14', '14'], ['15', '15'], ['16', '16'], ['17', '17'], ['18', '18'], ['19', '19'],
+      ['20', '20'], ['21', '21'], ['22', '22'], ['23', '23'], ['24', '24'], ['25', '25'], ['30', '30'], ['40', '40'], ['50', '50'],
+      ['60', '60'], ['70', '70'], ['80', '80'], ['90', '90'], ['100', '100'], ['150', '150'], ['200', '200'], ['250', '250'], ['300', '300'],
+      ['400', '400'], ['500', '500'], ['600', '600'], ['700', '700'], ['800', '800'], ['900', '900'], ['1000', '1000'],
+      // Korean same (1-9 only)
       ['일', '일'], ['이', '이'], ['삼', '삼'], ['사', '사'], ['오', '오'],
       ['육', '육'], ['칠', '칠'], ['팔', '팔'], ['구', '구'],
-      ['一', '一'], ['二', '二'], ['三', '三'], ['四', '四'], ['五', '五'],
-      ['六', '六'], ['七', '七'], ['八', '八'], ['九', '九'],
-      ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'],
-      ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX']
+      // Chinese same (LIMITED TO 1-9 ONLY)
+      ['一', '一'], ['二', '二'], ['三', '三'], ['四', '四'], ['五', '五'], ['六', '六'], ['七', '七'], ['八', '八'], ['九', '九'],
+      // Roman same
+      ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'], ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX'],
+      ['X', 'X'], ['XI', 'XI'], ['XII', 'XII'], ['XIII', 'XIII'], ['XIV', 'XIV'], ['XV', 'XV'], ['XVI', 'XVI'], ['XVII', 'XVII'], ['XVIII', 'XVIII'], ['XIX', 'XIX'],
+      ['XX', 'XX'], ['XXI', 'XXI'], ['XXII', 'XXII'], ['XXIII', 'XXIII'], ['XXIV', 'XXIV'], ['XXV', 'XXV'], ['XXVI', 'XXVI'], ['XXVII', 'XXVII'], ['XXVIII', 'XXVIII'], ['XXIX', 'XXIX'],
+      ['XXX', 'XXX'], ['XXXI', 'XXXI'], ['XXXII', 'XXXII'], ['XXXIII', 'XXXIII'], ['XXXIV', 'XXXIV'], ['XXXV', 'XXXV'], ['XXXVI', 'XXXVI'], ['XXXVII', 'XXXVII'], ['XXXVIII', 'XXXVIII'], ['XXXIX', 'XXXIX'],
+      ['XL', 'XL'], ['XLI', 'XLI'], ['XLII', 'XLII'], ['XLIII', 'XLIII'], ['XLIV', 'XLIV'], ['XLV', 'XLV'], ['XLVI', 'XLVI'], ['XLVII', 'XLVII'], ['XLVIII', 'XLVIII'], ['XLIX', 'XLIX'],
+      ['L', 'L']
     ],
 
     // Level 3 task: Parity judgment - same format
@@ -1598,12 +1665,56 @@ const CognitiveTaskGame = () => {
       ['二', '四'], ['四', '六'], ['六', '八'], ['二', '六'], ['二', '八'],
       ['四', '八'],
 
-      // Both odd - Roman
-      ['I', 'III'], ['III', 'V'], ['V', 'VII'], ['VII', 'IX'], ['I', 'V'],
-      ['I', 'VII'], ['I', 'IX'], ['III', 'VII'], ['III', 'IX'], ['V', 'IX'],
-      // Both even - Roman
-      ['II', 'IV'], ['IV', 'VI'], ['VI', 'VIII'], ['II', 'VI'], ['II', 'VIII'],
-      ['IV', 'VIII']
+      // Both odd - Roman (1-50)
+      ['I', 'III'], ['I', 'V'], ['I', 'VII'], ['I', 'IX'], ['I', 'XI'], ['I', 'XIII'], ['I', 'XV'], ['I', 'XVII'], ['I', 'XIX'],
+      ['III', 'V'], ['III', 'VII'], ['III', 'IX'], ['III', 'XI'], ['III', 'XIII'], ['III', 'XV'], ['III', 'XVII'], ['III', 'XIX'],
+      ['V', 'VII'], ['V', 'IX'], ['V', 'XI'], ['V', 'XIII'], ['V', 'XV'], ['V', 'XVII'], ['V', 'XIX'],
+      ['VII', 'IX'], ['VII', 'XI'], ['VII', 'XIII'], ['VII', 'XV'], ['VII', 'XVII'], ['VII', 'XIX'],
+      ['IX', 'XI'], ['IX', 'XIII'], ['IX', 'XV'], ['IX', 'XVII'], ['IX', 'XIX'],
+      ['XI', 'XIII'], ['XI', 'XV'], ['XI', 'XVII'], ['XI', 'XIX'], ['XI', 'XXI'], ['XI', 'XXIII'], ['XI', 'XXV'],
+      ['XIII', 'XV'], ['XIII', 'XVII'], ['XIII', 'XIX'], ['XIII', 'XXI'], ['XIII', 'XXIII'], ['XIII', 'XXV'],
+      ['XV', 'XVII'], ['XV', 'XIX'], ['XV', 'XXI'], ['XV', 'XXIII'], ['XV', 'XXV'],
+      ['XVII', 'XIX'], ['XVII', 'XXI'], ['XVII', 'XXIII'], ['XVII', 'XXV'],
+      ['XIX', 'XXI'], ['XIX', 'XXIII'], ['XIX', 'XXV'],
+      ['XXI', 'XXIII'], ['XXI', 'XXV'], ['XXI', 'XXVII'], ['XXI', 'XXIX'], ['XXI', 'XXXI'],
+      ['XXIII', 'XXV'], ['XXIII', 'XXVII'], ['XXIII', 'XXIX'], ['XXIII', 'XXXI'],
+      ['XXV', 'XXVII'], ['XXV', 'XXIX'], ['XXV', 'XXXI'],
+      ['XXVII', 'XXIX'], ['XXVII', 'XXXI'],
+      ['XXIX', 'XXXI'], ['XXIX', 'XXXIII'], ['XXIX', 'XXXV'],
+      ['XXXI', 'XXXIII'], ['XXXI', 'XXXV'], ['XXXI', 'XXXVII'], ['XXXI', 'XXXIX'],
+      ['XXXIII', 'XXXV'], ['XXXIII', 'XXXVII'], ['XXXIII', 'XXXIX'],
+      ['XXXV', 'XXXVII'], ['XXXV', 'XXXIX'],
+      ['XXXVII', 'XXXIX'],
+      ['XXXIX', 'XLI'], ['XXXIX', 'XLIII'], ['XXXIX', 'XLV'],
+      ['XLI', 'XLIII'], ['XLI', 'XLV'], ['XLI', 'XLVII'], ['XLI', 'XLIX'],
+      ['XLIII', 'XLV'], ['XLIII', 'XLVII'], ['XLIII', 'XLIX'],
+      ['XLV', 'XLVII'], ['XLV', 'XLIX'],
+      ['XLVII', 'XLIX'],
+      // Both even - Roman (1-50)
+      ['II', 'IV'], ['II', 'VI'], ['II', 'VIII'], ['II', 'X'], ['II', 'XII'], ['II', 'XIV'], ['II', 'XVI'], ['II', 'XVIII'],
+      ['IV', 'VI'], ['IV', 'VIII'], ['IV', 'X'], ['IV', 'XII'], ['IV', 'XIV'], ['IV', 'XVI'], ['IV', 'XVIII'],
+      ['VI', 'VIII'], ['VI', 'X'], ['VI', 'XII'], ['VI', 'XIV'], ['VI', 'XVI'], ['VI', 'XVIII'],
+      ['VIII', 'X'], ['VIII', 'XII'], ['VIII', 'XIV'], ['VIII', 'XVI'], ['VIII', 'XVIII'],
+      ['X', 'XII'], ['X', 'XIV'], ['X', 'XVI'], ['X', 'XVIII'], ['X', 'XX'], ['X', 'XXII'], ['X', 'XXIV'],
+      ['XII', 'XIV'], ['XII', 'XVI'], ['XII', 'XVIII'], ['XII', 'XX'], ['XII', 'XXII'], ['XII', 'XXIV'],
+      ['XIV', 'XVI'], ['XIV', 'XVIII'], ['XIV', 'XX'], ['XIV', 'XXII'], ['XIV', 'XXIV'],
+      ['XVI', 'XVIII'], ['XVI', 'XX'], ['XVI', 'XXII'], ['XVI', 'XXIV'],
+      ['XVIII', 'XX'], ['XVIII', 'XXII'], ['XVIII', 'XXIV'],
+      ['XX', 'XXII'], ['XX', 'XXIV'], ['XX', 'XXVI'], ['XX', 'XXVIII'], ['XX', 'XXX'],
+      ['XXII', 'XXIV'], ['XXII', 'XXVI'], ['XXII', 'XXVIII'], ['XXII', 'XXX'],
+      ['XXIV', 'XXVI'], ['XXIV', 'XXVIII'], ['XXIV', 'XXX'],
+      ['XXVI', 'XXVIII'], ['XXVI', 'XXX'],
+      ['XXVIII', 'XXX'], ['XXVIII', 'XXXII'], ['XXVIII', 'XXXIV'],
+      ['XXX', 'XXXII'], ['XXX', 'XXXIV'], ['XXX', 'XXXVI'], ['XXX', 'XXXVIII'],
+      ['XXXII', 'XXXIV'], ['XXXII', 'XXXVI'], ['XXXII', 'XXXVIII'],
+      ['XXXIV', 'XXXVI'], ['XXXIV', 'XXXVIII'],
+      ['XXXVI', 'XXXVIII'],
+      ['XXXVIII', 'XL'], ['XXXVIII', 'XLII'], ['XXXVIII', 'XLIV'],
+      ['XL', 'XLII'], ['XL', 'XLIV'], ['XL', 'XLVI'], ['XL', 'XLVIII'], ['XL', 'L'],
+      ['XLII', 'XLIV'], ['XLII', 'XLVI'], ['XLII', 'XLVIII'], ['XLII', 'L'],
+      ['XLIV', 'XLVI'], ['XLIV', 'XLVIII'], ['XLIV', 'L'],
+      ['XLVI', 'XLVIII'], ['XLVI', 'L'],
+      ['XLVIII', 'L']
     ],
 
     // Level 4 task: Parity judgment - mixed format
@@ -1629,26 +1740,77 @@ const CognitiveTaskGame = () => {
       ['이', '四'], ['사', '六'], ['육', '八'], ['이', '六'], ['사', '二'],
       ['육', '四'], ['팔', '六'], ['팔', '二'],
 
-      // Both odd - Arabic-Roman
-      ['1', 'III'], ['3', 'V'], ['5', 'VII'], ['7', 'IX'], ['1', 'V'],
-      ['3', 'I'], ['5', 'III'], ['7', 'V'], ['9', 'VII'], ['9', 'I'],
-      // Both even - Arabic-Roman
-      ['2', 'IV'], ['4', 'VI'], ['6', 'VIII'], ['2', 'VI'], ['4', 'II'],
-      ['6', 'IV'], ['8', 'VI'], ['8', 'II'],
+      // Both odd - Arabic-Roman (1-50)
+      ['1', 'III'], ['1', 'V'], ['1', 'VII'], ['1', 'IX'], ['1', 'XI'], ['1', 'XIII'], ['1', 'XV'],
+      ['3', 'I'], ['3', 'V'], ['3', 'VII'], ['3', 'IX'], ['3', 'XI'], ['3', 'XIII'], ['3', 'XV'],
+      ['5', 'I'], ['5', 'III'], ['5', 'VII'], ['5', 'IX'], ['5', 'XI'], ['5', 'XIII'], ['5', 'XV'],
+      ['7', 'I'], ['7', 'III'], ['7', 'V'], ['7', 'IX'], ['7', 'XI'], ['7', 'XIII'], ['7', 'XV'],
+      ['9', 'I'], ['9', 'III'], ['9', 'V'], ['9', 'VII'], ['9', 'XI'], ['9', 'XIII'], ['9', 'XV'],
+      ['11', 'I'], ['11', 'III'], ['11', 'V'], ['11', 'VII'], ['11', 'IX'], ['11', 'XIII'], ['11', 'XV'], ['11', 'XVII'], ['11', 'XIX'],
+      ['13', 'I'], ['13', 'III'], ['13', 'V'], ['13', 'VII'], ['13', 'IX'], ['13', 'XI'], ['13', 'XV'], ['13', 'XVII'], ['13', 'XIX'],
+      ['15', 'I'], ['15', 'III'], ['15', 'V'], ['15', 'VII'], ['15', 'IX'], ['15', 'XI'], ['15', 'XIII'], ['15', 'XVII'], ['15', 'XIX'],
+      ['17', 'I'], ['17', 'III'], ['17', 'V'], ['17', 'IX'], ['17', 'XI'], ['17', 'XIII'], ['17', 'XV'], ['17', 'XIX'],
+      ['19', 'I'], ['19', 'III'], ['19', 'V'], ['19', 'IX'], ['19', 'XI'], ['19', 'XIII'], ['19', 'XV'], ['19', 'XVII'],
+      ['21', 'I'], ['21', 'V'], ['21', 'IX'], ['21', 'XIII'], ['21', 'XVII'], ['21', 'XXI'], ['21', 'XXV'],
+      ['23', 'I'], ['23', 'V'], ['23', 'IX'], ['23', 'XIII'], ['23', 'XVII'], ['23', 'XXI'], ['23', 'XXV'],
+      ['25', 'I'], ['25', 'V'], ['25', 'IX'], ['25', 'XIII'], ['25', 'XVII'], ['25', 'XXI'], ['25', 'XXIII'],
+      ['27', 'I'], ['27', 'V'], ['27', 'IX'], ['27', 'XIII'], ['27', 'XVII'], ['27', 'XXI'], ['27', 'XXV'],
+      ['29', 'I'], ['29', 'V'], ['29', 'IX'], ['29', 'XIII'], ['29', 'XVII'], ['29', 'XXI'], ['29', 'XXV'],
+      ['31', 'I'], ['31', 'V'], ['31', 'IX'], ['31', 'XIII'], ['31', 'XXI'], ['31', 'XXV'], ['31', 'XXIX'],
+      ['33', 'I'], ['33', 'V'], ['33', 'IX'], ['33', 'XIII'], ['33', 'XXI'], ['33', 'XXV'], ['33', 'XXIX'],
+      ['35', 'I'], ['35', 'V'], ['35', 'IX'], ['35', 'XIII'], ['35', 'XXI'], ['35', 'XXV'], ['35', 'XXIX'],
+      ['37', 'I'], ['37', 'V'], ['37', 'IX'], ['37', 'XIII'], ['37', 'XXI'], ['37', 'XXV'], ['37', 'XXIX'],
+      ['39', 'I'], ['39', 'V'], ['39', 'IX'], ['39', 'XIII'], ['39', 'XXI'], ['39', 'XXV'], ['39', 'XXIX'],
+      ['41', 'I'], ['41', 'V'], ['41', 'IX'], ['41', 'XIII'], ['41', 'XXI'], ['41', 'XXV'], ['41', 'XXIX'], ['41', 'XXXIII'], ['41', 'XXXVII'],
+      ['43', 'I'], ['43', 'V'], ['43', 'IX'], ['43', 'XIII'], ['43', 'XXI'], ['43', 'XXV'], ['43', 'XXXIII'], ['43', 'XXXVII'],
+      ['45', 'I'], ['45', 'V'], ['45', 'IX'], ['45', 'XIII'], ['45', 'XXI'], ['45', 'XXV'], ['45', 'XXXIII'], ['45', 'XXXVII'],
+      ['47', 'I'], ['47', 'V'], ['47', 'IX'], ['47', 'XIII'], ['47', 'XXI'], ['47', 'XXV'], ['47', 'XXXIII'], ['47', 'XXXVII'],
+      ['49', 'I'], ['49', 'V'], ['49', 'IX'], ['49', 'XIII'], ['49', 'XXI'], ['49', 'XXV'], ['49', 'XXXIII'], ['49', 'XXXVII'],
+      // Both even - Arabic-Roman (1-50)
+      ['2', 'II'], ['2', 'IV'], ['2', 'VI'], ['2', 'VIII'], ['2', 'X'], ['2', 'XII'], ['2', 'XIV'], ['2', 'XVI'],
+      ['4', 'II'], ['4', 'VI'], ['4', 'VIII'], ['4', 'X'], ['4', 'XII'], ['4', 'XIV'], ['4', 'XVI'],
+      ['6', 'II'], ['6', 'IV'], ['6', 'VIII'], ['6', 'X'], ['6', 'XII'], ['6', 'XIV'], ['6', 'XVI'],
+      ['8', 'II'], ['8', 'IV'], ['8', 'VI'], ['8', 'X'], ['8', 'XII'], ['8', 'XIV'], ['8', 'XVI'],
+      ['10', 'II'], ['10', 'IV'], ['10', 'VI'], ['10', 'VIII'], ['10', 'XII'], ['10', 'XIV'], ['10', 'XVI'], ['10', 'XVIII'],
+      ['12', 'II'], ['12', 'IV'], ['12', 'VI'], ['12', 'VIII'], ['12', 'X'], ['12', 'XIV'], ['12', 'XVI'], ['12', 'XVIII'],
+      ['14', 'II'], ['14', 'IV'], ['14', 'VI'], ['14', 'VIII'], ['14', 'X'], ['14', 'XII'], ['14', 'XVI'], ['14', 'XVIII'],
+      ['16', 'II'], ['16', 'IV'], ['16', 'VI'], ['16', 'VIII'], ['16', 'X'], ['16', 'XII'], ['16', 'XIV'], ['16', 'XVIII'],
+      ['18', 'II'], ['18', 'IV'], ['18', 'VI'], ['18', 'VIII'], ['18', 'X'], ['18', 'XII'], ['18', 'XIV'], ['18', 'XVI'],
+      ['20', 'II'], ['20', 'IV'], ['20', 'VIII'], ['20', 'XII'], ['20', 'XVI'], ['20', 'XX'], ['20', 'XXIV'],
+      ['22', 'II'], ['22', 'IV'], ['22', 'VIII'], ['22', 'XII'], ['22', 'XVI'], ['22', 'XX'], ['22', 'XXIV'],
+      ['24', 'II'], ['24', 'IV'], ['24', 'VIII'], ['24', 'XII'], ['24', 'XVI'], ['24', 'XX'], ['24', 'XXII'],
+      ['26', 'II'], ['26', 'IV'], ['26', 'VIII'], ['26', 'XII'], ['26', 'XVI'], ['26', 'XX'], ['26', 'XXIV'],
+      ['28', 'II'], ['28', 'IV'], ['28', 'VIII'], ['28', 'XII'], ['28', 'XVI'], ['28', 'XX'], ['28', 'XXIV'],
+      ['30', 'II'], ['30', 'IV'], ['30', 'VIII'], ['30', 'XII'], ['30', 'XX'], ['30', 'XXIV'], ['30', 'XXVIII'],
+      ['32', 'II'], ['32', 'IV'], ['32', 'VIII'], ['32', 'XII'], ['32', 'XX'], ['32', 'XXIV'], ['32', 'XXVIII'],
+      ['34', 'II'], ['34', 'IV'], ['34', 'VIII'], ['34', 'XII'], ['34', 'XX'], ['34', 'XXIV'], ['34', 'XXVIII'],
+      ['36', 'II'], ['36', 'IV'], ['36', 'VIII'], ['36', 'XII'], ['36', 'XX'], ['36', 'XXIV'], ['36', 'XXVIII'],
+      ['38', 'II'], ['38', 'IV'], ['38', 'VIII'], ['38', 'XII'], ['38', 'XX'], ['38', 'XXIV'], ['38', 'XXVIII'],
+      ['40', 'II'], ['40', 'IV'], ['40', 'VIII'], ['40', 'XII'], ['40', 'XX'], ['40', 'XXIV'], ['40', 'XXVIII'], ['40', 'XXXII'], ['40', 'XXXVI'],
+      ['42', 'II'], ['42', 'IV'], ['42', 'VIII'], ['42', 'XII'], ['42', 'XX'], ['42', 'XXIV'], ['42', 'XXXII'], ['42', 'XXXVI'],
+      ['44', 'II'], ['44', 'IV'], ['44', 'VIII'], ['44', 'XII'], ['44', 'XX'], ['44', 'XXIV'], ['44', 'XXXII'], ['44', 'XXXVI'],
+      ['46', 'II'], ['46', 'IV'], ['46', 'VIII'], ['46', 'XII'], ['46', 'XX'], ['46', 'XXIV'], ['46', 'XXXII'], ['46', 'XXXVI'],
+      ['48', 'II'], ['48', 'IV'], ['48', 'VIII'], ['48', 'XII'], ['48', 'XX'], ['48', 'XXIV'], ['48', 'XXXII'], ['48', 'XXXVI'],
+      ['50', 'II'], ['50', 'IV'], ['50', 'VIII'], ['50', 'XII'], ['50', 'XX'], ['50', 'XXIV'], ['50', 'XXXII'], ['50', 'XXXVI'], ['50', 'XL'],
 
-      // Both odd - Korean-Roman
+      // Both odd - Korean-Roman (1-9 only)
       ['일', 'III'], ['삼', 'V'], ['오', 'VII'], ['칠', 'IX'], ['일', 'V'],
       ['삼', 'I'], ['오', 'III'], ['칠', 'V'], ['구', 'VII'], ['구', 'I'],
-      // Both even - Korean-Roman
+      // Both even - Korean-Roman (1-9 only)
       ['이', 'IV'], ['사', 'VI'], ['육', 'VIII'], ['이', 'VI'], ['사', 'II'],
       ['육', 'IV'], ['팔', 'VI'], ['팔', 'II'],
 
-      // Both odd - Chinese-Roman
-      ['一', 'III'], ['三', 'V'], ['五', 'VII'], ['七', 'IX'], ['一', 'V'],
-      ['三', 'I'], ['五', 'III'], ['七', 'V'], ['九', 'VII'], ['九', 'I'],
-      // Both even - Chinese-Roman
-      ['二', 'IV'], ['四', 'VI'], ['六', 'VIII'], ['二', 'VI'], ['四', 'II'],
-      ['六', 'IV'], ['八', 'VI'], ['八', 'II']
+      // Both odd - Chinese-Roman (LIMITED TO 1-9 ONLY)
+      ['一', 'III'], ['一', 'V'], ['一', 'VII'], ['一', 'IX'],
+      ['三', 'I'], ['三', 'V'], ['三', 'VII'], ['三', 'IX'],
+      ['五', 'I'], ['五', 'III'], ['五', 'VII'], ['五', 'IX'],
+      ['七', 'I'], ['七', 'III'], ['七', 'V'], ['七', 'IX'],
+      ['九', 'I'], ['九', 'III'], ['九', 'V'], ['九', 'VII'],
+      // Both even - Chinese-Roman (LIMITED TO 1-9 ONLY)
+      ['二', 'II'], ['二', 'IV'], ['二', 'VI'], ['二', 'VIII'],
+      ['四', 'II'], ['四', 'VI'], ['四', 'VIII'],
+      ['六', 'II'], ['六', 'IV'], ['六', 'VIII'],
+      ['八', 'II'], ['八', 'IV'], ['八', 'VI']
     ],
 
     'whole-part': [
