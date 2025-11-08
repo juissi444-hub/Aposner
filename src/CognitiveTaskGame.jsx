@@ -1234,12 +1234,13 @@ const CognitiveTaskGame = () => {
           console.log(`⏱️ Training session duration: ${sessionMinutes}m ${sessionSeconds}s`);
 
           // Update training time via database function
-          // Note: Convert total time to just minutes for database storage, but track seconds in local state
+          // Note: Store both minutes and seconds in the database
           try {
             const { error: trainingError } = await supabase
               .rpc('update_training_time', {
                 p_user_id: userId,
                 p_minutes: sessionMinutes,
+                p_seconds: sessionSeconds,
                 p_level_reached: highestLevel
               });
 
