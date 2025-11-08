@@ -768,11 +768,25 @@ const CognitiveTaskGame = () => {
       // Try to load from leaderboard table (best achievements) - only for authenticated users
       if (!userId.startsWith('anon_')) {
         try {
-          const { data: leaderboardData, error: leaderboardError } = await supabase
+          // First try with all columns including training time (for migrated databases)
+          let { data: leaderboardData, error: leaderboardError } = await supabase
             .from('leaderboard')
             .select('highest_level, best_score, total_training_minutes, training_sessions, training_goal_minutes, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode, chinese_numerals_enabled, korean_numerals_enabled')
             .eq('user_id', userId)
             .single();
+
+          // If query failed due to missing columns, retry with base columns only
+          if (leaderboardError && leaderboardError.message && leaderboardError.message.includes('does not exist')) {
+            console.log('⚠️ Training columns not found, retrying with base columns only');
+            const { data: baseData, error: baseError } = await supabase
+              .from('leaderboard')
+              .select('highest_level, best_score, sound_enabled, auto_continue_enabled, auto_continue_delay, experimental_mode, chinese_numerals_enabled, korean_numerals_enabled')
+              .eq('user_id', userId)
+              .single();
+
+            leaderboardData = baseData;
+            leaderboardError = baseError;
+          }
 
           if (leaderboardError && leaderboardError.code !== 'PGRST116') {
             console.warn('⚠️ leaderboard table query failed:', leaderboardError.message);
@@ -781,16 +795,16 @@ const CognitiveTaskGame = () => {
             serverBestScore = leaderboardData.best_score || 0;
             console.log('📥 Loaded from leaderboard:', { serverHighestLevel, serverBestScore });
 
-            // Load training data
-            if (leaderboardData.total_training_minutes) {
+            // Load training data (if columns exist in database)
+            if (leaderboardData.total_training_minutes !== undefined) {
               setTotalTrainingMinutes(leaderboardData.total_training_minutes);
               console.log('📥 Loaded training minutes:', leaderboardData.total_training_minutes);
             }
-            if (leaderboardData.training_sessions) {
+            if (leaderboardData.training_sessions !== undefined) {
               setTrainingSessions(leaderboardData.training_sessions);
               console.log('📥 Loaded training sessions:', leaderboardData.training_sessions.length);
             }
-            if (leaderboardData.training_goal_minutes) {
+            if (leaderboardData.training_goal_minutes !== undefined) {
               setTrainingGoalMinutes(leaderboardData.training_goal_minutes);
               localStorage.setItem('trainingGoalMinutes', String(leaderboardData.training_goal_minutes));
               console.log('📥 Loaded training goal:', leaderboardData.training_goal_minutes);
