@@ -5305,7 +5305,7 @@ const CognitiveTaskGame = () => {
                   <p><strong>Level 4:</strong> Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
                 </div>
                 <p className="text-xs text-blue-200 mt-2">
-                  • Uses numbers 1-9 in Arabic, Chinese (一~九), and Roman numerals (I-IX)
+                  • Uses numbers 1-1000 in Arabic and verbal forms, 1-30 in Roman numerals (I-XXX), 1-9 in Chinese (一~九), and 1-9 in Korean (일~구)
                 </p>
                 <p className="text-xs text-blue-200">
                   • Difficulty increases through time pressure only (2000ms → 87.5ms)
