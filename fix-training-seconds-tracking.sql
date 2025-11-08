@@ -1,17 +1,10 @@
--- Add training time tracking to leaderboard table
-ALTER TABLE leaderboard
-ADD COLUMN IF NOT EXISTS total_training_minutes INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS training_sessions JSONB DEFAULT '[]'::jsonb,
-ADD COLUMN IF NOT EXISTS training_goal_minutes INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS last_training_date DATE;
+-- Fix training time tracking to include seconds
+-- This migration updates the update_training_time function to properly track seconds
 
--- Create index for efficient querying
-CREATE INDEX IF NOT EXISTS idx_leaderboard_training_time ON leaderboard(total_training_minutes DESC);
-
--- Add comment to describe the training_sessions JSONB structure
+-- Update the comment to reflect the new structure
 COMMENT ON COLUMN leaderboard.training_sessions IS 'Array of training sessions: [{date: "YYYY-MM-DD", minutes: number, seconds: number, level_reached: number}]';
 
--- Function to update daily training time
+-- Recreate the function with seconds parameter
 CREATE OR REPLACE FUNCTION update_training_time(
   p_user_id UUID,
   p_minutes INTEGER,
@@ -42,6 +35,7 @@ BEGIN
 
   IF v_today_session IS NOT NULL THEN
     -- Update today's session
+    -- When adding seconds, handle overflow: if total seconds >= 60, convert to minutes
     v_sessions := (
       SELECT jsonb_agg(
         CASE
