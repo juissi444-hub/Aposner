@@ -137,6 +137,8 @@ const CognitiveTaskGame = () => {
   const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
   const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, seconds, level_reached}
   const [totalTrainingMinutes, setTotalTrainingMinutes] = useState(0); // Total training time across all sessions
+  const [showGoalCelebration, setShowGoalCelebration] = useState(false); // Show celebration popup when goal is reached
+  const [goalReachedToday, setGoalReachedToday] = useState(false); // Track if goal was already reached today
 
   // Numeral system enable states
   const [chineseNumeralsEnabled, setChineseNumeralsEnabled] = useState(false);
@@ -297,6 +299,43 @@ const CognitiveTaskGame = () => {
     setTotalSessionSeconds(todaySeconds);
     console.log(`📊 Today's training time calculated: ${todayMinutes}m ${todaySeconds}s from ${todaySessions.length} sessions`);
   }, [trainingSessions]);
+
+  // Check if training goal is reached and show celebration
+  useEffect(() => {
+    if (trainingGoalMinutes > 0 && totalSessionMinutes >= trainingGoalMinutes && !goalReachedToday) {
+      console.log('🎉 Training goal reached! Showing celebration...');
+      setShowGoalCelebration(true);
+      setGoalReachedToday(true);
+
+      // Play celebration sound
+      if (soundEnabled && celebrationAudioRef.current) {
+        celebrationAudioRef.current.currentTime = 0;
+        celebrationAudioRef.current.play().catch(err => console.log('Could not play celebration sound:', err));
+      }
+    }
+  }, [totalSessionMinutes, trainingGoalMinutes, goalReachedToday, soundEnabled]);
+
+  // Reset goal reached flag at midnight (when date changes)
+  useEffect(() => {
+    const checkDateChange = setInterval(() => {
+      const today = new Date();
+      const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const lastCheckDate = localStorage.getItem('lastGoalCheckDate');
+
+      if (lastCheckDate !== todayString) {
+        console.log('📅 New day detected - resetting goal reached flag');
+        setGoalReachedToday(false);
+        localStorage.setItem('lastGoalCheckDate', todayString);
+      }
+    }, 60000); // Check every minute
+
+    // Initial check on mount
+    const today = new Date();
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('lastGoalCheckDate', todayString);
+
+    return () => clearInterval(checkDateChange);
+  }, []);
 
   // Separate effect for authentication
   useEffect(() => {
@@ -6567,6 +6606,70 @@ const CognitiveTaskGame = () => {
                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Daily Goal Celebration Modal */}
+      {showGoalCelebration && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-2 sm:p-4 z-50 gpu-accelerate"
+          onClick={() => setShowGoalCelebration(false)}
+        >
+          <div
+            className="bg-gradient-to-br from-green-900 via-emerald-800 to-green-900 rounded-lg p-6 sm:p-10 max-w-lg w-full border-4 border-green-400 shadow-2xl gpu-accelerate animate-bounce-once"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              animation: 'pulse 0.5s ease-in-out 3'
+            }}
+          >
+            <div className="text-center space-y-6">
+              {/* Trophy and Celebration Emojis */}
+              <div className="text-8xl sm:text-9xl animate-bounce">
+                🏆
+              </div>
+
+              {/* Congratulations Header */}
+              <div className="space-y-2">
+                <h2 className="text-3xl sm:text-4xl font-bold text-yellow-300 drop-shadow-lg">
+                  CONGRATULATIONS!
+                </h2>
+                <div className="flex justify-center gap-2 text-4xl">
+                  🎉 ✨ 🎊 ✨ 🎉
+                </div>
+              </div>
+
+              {/* Achievement Message */}
+              <div className="bg-black bg-opacity-40 p-6 rounded-lg border-2 border-green-300 space-y-3">
+                <p className="text-2xl sm:text-3xl font-bold text-white">
+                  Goal Achieved!
+                </p>
+                <p className="text-lg sm:text-xl text-green-200">
+                  You've completed your daily training goal of <span className="font-bold text-yellow-300">{trainingGoalMinutes} minutes</span>!
+                </p>
+                <p className="text-base sm:text-lg text-emerald-200">
+                  Your dedication and hard work are paying off! 💪
+                </p>
+                <div className="mt-4 p-4 bg-green-950 bg-opacity-50 rounded-lg">
+                  <p className="text-sm text-gray-300">
+                    Today's training: <span className="font-bold text-green-300">{formatTime(totalSessionMinutes, totalSessionSeconds)}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Motivational Quote */}
+              <div className="text-sm sm:text-base italic text-green-200 border-t-2 border-green-400 pt-4">
+                "Excellence is not a destination; it is a continuous journey that never ends."
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowGoalCelebration(false)}
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold py-4 px-8 rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg"
+              >
+                Keep Training! 🚀
               </button>
             </div>
           </div>
