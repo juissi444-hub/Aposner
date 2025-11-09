@@ -1290,15 +1290,16 @@ const CognitiveTaskGame = () => {
 
       // Calculate training time for this session
       console.log('⏱️ TIME TRACKING DEBUG:');
-      console.log('⏱️ sessionStartTime:', sessionStartTime);
-      console.log('⏱️ accumulatedSessionTime:', accumulatedSessionTime);
-      console.log('⏱️ sessionStartTime date:', sessionStartTime ? new Date(sessionStartTime).toISOString() : 'NULL');
+      console.log('⏱️ sessionStartTime:', sessionStartTimeRef.current);
+      console.log('⏱️ accumulatedSessionTime:', accumulatedSessionTimeRef.current);
+      console.log('⏱️ sessionStartTime date:', sessionStartTimeRef.current ? new Date(sessionStartTimeRef.current).toISOString() : 'NULL');
 
       // Calculate total active time (accumulated + current session if timer is running)
-      let totalActiveTime = accumulatedSessionTime;
-      if (sessionStartTime) {
+      // Use refs to get current values (fixes stale closure in useCallback)
+      let totalActiveTime = accumulatedSessionTimeRef.current;
+      if (sessionStartTimeRef.current) {
         const now = Date.now();
-        totalActiveTime += (now - sessionStartTime);
+        totalActiveTime += (now - sessionStartTimeRef.current);
       }
 
       if (totalActiveTime > 0) {
