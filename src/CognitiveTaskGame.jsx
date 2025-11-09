@@ -6129,9 +6129,20 @@ const CognitiveTaskGame = () => {
                             {index === 2 && '🥉'}
                             {index > 2 && `#${index + 1}`}
                           </div>
-                          <div className="truncate font-medium flex items-center gap-2">
-                            {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
-                            {entry.username}
+                          <div className="font-medium flex flex-col">
+                            <div className="flex items-center gap-2">
+                              {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
+                              <span className="truncate">{entry.username}</span>
+                            </div>
+                            {(entry.korean_numerals_enabled || entry.chinese_numerals_enabled) && (
+                              <div className="text-xs text-purple-300 mt-0.5">
+                                Trains with {entry.korean_numerals_enabled && entry.chinese_numerals_enabled
+                                  ? 'Korean and Chinese numerals'
+                                  : entry.korean_numerals_enabled
+                                    ? 'Korean numerals'
+                                    : 'Chinese numerals'} enabled
+                              </div>
+                            )}
                           </div>
                           <div className="font-semibold">
                             <span className="text-white">Level {entry.highest_level}</span>
@@ -6181,10 +6192,21 @@ const CognitiveTaskGame = () => {
                                 {index === 2 && '🥉'}
                                 {index > 2 && `#${index + 1}`}
                               </span>
-                              <span className={`font-medium ${index === 0 ? 'text-lg' : 'text-sm'} flex items-center gap-1`}>
-                                {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
-                                {entry.username}
-                              </span>
+                              <div className="flex flex-col">
+                                <span className={`font-medium ${index === 0 ? 'text-lg' : 'text-sm'} flex items-center gap-1`}>
+                                  {entry.is_anonymous && <span title="Anonymous User">🕵️</span>}
+                                  {entry.username}
+                                </span>
+                                {(entry.korean_numerals_enabled || entry.chinese_numerals_enabled) && (
+                                  <span className="text-xs text-purple-300">
+                                    Trains with {entry.korean_numerals_enabled && entry.chinese_numerals_enabled
+                                      ? 'Korean and Chinese numerals'
+                                      : entry.korean_numerals_enabled
+                                        ? 'Korean numerals'
+                                        : 'Chinese numerals'} enabled
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <span className={`${index === 0 ? 'text-sm' : 'text-xs'} font-semibold text-yellow-400`}>{getOrdinalSuffix(percentile)} percentile</span>
                           </div>
