@@ -132,6 +132,7 @@ const CognitiveTaskGame = () => {
 
   // Training time tracking states
   const [sessionStartTime, setSessionStartTime] = useState(null); // Track when training session starts
+  const [accumulatedSessionTime, setAccumulatedSessionTime] = useState(0); // Accumulated active time in milliseconds
   const [totalSessionMinutes, setTotalSessionMinutes] = useState(0); // Total minutes trained today
   const [totalSessionSeconds, setTotalSessionSeconds] = useState(0); // Total seconds trained today (remainder after minutes)
   const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
@@ -336,6 +337,60 @@ const CognitiveTaskGame = () => {
 
     return () => clearInterval(checkDateChange);
   }, []);
+
+  // Handle visibility changes to pause/resume training timer (critical for mobile)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden - pause the timer by accumulating time so far
+        if (sessionStartTime) {
+          const now = Date.now();
+          const elapsed = now - sessionStartTime;
+          setAccumulatedSessionTime(prev => prev + elapsed);
+          console.log('⏱️ Page hidden - pausing timer. Accumulated:', Math.floor((accumulatedSessionTime + elapsed) / 1000), 'seconds');
+          // Reset sessionStartTime so we don't double-count when resuming
+          setSessionStartTime(null);
+        }
+      } else {
+        // Page is visible - resume the timer if we're in a game session
+        if (gameState !== 'menu' && gameState !== 'result' && !sessionStartTime) {
+          const now = Date.now();
+          setSessionStartTime(now);
+          console.log('⏱️ Page visible - resuming timer from accumulated:', Math.floor(accumulatedSessionTime / 1000), 'seconds');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Also handle page focus/blur as fallback for older mobile browsers
+    const handleBlur = () => {
+      if (sessionStartTime) {
+        const now = Date.now();
+        const elapsed = now - sessionStartTime;
+        setAccumulatedSessionTime(prev => prev + elapsed);
+        console.log('⏱️ Page blur - pausing timer');
+        setSessionStartTime(null);
+      }
+    };
+
+    const handleFocus = () => {
+      if (gameState !== 'menu' && gameState !== 'result' && !sessionStartTime) {
+        const now = Date.now();
+        setSessionStartTime(now);
+        console.log('⏱️ Page focus - resuming timer');
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [sessionStartTime, gameState, accumulatedSessionTime]);
 
   // Separate effect for authentication
   useEffect(() => {
@@ -1217,15 +1272,22 @@ const CognitiveTaskGame = () => {
       // Calculate training time for this session
       console.log('⏱️ TIME TRACKING DEBUG:');
       console.log('⏱️ sessionStartTime:', sessionStartTime);
+      console.log('⏱️ accumulatedSessionTime:', accumulatedSessionTime);
       console.log('⏱️ sessionStartTime date:', sessionStartTime ? new Date(sessionStartTime).toISOString() : 'NULL');
 
+      // Calculate total active time (accumulated + current session if timer is running)
+      let totalActiveTime = accumulatedSessionTime;
       if (sessionStartTime) {
-        const sessionEndTime = Date.now();
-        const sessionTotalSeconds = Math.floor((sessionEndTime - sessionStartTime) / 1000);
+        const now = Date.now();
+        totalActiveTime += (now - sessionStartTime);
+      }
+
+      if (totalActiveTime > 0) {
+        const sessionTotalSeconds = Math.floor(totalActiveTime / 1000);
         const sessionMinutes = Math.floor(sessionTotalSeconds / 60);
         const sessionSeconds = sessionTotalSeconds % 60;
 
-        console.log('⏱️ Session end time:', new Date(sessionEndTime).toISOString());
+        console.log('⏱️ Total active time (ms):', totalActiveTime);
         console.log('⏱️ Total seconds:', sessionTotalSeconds);
         console.log('⏱️ Calculated minutes:', sessionMinutes);
         console.log('⏱️ Calculated seconds:', sessionSeconds);
@@ -4936,6 +4998,7 @@ const CognitiveTaskGame = () => {
     // Start training session timer
     const startTime = Date.now();
     setSessionStartTime(startTime);
+    setAccumulatedSessionTime(0); // Reset accumulated time for new session
     console.log('⏱️ Training session started at:', new Date(startTime).toISOString());
     console.log('⏱️ Session start timestamp:', startTime);
 
@@ -5340,6 +5403,7 @@ const CognitiveTaskGame = () => {
         console.log('🔄 Returned to menu - used pairs cleared');
         // Reset session start time when returning to menu
         setSessionStartTime(null);
+        setAccumulatedSessionTime(0);
         console.log('⏱️ Session timer reset (returned to menu)');
         setGameState('menu');
         setFeedback(null);
@@ -6141,6 +6205,7 @@ const CognitiveTaskGame = () => {
                 console.log('🔄 Returned to menu - used pairs cleared');
                 // Reset session start time when returning to menu
                 setSessionStartTime(null);
+                setAccumulatedSessionTime(0);
                 console.log('⏱️ Session timer reset (returned to menu)');
                 setGameState('menu');
               }}
