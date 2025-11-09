@@ -137,6 +137,10 @@ const CognitiveTaskGame = () => {
   const [totalSessionSeconds, setTotalSessionSeconds] = useState(0); // Total seconds trained today (remainder after minutes)
   const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
   const [trainingSessions, setTrainingSessions] = useState([]); // Array of {date, minutes, seconds, level_reached}
+
+  // Refs to track current timer state (fixes stale closure issue on mobile)
+  const sessionStartTimeRef = useRef(null);
+  const accumulatedSessionTimeRef = useRef(0);
   const [totalTrainingMinutes, setTotalTrainingMinutes] = useState(0); // Total training time across all sessions
   const [showGoalCelebration, setShowGoalCelebration] = useState(false); // Show celebration popup when goal is reached
   const [goalReachedToday, setGoalReachedToday] = useState(false); // Track if goal was already reached today
@@ -338,25 +342,37 @@ const CognitiveTaskGame = () => {
     return () => clearInterval(checkDateChange);
   }, []);
 
+  // Keep timer refs in sync with state
+  useEffect(() => {
+    sessionStartTimeRef.current = sessionStartTime;
+  }, [sessionStartTime]);
+
+  useEffect(() => {
+    accumulatedSessionTimeRef.current = accumulatedSessionTime;
+  }, [accumulatedSessionTime]);
+
   // Handle visibility changes to pause/resume training timer (critical for mobile)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Page is hidden - pause the timer by accumulating time so far
-        if (sessionStartTime) {
+        if (sessionStartTimeRef.current) {
           const now = Date.now();
-          const elapsed = now - sessionStartTime;
-          setAccumulatedSessionTime(prev => prev + elapsed);
-          console.log('⏱️ Page hidden - pausing timer. Accumulated:', Math.floor((accumulatedSessionTime + elapsed) / 1000), 'seconds');
+          const elapsed = now - sessionStartTimeRef.current;
+          const accumulated = accumulatedSessionTimeRef.current + elapsed;
+          setAccumulatedSessionTime(accumulated);
+          console.log('⏱️ Page hidden - pausing timer. Accumulated:', Math.floor(accumulated / 1000), 'seconds');
           // Reset sessionStartTime so we don't double-count when resuming
           setSessionStartTime(null);
         }
       } else {
         // Page is visible - resume the timer if we're in a game session
-        if (gameState !== 'menu' && gameState !== 'result' && !sessionStartTime) {
+        const currentGameState = gameStateRef.current;
+        const isActiveGameState = currentGameState !== 'menu' && currentGameState !== 'results';
+        if (isActiveGameState && !sessionStartTimeRef.current) {
           const now = Date.now();
           setSessionStartTime(now);
-          console.log('⏱️ Page visible - resuming timer from accumulated:', Math.floor(accumulatedSessionTime / 1000), 'seconds');
+          console.log('⏱️ Page visible - resuming timer from accumulated:', Math.floor(accumulatedSessionTimeRef.current / 1000), 'seconds');
         }
       }
     };
@@ -365,20 +381,23 @@ const CognitiveTaskGame = () => {
 
     // Also handle page focus/blur as fallback for older mobile browsers
     const handleBlur = () => {
-      if (sessionStartTime) {
+      if (sessionStartTimeRef.current) {
         const now = Date.now();
-        const elapsed = now - sessionStartTime;
-        setAccumulatedSessionTime(prev => prev + elapsed);
-        console.log('⏱️ Page blur - pausing timer');
+        const elapsed = now - sessionStartTimeRef.current;
+        const accumulated = accumulatedSessionTimeRef.current + elapsed;
+        setAccumulatedSessionTime(accumulated);
+        console.log('⏱️ Page blur - pausing timer. Accumulated:', Math.floor(accumulated / 1000), 'seconds');
         setSessionStartTime(null);
       }
     };
 
     const handleFocus = () => {
-      if (gameState !== 'menu' && gameState !== 'result' && !sessionStartTime) {
+      const currentGameState = gameStateRef.current;
+      const isActiveGameState = currentGameState !== 'menu' && currentGameState !== 'results';
+      if (isActiveGameState && !sessionStartTimeRef.current) {
         const now = Date.now();
         setSessionStartTime(now);
-        console.log('⏱️ Page focus - resuming timer');
+        console.log('⏱️ Page focus - resuming timer from accumulated:', Math.floor(accumulatedSessionTimeRef.current / 1000), 'seconds');
       }
     };
 
@@ -390,7 +409,7 @@ const CognitiveTaskGame = () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [sessionStartTime, gameState, accumulatedSessionTime]);
+  }, []); // Empty deps - handlers now use refs which are always current
 
   // Separate effect for authentication
   useEffect(() => {
