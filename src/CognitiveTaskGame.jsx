@@ -5691,9 +5691,14 @@ const CognitiveTaskGame = () => {
           <div className="text-3xl font-bold mb-8">
             Possible Relationship:
           </div>
-          <div className="text-4xl font-bold text-blue-400 mb-12">
+          <div className="text-4xl font-bold text-blue-400 mb-8">
             {relationTypes[currentRelation]}
           </div>
+          {mode === 'adaptive' && (
+            <div className="text-sm text-gray-400 mb-8">
+              (Level {level} - {experimentalMode ? 'Experimental Mode' : 'Standard Mode'})
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
               onClick={() => {
