@@ -1590,12 +1590,12 @@ const CognitiveTaskGame = () => {
 
   const relationTypes = {
     // Level 1-2 tasks (Lower grade retrieval - from study)
-    'same-format': 'Same Format (1-2, V-VI, 三-四) - Physical property',
+    'same-format': 'Same Format (1-2, III-IV, 五-六) - Physical property',
     'meaning': 'Same Meaning (2-二-II) - Semantic property',
 
     // Level 3-4 tasks (Higher grade retrieval - from study)
-    'parity-same-format': 'Both Odd or Both Even - Same Format (1-3, 一-三, I-III)',
-    'parity-mixed-format': 'Both Odd or Both Even - Mixed Format (1-一, 2-II, 四-4)',
+    'parity-same-format': 'Both Odd/Even - Same Format (1-3, 二-四) - Conceptual',
+    'parity-mixed-format': 'Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual',
 
     // Experimental tasks (all other relation types)
     'whole-part': 'Whole-Part (fish-pike, world-France)',
