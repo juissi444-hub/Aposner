@@ -1590,12 +1590,12 @@ const CognitiveTaskGame = () => {
 
   const relationTypes = {
     // Level 1-2 tasks (Lower grade retrieval - from study)
-    'same-format': 'Same Format (1-2, V-VI, 三-四) - Physical property',
+    'same-format': 'Same Format (1-2, III-IV, 五-六) - Physical property',
     'meaning': 'Same Meaning (2-二-II) - Semantic property',
 
     // Level 3-4 tasks (Higher grade retrieval - from study)
-    'parity-same-format': 'Both Odd or Both Even - Same Format (1-3, 一-三, I-III)',
-    'parity-mixed-format': 'Both Odd or Both Even - Mixed Format (1-一, 2-II, 四-4)',
+    'parity-same-format': 'Both Odd/Even - Same Format (1-3, 二-四) - Conceptual',
+    'parity-mixed-format': 'Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual',
 
     // Experimental tasks (all other relation types)
     'whole-part': 'Whole-Part (fish-pike, world-France)',
@@ -1618,21 +1618,14 @@ const CognitiveTaskGame = () => {
       return Object.keys(relationTypes);
     }
 
-    // In standard adaptive mode, each level has specific relation types:
-    // Level 1: Physical property (same format)
-    // Level 2: Semantic property (same meaning)
-    // Level 3: Conceptual (parity - same format)
-    // Level 4+: Conceptual (parity - mixed format)
+    // In standard adaptive mode, all 4 main relation types are available at all levels:
+    // - Same Format (1-2, III-IV, 五-六) - Physical property
+    // - Same Meaning (2-二-II) - Semantic property
+    // - Both Odd/Even - Same Format (1-3, 二-四) - Conceptual
+    // - Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual
+    // Level only affects time pressure, not relation types
     if (mode === 'adaptive') {
-      if (level === 1) {
-        return ['same-format'];
-      } else if (level === 2) {
-        return ['meaning'];
-      } else if (level === 3) {
-        return ['parity-same-format'];
-      } else if (level >= 4) {
-        return ['parity-mixed-format'];
-      }
+      return ['same-format', 'meaning', 'parity-same-format', 'parity-mixed-format'];
     }
 
     // Default: all types
@@ -4579,13 +4572,7 @@ const CognitiveTaskGame = () => {
 
     // Log which relation types are being used (helpful for debugging)
     if (currentMode === 'adaptive' && !experimentalMode) {
-      const levelDescriptions = {
-        1: 'Physical property (same format)',
-        2: 'Semantic property (same meaning)',
-        3: 'Conceptual (parity-same-format)',
-      };
-      const desc = levelDescriptions[currentLevel] || 'Conceptual (parity-mixed-format)';
-      console.log(`📚 Level ${currentLevel} - ${desc}:`, availableRelations);
+      console.log(`📚 Level ${currentLevel} - All 4 relation types available:`, availableRelations);
     }
 
     const selectedRelation = availableRelations[Math.floor(Math.random() * availableRelations.length)];
@@ -5485,10 +5472,11 @@ const CognitiveTaskGame = () => {
                   <strong>Standard Adaptive Mode (4-Level Posner Task):</strong>
                 </p>
                 <div className="text-xs text-blue-200 mt-2 space-y-1">
-                  <p><strong>Level 1:</strong> Same Format (1-2, III-IV, 五-六) - Physical property</p>
-                  <p><strong>Level 2:</strong> Same Meaning (2-二-II) - Semantic property</p>
-                  <p><strong>Level 3:</strong> Both Odd/Even - Same Format (1-3, 二-四) - Conceptual</p>
-                  <p><strong>Level 4:</strong> Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
+                  <p><strong>All 4 relation types available at all levels:</strong></p>
+                  <p className="ml-3">• Same Format (1-2, III-IV, 五-六) - Physical property</p>
+                  <p className="ml-3">• Same Meaning (2-二-II) - Semantic property</p>
+                  <p className="ml-3">• Both Odd/Even - Same Format (1-3, 二-四) - Conceptual</p>
+                  <p className="ml-3">• Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
                 </div>
                 <p className="text-xs text-blue-200 mt-2">
                   • Uses numbers 1-1000 in Arabic and verbal forms, 1-30 in Roman numerals (I-XXX), 1-9 in Chinese (一~九), and 1-9 in Korean (일~구)
@@ -5691,9 +5679,14 @@ const CognitiveTaskGame = () => {
           <div className="text-3xl font-bold mb-8">
             Possible Relationship:
           </div>
-          <div className="text-4xl font-bold text-blue-400 mb-12">
+          <div className="text-4xl font-bold text-blue-400 mb-8">
             {relationTypes[currentRelation]}
           </div>
+          {mode === 'adaptive' && (
+            <div className="text-sm text-gray-400 mb-8">
+              (Level {level} - {experimentalMode ? 'Experimental Mode' : 'Standard Mode'})
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
               onClick={() => {
