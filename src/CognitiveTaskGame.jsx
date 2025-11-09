@@ -1618,21 +1618,14 @@ const CognitiveTaskGame = () => {
       return Object.keys(relationTypes);
     }
 
-    // In standard adaptive mode, each level has specific relation types:
-    // Level 1: Physical property (same format)
-    // Level 2: Semantic property (same meaning)
-    // Level 3: Conceptual (parity - same format)
-    // Level 4+: Conceptual (parity - mixed format)
+    // In standard adaptive mode, all 4 main relation types are available at all levels:
+    // - Same Format (1-2, III-IV, 五-六) - Physical property
+    // - Same Meaning (2-二-II) - Semantic property
+    // - Both Odd/Even - Same Format (1-3, 二-四) - Conceptual
+    // - Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual
+    // Level only affects time pressure, not relation types
     if (mode === 'adaptive') {
-      if (level === 1) {
-        return ['same-format'];
-      } else if (level === 2) {
-        return ['meaning'];
-      } else if (level === 3) {
-        return ['parity-same-format'];
-      } else if (level >= 4) {
-        return ['parity-mixed-format'];
-      }
+      return ['same-format', 'meaning', 'parity-same-format', 'parity-mixed-format'];
     }
 
     // Default: all types
