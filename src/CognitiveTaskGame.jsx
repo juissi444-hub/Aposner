@@ -5478,10 +5478,11 @@ const CognitiveTaskGame = () => {
                   <strong>Standard Adaptive Mode (4-Level Posner Task):</strong>
                 </p>
                 <div className="text-xs text-blue-200 mt-2 space-y-1">
-                  <p><strong>Level 1:</strong> Same Format (1-2, III-IV, 五-六) - Physical property</p>
-                  <p><strong>Level 2:</strong> Same Meaning (2-二-II) - Semantic property</p>
-                  <p><strong>Level 3:</strong> Both Odd/Even - Same Format (1-3, 二-四) - Conceptual</p>
-                  <p><strong>Level 4:</strong> Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
+                  <p><strong>All 4 relation types available at all levels:</strong></p>
+                  <p className="ml-3">• Same Format (1-2, III-IV, 五-六) - Physical property</p>
+                  <p className="ml-3">• Same Meaning (2-二-II) - Semantic property</p>
+                  <p className="ml-3">• Both Odd/Even - Same Format (1-3, 二-四) - Conceptual</p>
+                  <p className="ml-3">• Both Odd/Even - Mixed Format (1-三, 2-IV) - Conceptual</p>
                 </div>
                 <p className="text-xs text-blue-200 mt-2">
                   • Uses numbers 1-1000 in Arabic and verbal forms, 1-30 in Roman numerals (I-XXX), 1-9 in Chinese (一~九), and 1-9 in Korean (일~구)
