@@ -77,15 +77,16 @@ ADD COLUMN IF NOT EXISTS last_training_date DATE;
 
 CREATE INDEX IF NOT EXISTS idx_leaderboard_training_time ON leaderboard(total_training_minutes DESC);
 
-COMMENT ON COLUMN leaderboard.training_sessions IS 'Array of training sessions: [{date: "YYYY-MM-DD", minutes: number, level_reached: number}]';
+COMMENT ON COLUMN leaderboard.training_sessions IS 'Array of training sessions: [{date: "YYYY-MM-DD", minutes: number, seconds: number, level_reached: number}]';
 
 -- ============================================================================
--- 5. Create training time update function
+-- 5. Create training time update function (WITH SECONDS SUPPORT)
 -- ============================================================================
 CREATE OR REPLACE FUNCTION update_training_time(
   p_user_id UUID,
   p_minutes INTEGER,
-  p_level_reached INTEGER
+  p_seconds INTEGER DEFAULT 0,
+  p_level_reached INTEGER DEFAULT 1
 )
 RETURNS void AS $$
 DECLARE
@@ -110,14 +111,15 @@ BEGIN
   LIMIT 1;
 
   IF v_today_session IS NOT NULL THEN
-    -- Update today's session
+    -- Update today's session with proper seconds overflow handling
     v_sessions := (
       SELECT jsonb_agg(
         CASE
           WHEN value->>'date' = v_today::text
           THEN jsonb_build_object(
             'date', v_today,
-            'minutes', (value->>'minutes')::int + p_minutes,
+            'minutes', (value->>'minutes')::int + p_minutes + ((COALESCE((value->>'seconds')::int, 0) + p_seconds) / 60),
+            'seconds', (COALESCE((value->>'seconds')::int, 0) + p_seconds) % 60,
             'level_reached', GREATEST((value->>'level_reached')::int, p_level_reached)
           )
           ELSE value
@@ -130,6 +132,7 @@ BEGIN
     v_sessions := v_sessions || jsonb_build_object(
       'date', v_today,
       'minutes', p_minutes,
+      'seconds', p_seconds,
       'level_reached', p_level_reached
     );
   END IF;
