@@ -132,6 +132,7 @@ const CognitiveTaskGame = () => {
 
   // Training time tracking states
   const [sessionStartTime, setSessionStartTime] = useState(null); // Track when training session starts
+  const [accumulatedSessionTime, setAccumulatedSessionTime] = useState(0); // Accumulated active time in milliseconds
   const [totalSessionMinutes, setTotalSessionMinutes] = useState(0); // Total minutes trained today
   const [totalSessionSeconds, setTotalSessionSeconds] = useState(0); // Total seconds trained today (remainder after minutes)
   const [trainingGoalMinutes, setTrainingGoalMinutes] = useState(0); // User's daily training goal (0-500)
@@ -336,6 +337,60 @@ const CognitiveTaskGame = () => {
 
     return () => clearInterval(checkDateChange);
   }, []);
+
+  // Handle visibility changes to pause/resume training timer (critical for mobile)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden - pause the timer by accumulating time so far
+        if (sessionStartTime) {
+          const now = Date.now();
+          const elapsed = now - sessionStartTime;
+          setAccumulatedSessionTime(prev => prev + elapsed);
+          console.log('⏱️ Page hidden - pausing timer. Accumulated:', Math.floor((accumulatedSessionTime + elapsed) / 1000), 'seconds');
+          // Reset sessionStartTime so we don't double-count when resuming
+          setSessionStartTime(null);
+        }
+      } else {
+        // Page is visible - resume the timer if we're in a game session
+        if (gameState !== 'menu' && gameState !== 'result' && !sessionStartTime) {
+          const now = Date.now();
+          setSessionStartTime(now);
+          console.log('⏱️ Page visible - resuming timer from accumulated:', Math.floor(accumulatedSessionTime / 1000), 'seconds');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Also handle page focus/blur as fallback for older mobile browsers
+    const handleBlur = () => {
+      if (sessionStartTime) {
+        const now = Date.now();
+        const elapsed = now - sessionStartTime;
+        setAccumulatedSessionTime(prev => prev + elapsed);
+        console.log('⏱️ Page blur - pausing timer');
+        setSessionStartTime(null);
+      }
+    };
+
+    const handleFocus = () => {
+      if (gameState !== 'menu' && gameState !== 'result' && !sessionStartTime) {
+        const now = Date.now();
+        setSessionStartTime(now);
+        console.log('⏱️ Page focus - resuming timer');
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [sessionStartTime, gameState, accumulatedSessionTime]);
 
   // Separate effect for authentication
   useEffect(() => {
@@ -1217,15 +1272,22 @@ const CognitiveTaskGame = () => {
       // Calculate training time for this session
       console.log('⏱️ TIME TRACKING DEBUG:');
       console.log('⏱️ sessionStartTime:', sessionStartTime);
+      console.log('⏱️ accumulatedSessionTime:', accumulatedSessionTime);
       console.log('⏱️ sessionStartTime date:', sessionStartTime ? new Date(sessionStartTime).toISOString() : 'NULL');
 
+      // Calculate total active time (accumulated + current session if timer is running)
+      let totalActiveTime = accumulatedSessionTime;
       if (sessionStartTime) {
-        const sessionEndTime = Date.now();
-        const sessionTotalSeconds = Math.floor((sessionEndTime - sessionStartTime) / 1000);
+        const now = Date.now();
+        totalActiveTime += (now - sessionStartTime);
+      }
+
+      if (totalActiveTime > 0) {
+        const sessionTotalSeconds = Math.floor(totalActiveTime / 1000);
         const sessionMinutes = Math.floor(sessionTotalSeconds / 60);
         const sessionSeconds = sessionTotalSeconds % 60;
 
-        console.log('⏱️ Session end time:', new Date(sessionEndTime).toISOString());
+        console.log('⏱️ Total active time (ms):', totalActiveTime);
         console.log('⏱️ Total seconds:', sessionTotalSeconds);
         console.log('⏱️ Calculated minutes:', sessionMinutes);
         console.log('⏱️ Calculated seconds:', sessionSeconds);
@@ -1728,7 +1790,115 @@ const CognitiveTaskGame = () => {
       ['seven hundred', 'seven hundred fifty'], ['seven hundred', 'eight hundred'],
       ['eight hundred', 'eight hundred fifty'], ['eight hundred', 'nine hundred'],
       ['nine hundred', 'nine hundred fifty'], ['nine hundred', 'one thousand'],
-      ['one hundred fifty', 'one hundred sixty'], ['two hundred fifty', 'two hundred sixty'], ['five hundred fifty', 'five hundred sixty']
+      ['one hundred fifty', 'one hundred sixty'], ['two hundred fifty', 'two hundred sixty'], ['five hundred fifty', 'five hundred sixty'],
+
+      // Additional Arabic pairs (10-1000) - hundreds more combinations
+      ['46', '47'], ['47', '48'], ['48', '49'], ['49', '50'], ['51', '52'], ['52', '53'], ['53', '54'], ['54', '55'], ['55', '56'], ['56', '57'],
+      ['57', '58'], ['58', '59'], ['59', '60'], ['61', '62'], ['62', '63'], ['63', '64'], ['64', '65'], ['65', '66'], ['66', '67'], ['67', '68'],
+      ['68', '69'], ['69', '70'], ['71', '72'], ['72', '73'], ['73', '74'], ['74', '75'], ['75', '76'], ['76', '77'], ['77', '78'], ['78', '79'],
+      ['79', '80'], ['81', '82'], ['82', '83'], ['83', '84'], ['84', '85'], ['85', '86'], ['86', '87'], ['87', '88'], ['88', '89'], ['89', '90'],
+      ['91', '92'], ['92', '93'], ['93', '94'], ['94', '95'], ['95', '96'], ['96', '97'], ['97', '98'], ['98', '99'], ['99', '100'],
+      // More gaps in 10-99
+      ['10', '13'], ['11', '14'], ['12', '15'], ['13', '16'], ['14', '17'], ['15', '18'], ['16', '19'], ['17', '20'],
+      ['20', '23'], ['21', '24'], ['22', '25'], ['23', '26'], ['24', '27'], ['25', '28'], ['26', '29'], ['27', '30'],
+      ['30', '33'], ['31', '34'], ['32', '35'], ['33', '36'], ['34', '37'], ['35', '38'], ['36', '39'], ['37', '40'],
+      ['40', '43'], ['41', '44'], ['42', '45'], ['43', '46'], ['44', '47'], ['45', '48'], ['46', '49'], ['47', '50'],
+      ['50', '53'], ['51', '54'], ['52', '55'], ['53', '56'], ['54', '57'], ['55', '58'], ['56', '59'], ['57', '60'],
+      ['60', '63'], ['61', '64'], ['62', '65'], ['63', '66'], ['64', '67'], ['65', '68'], ['66', '69'], ['67', '70'],
+      ['70', '73'], ['71', '74'], ['72', '75'], ['73', '76'], ['74', '77'], ['75', '78'], ['76', '79'], ['77', '80'],
+      ['80', '83'], ['81', '84'], ['82', '85'], ['83', '86'], ['84', '87'], ['85', '88'], ['86', '89'], ['87', '90'],
+      ['90', '93'], ['91', '94'], ['92', '95'], ['93', '96'], ['94', '97'], ['95', '98'], ['96', '99'], ['97', '100'],
+      // Larger gaps
+      ['10', '16'], ['11', '17'], ['12', '18'], ['13', '19'], ['14', '20'], ['15', '21'], ['16', '22'], ['17', '23'], ['18', '24'], ['19', '25'],
+      ['20', '26'], ['21', '27'], ['22', '28'], ['23', '29'], ['24', '30'], ['25', '31'], ['26', '32'], ['27', '33'], ['28', '34'], ['29', '35'],
+      ['30', '36'], ['31', '37'], ['32', '38'], ['33', '39'], ['34', '40'], ['35', '41'], ['36', '42'], ['37', '43'], ['38', '44'], ['39', '45'],
+      ['40', '46'], ['41', '47'], ['42', '48'], ['43', '49'], ['44', '50'], ['45', '51'], ['46', '52'], ['47', '53'], ['48', '54'], ['49', '55'],
+      ['50', '56'], ['51', '57'], ['52', '58'], ['53', '59'], ['54', '60'], ['55', '61'], ['56', '62'], ['57', '63'], ['58', '64'], ['59', '65'],
+      ['60', '66'], ['61', '67'], ['62', '68'], ['63', '69'], ['64', '70'], ['65', '71'], ['66', '72'], ['67', '73'], ['68', '74'], ['69', '75'],
+      ['70', '76'], ['71', '77'], ['72', '78'], ['73', '79'], ['74', '80'], ['75', '81'], ['76', '82'], ['77', '83'], ['78', '84'], ['79', '85'],
+      ['80', '86'], ['81', '87'], ['82', '88'], ['83', '89'], ['84', '90'], ['85', '91'], ['86', '92'], ['87', '93'], ['88', '94'], ['89', '95'],
+      ['90', '96'], ['91', '97'], ['92', '98'], ['93', '99'], ['94', '100'],
+      // Even larger gaps
+      ['10', '18'], ['11', '19'], ['12', '20'], ['13', '21'], ['14', '22'], ['15', '23'], ['16', '24'], ['17', '25'],
+      ['20', '28'], ['21', '29'], ['22', '30'], ['23', '31'], ['24', '32'], ['25', '33'], ['26', '34'], ['27', '35'],
+      ['30', '38'], ['31', '39'], ['32', '40'], ['33', '41'], ['34', '42'], ['35', '43'], ['36', '44'], ['37', '45'],
+      ['40', '48'], ['41', '49'], ['42', '50'], ['43', '51'], ['44', '52'], ['45', '53'], ['46', '54'], ['47', '55'],
+      ['50', '58'], ['51', '59'], ['52', '60'], ['53', '61'], ['54', '62'], ['55', '63'], ['56', '64'], ['57', '65'],
+      ['60', '68'], ['61', '69'], ['62', '70'], ['63', '71'], ['64', '72'], ['65', '73'], ['66', '74'], ['67', '75'],
+      ['70', '78'], ['71', '79'], ['72', '80'], ['73', '81'], ['74', '82'], ['75', '83'], ['76', '84'], ['77', '85'],
+      ['80', '88'], ['81', '89'], ['82', '90'], ['83', '91'], ['84', '92'], ['85', '93'], ['86', '94'], ['87', '95'],
+      // 100s range - more combinations
+      ['101', '102'], ['102', '103'], ['103', '104'], ['104', '105'], ['105', '106'], ['106', '107'], ['107', '108'], ['108', '109'], ['109', '110'],
+      ['110', '111'], ['111', '112'], ['112', '113'], ['113', '114'], ['114', '115'], ['115', '116'], ['116', '117'], ['117', '118'], ['118', '119'], ['119', '120'],
+      ['120', '121'], ['121', '122'], ['122', '123'], ['123', '124'], ['124', '125'], ['125', '126'], ['130', '131'], ['140', '141'], ['150', '151'], ['160', '161'],
+      ['170', '171'], ['180', '181'], ['190', '191'],
+      ['101', '103'], ['102', '104'], ['103', '105'], ['104', '106'], ['105', '107'], ['106', '108'], ['110', '112'], ['115', '117'], ['120', '122'], ['125', '127'],
+      ['130', '132'], ['140', '142'], ['150', '152'], ['160', '162'], ['170', '172'], ['180', '182'], ['190', '192'],
+      ['101', '106'], ['102', '107'], ['103', '108'], ['110', '115'], ['120', '125'], ['130', '135'], ['140', '145'], ['150', '155'], ['160', '165'], ['170', '175'],
+      ['180', '185'], ['190', '195'],
+      ['101', '111'], ['102', '112'], ['103', '113'], ['110', '120'], ['120', '130'], ['130', '140'], ['140', '150'], ['150', '160'], ['160', '170'], ['170', '180'],
+      ['180', '190'], ['190', '200'],
+      ['105', '115'], ['115', '125'], ['125', '135'], ['135', '145'], ['145', '155'], ['155', '165'], ['165', '175'], ['175', '185'], ['185', '195'],
+      // 200s-900s range
+      ['201', '202'], ['202', '203'], ['210', '211'], ['220', '221'], ['230', '231'], ['240', '241'], ['250', '251'], ['260', '261'], ['270', '271'], ['280', '281'], ['290', '291'],
+      ['301', '302'], ['310', '311'], ['320', '321'], ['330', '331'], ['340', '341'], ['350', '351'], ['360', '361'], ['370', '371'], ['380', '381'], ['390', '391'],
+      ['401', '402'], ['410', '411'], ['420', '421'], ['430', '431'], ['440', '441'], ['450', '451'], ['460', '461'], ['470', '471'], ['480', '481'], ['490', '491'],
+      ['501', '502'], ['510', '511'], ['520', '521'], ['530', '531'], ['540', '541'], ['550', '551'], ['560', '561'], ['570', '571'], ['580', '581'], ['590', '591'],
+      ['601', '602'], ['610', '611'], ['620', '621'], ['630', '631'], ['640', '641'], ['650', '651'], ['660', '661'], ['670', '671'], ['680', '681'], ['690', '691'],
+      ['701', '702'], ['710', '711'], ['720', '721'], ['730', '731'], ['740', '741'], ['750', '751'], ['760', '761'], ['770', '771'], ['780', '781'], ['790', '791'],
+      ['801', '802'], ['810', '811'], ['820', '821'], ['830', '831'], ['840', '841'], ['850', '851'], ['860', '861'], ['870', '871'], ['880', '881'], ['890', '891'],
+      ['901', '902'], ['910', '911'], ['920', '921'], ['930', '931'], ['940', '941'], ['950', '951'], ['960', '961'], ['970', '971'], ['980', '981'], ['990', '991'],
+      // Large gaps in 100-1000
+      ['100', '125'], ['125', '150'], ['150', '175'], ['175', '200'], ['200', '225'], ['225', '250'], ['250', '275'], ['275', '300'],
+      ['300', '325'], ['325', '350'], ['350', '375'], ['375', '400'], ['400', '425'], ['425', '450'], ['450', '475'], ['475', '500'],
+      ['500', '525'], ['525', '550'], ['550', '575'], ['575', '600'], ['600', '625'], ['625', '650'], ['650', '675'], ['675', '700'],
+      ['700', '725'], ['725', '750'], ['750', '775'], ['775', '800'], ['800', '825'], ['825', '850'], ['850', '875'], ['875', '900'],
+      ['900', '925'], ['925', '950'], ['950', '975'], ['975', '1000'],
+      ['100', '130'], ['130', '160'], ['160', '190'], ['190', '220'], ['220', '250'], ['250', '280'], ['280', '310'], ['310', '340'],
+      ['340', '370'], ['370', '400'], ['400', '430'], ['430', '460'], ['460', '490'], ['490', '520'], ['520', '550'], ['550', '580'],
+      ['580', '610'], ['610', '640'], ['640', '670'], ['670', '700'], ['700', '730'], ['730', '760'], ['760', '790'], ['790', '820'],
+      ['820', '850'], ['850', '880'], ['880', '910'], ['910', '940'], ['940', '970'], ['970', '1000'],
+
+      // Many more verbal pairs
+      ['one', 'five'], ['one', 'six'], ['one', 'seven'], ['one', 'eight'], ['one', 'nine'],
+      ['two', 'six'], ['two', 'seven'], ['two', 'eight'], ['two', 'nine'],
+      ['three', 'seven'], ['three', 'eight'], ['three', 'nine'],
+      ['four', 'eight'], ['four', 'nine'],
+      ['five', 'nine'],
+      ['six', 'nine'],
+      ['seven', 'nine'],
+      ['ten', 'thirteen'], ['ten', 'fourteen'], ['ten', 'fifteen'], ['ten', 'sixteen'], ['ten', 'seventeen'], ['ten', 'eighteen'], ['ten', 'nineteen'],
+      ['eleven', 'fourteen'], ['eleven', 'fifteen'], ['eleven', 'sixteen'], ['eleven', 'seventeen'], ['eleven', 'eighteen'], ['eleven', 'nineteen'],
+      ['twelve', 'fifteen'], ['twelve', 'sixteen'], ['twelve', 'seventeen'], ['twelve', 'eighteen'], ['twelve', 'nineteen'],
+      ['thirteen', 'sixteen'], ['thirteen', 'seventeen'], ['thirteen', 'eighteen'], ['thirteen', 'nineteen'],
+      ['fourteen', 'sixteen'], ['fourteen', 'seventeen'], ['fourteen', 'eighteen'], ['fourteen', 'nineteen'],
+      ['fifteen', 'seventeen'], ['fifteen', 'eighteen'], ['fifteen', 'nineteen'],
+      ['sixteen', 'eighteen'], ['sixteen', 'nineteen'],
+      ['seventeen', 'nineteen'],
+      ['twenty', 'twenty-two'], ['twenty', 'twenty-three'], ['twenty', 'twenty-four'], ['twenty', 'twenty-six'], ['twenty', 'twenty-seven'], ['twenty', 'twenty-eight'], ['twenty', 'twenty-nine'],
+      ['thirty', 'thirty-two'], ['thirty', 'thirty-three'], ['thirty', 'thirty-four'], ['thirty', 'thirty-six'], ['thirty', 'thirty-seven'], ['thirty', 'thirty-eight'], ['thirty', 'thirty-nine'],
+      ['forty', 'forty-two'], ['forty', 'forty-three'], ['forty', 'forty-four'], ['forty', 'forty-six'], ['forty', 'forty-seven'], ['forty', 'forty-eight'], ['forty', 'forty-nine'],
+      ['fifty', 'fifty-two'], ['fifty', 'fifty-three'], ['fifty', 'fifty-four'], ['fifty', 'fifty-six'], ['fifty', 'fifty-seven'], ['fifty', 'fifty-eight'], ['fifty', 'fifty-nine'],
+      ['sixty', 'sixty-two'], ['sixty', 'sixty-three'], ['sixty', 'sixty-four'], ['sixty', 'sixty-six'], ['sixty', 'sixty-seven'], ['sixty', 'sixty-eight'], ['sixty', 'sixty-nine'],
+      ['seventy', 'seventy-two'], ['seventy', 'seventy-three'], ['seventy', 'seventy-four'], ['seventy', 'seventy-six'], ['seventy', 'seventy-seven'], ['seventy', 'seventy-eight'], ['seventy', 'seventy-nine'],
+      ['eighty', 'eighty-two'], ['eighty', 'eighty-three'], ['eighty', 'eighty-four'], ['eighty', 'eighty-six'], ['eighty', 'eighty-seven'], ['eighty', 'eighty-eight'], ['eighty', 'eighty-nine'],
+      ['ninety', 'ninety-two'], ['ninety', 'ninety-three'], ['ninety', 'ninety-four'], ['ninety', 'ninety-six'], ['ninety', 'ninety-seven'], ['ninety', 'ninety-eight'], ['ninety', 'ninety-nine'],
+      ['twenty-one', 'twenty-three'], ['twenty-two', 'twenty-four'], ['twenty-three', 'twenty-five'], ['twenty-four', 'twenty-six'], ['twenty-five', 'twenty-seven'], ['twenty-six', 'twenty-eight'], ['twenty-seven', 'twenty-nine'],
+      ['thirty-one', 'thirty-three'], ['thirty-two', 'thirty-four'], ['thirty-three', 'thirty-five'], ['forty-one', 'forty-three'], ['forty-two', 'forty-four'], ['forty-three', 'forty-five'],
+      ['fifty-one', 'fifty-three'], ['fifty-two', 'fifty-four'], ['fifty-three', 'fifty-five'], ['sixty-one', 'sixty-three'], ['sixty-two', 'sixty-four'], ['sixty-three', 'sixty-five'],
+      ['seventy-one', 'seventy-three'], ['seventy-two', 'seventy-four'], ['seventy-three', 'seventy-five'], ['eighty-one', 'eighty-three'], ['eighty-two', 'eighty-four'], ['eighty-three', 'eighty-five'],
+      ['ninety-one', 'ninety-three'], ['ninety-two', 'ninety-four'], ['ninety-three', 'ninety-five'],
+      ['ten', 'twenty'], ['ten', 'thirty'], ['ten', 'forty'], ['ten', 'fifty'], ['twenty', 'forty'], ['twenty', 'fifty'], ['twenty', 'sixty'], ['thirty', 'fifty'], ['thirty', 'sixty'], ['thirty', 'seventy'],
+      ['forty', 'sixty'], ['forty', 'seventy'], ['forty', 'eighty'], ['fifty', 'seventy'], ['fifty', 'eighty'], ['fifty', 'ninety'], ['sixty', 'eighty'], ['sixty', 'ninety'],
+      ['one hundred', 'one hundred five'], ['one hundred', 'one hundred fifteen'], ['one hundred', 'one hundred thirty'], ['one hundred', 'one hundred forty'], ['one hundred', 'one hundred fifty'],
+      ['two hundred', 'two hundred ten'], ['two hundred', 'two hundred twenty'], ['two hundred', 'two hundred thirty'], ['two hundred', 'two hundred forty'],
+      ['three hundred', 'three hundred ten'], ['three hundred', 'three hundred twenty'], ['three hundred', 'three hundred thirty'], ['three hundred', 'three hundred forty'], ['three hundred', 'three hundred fifty'],
+      ['four hundred', 'four hundred ten'], ['four hundred', 'four hundred twenty'], ['four hundred', 'four hundred thirty'], ['four hundred', 'four hundred forty'],
+      ['five hundred', 'five hundred ten'], ['five hundred', 'five hundred twenty'], ['five hundred', 'five hundred thirty'], ['five hundred', 'five hundred forty'],
+      ['six hundred', 'six hundred ten'], ['six hundred', 'six hundred twenty'], ['six hundred', 'six hundred thirty'], ['six hundred', 'six hundred forty'],
+      ['seven hundred', 'seven hundred ten'], ['seven hundred', 'seven hundred twenty'], ['seven hundred', 'seven hundred thirty'], ['seven hundred', 'seven hundred forty'],
+      ['eight hundred', 'eight hundred ten'], ['eight hundred', 'eight hundred twenty'], ['eight hundred', 'eight hundred thirty'], ['eight hundred', 'eight hundred forty'],
+      ['nine hundred', 'nine hundred ten'], ['nine hundred', 'nine hundred twenty'], ['nine hundred', 'nine hundred thirty'], ['nine hundred', 'nine hundred forty']
     ],
 
     'meaning': [
@@ -1787,7 +1957,86 @@ const CognitiveTaskGame = () => {
       ['I', 'I'], ['II', 'II'], ['III', 'III'], ['IV', 'IV'], ['V', 'V'], ['VI', 'VI'], ['VII', 'VII'], ['VIII', 'VIII'], ['IX', 'IX'],
       ['X', 'X'], ['XI', 'XI'], ['XII', 'XII'], ['XIII', 'XIII'], ['XIV', 'XIV'], ['XV', 'XV'], ['XVI', 'XVI'], ['XVII', 'XVII'], ['XVIII', 'XVIII'], ['XIX', 'XIX'],
       ['XX', 'XX'], ['XXI', 'XXI'], ['XXII', 'XXII'], ['XXIII', 'XXIII'], ['XXIV', 'XXIV'], ['XXV', 'XXV'], ['XXVI', 'XXVI'], ['XXVII', 'XXVII'], ['XXVIII', 'XXVIII'], ['XXIX', 'XXIX'],
-      ['XXX', 'XXX']
+      ['XXX', 'XXX'],
+
+      // Additional meaning pairs - hundreds more combinations
+      // More Arabic same (extend to 100)
+      ['26', '26'], ['27', '27'], ['28', '28'], ['29', '29'], ['31', '31'], ['32', '32'], ['33', '33'], ['34', '34'], ['35', '35'], ['36', '36'],
+      ['37', '37'], ['38', '38'], ['39', '39'], ['41', '41'], ['42', '42'], ['43', '43'], ['44', '44'], ['45', '45'], ['46', '46'], ['47', '47'],
+      ['48', '48'], ['49', '49'], ['51', '51'], ['52', '52'], ['53', '53'], ['54', '54'], ['55', '55'], ['56', '56'], ['57', '57'], ['58', '58'],
+      ['59', '59'], ['61', '61'], ['62', '62'], ['63', '63'], ['64', '64'], ['65', '65'], ['66', '66'], ['67', '67'], ['68', '68'], ['69', '69'],
+      ['71', '71'], ['72', '72'], ['73', '73'], ['74', '74'], ['75', '75'], ['76', '76'], ['77', '77'], ['78', '78'], ['79', '79'], ['81', '81'],
+      ['82', '82'], ['83', '83'], ['84', '84'], ['85', '85'], ['86', '86'], ['87', '87'], ['88', '88'], ['89', '89'], ['91', '91'], ['92', '92'],
+      ['93', '93'], ['94', '94'], ['95', '95'], ['96', '96'], ['97', '97'], ['98', '98'], ['99', '99'],
+      // More Arabic-Chinese reversed (1-9)
+      ['一', '1'], ['二', '2'], ['三', '3'], ['四', '4'], ['五', '5'], ['六', '6'], ['七', '7'], ['八', '8'], ['九', '9'],
+      // More Arabic-Korean reversed (1-9)
+      ['일', '1'], ['이', '2'], ['삼', '3'], ['사', '4'], ['오', '5'], ['육', '6'], ['칠', '7'], ['팔', '8'], ['구', '9'],
+      // More Korean-Chinese reversed  (1-9)
+      ['一', '일'], ['二', '이'], ['三', '삼'], ['四', '사'], ['五', '오'], ['六', '육'], ['七', '칠'], ['八', '팔'], ['九', '구'],
+      // More Korean-Roman reversed (1-9)
+      ['I', '일'], ['II', '이'], ['III', '삼'], ['IV', '사'], ['V', '오'], ['VI', '육'], ['VII', '칠'], ['VIII', '팔'], ['IX', '구'],
+      // More Chinese-Roman reversed (1-9)
+      ['I', '一'], ['II', '二'], ['III', '三'], ['IV', '四'], ['V', '五'], ['VI', '六'], ['VII', '七'], ['VIII', '八'], ['IX', '九'],
+      // More Arabic-Roman reversed (10-30)
+      ['I', '1'], ['II', '2'], ['III', '3'], ['IV', '4'], ['V', '5'], ['VI', '6'], ['VII', '7'], ['VIII', '8'], ['IX', '9'],
+      ['X', '10'], ['XI', '11'], ['XII', '12'], ['XIII', '13'], ['XIV', '14'], ['XV', '15'], ['XVI', '16'], ['XVII', '17'], ['XVIII', '18'], ['XIX', '19'],
+      ['XX', '20'], ['XXI', '21'], ['XXII', '22'], ['XXIII', '23'], ['XXIV', '24'], ['XXV', '25'], ['XXVI', '26'], ['XXVII', '27'], ['XXVIII', '28'], ['XXIX', '29'],
+      ['XXX', '30'],
+      // Verbal-Arabic (1-100) - many more combinations
+      ['one', '1'], ['1', 'one'], ['two', '2'], ['2', 'two'], ['three', '3'], ['3', 'three'], ['four', '4'], ['4', 'four'], ['five', '5'], ['5', 'five'],
+      ['six', '6'], ['6', 'six'], ['seven', '7'], ['7', 'seven'], ['eight', '8'], ['8', 'eight'], ['nine', '9'], ['9', 'nine'],
+      ['ten', '10'], ['10', 'ten'], ['eleven', '11'], ['11', 'eleven'], ['twelve', '12'], ['12', 'twelve'], ['thirteen', '13'], ['13', 'thirteen'],
+      ['fourteen', '14'], ['14', 'fourteen'], ['fifteen', '15'], ['15', 'fifteen'], ['sixteen', '16'], ['16', 'sixteen'], ['seventeen', '17'], ['17', 'seventeen'],
+      ['eighteen', '18'], ['18', 'eighteen'], ['nineteen', '19'], ['19', 'nineteen'],
+      ['twenty', '20'], ['20', 'twenty'], ['twenty-one', '21'], ['21', 'twenty-one'], ['twenty-two', '22'], ['22', 'twenty-two'], ['twenty-three', '23'], ['23', 'twenty-three'],
+      ['twenty-four', '24'], ['24', 'twenty-four'], ['twenty-five', '25'], ['25', 'twenty-five'], ['twenty-six', '26'], ['26', 'twenty-six'],
+      ['twenty-seven', '27'], ['27', 'twenty-seven'], ['twenty-eight', '28'], ['28', 'twenty-eight'], ['twenty-nine', '29'], ['29', 'twenty-nine'],
+      ['thirty', '30'], ['30', 'thirty'], ['thirty-one', '31'], ['31', 'thirty-one'], ['thirty-two', '32'], ['32', 'thirty-two'], ['thirty-three', '33'], ['33', 'thirty-three'],
+      ['thirty-four', '34'], ['34', 'thirty-four'], ['thirty-five', '35'], ['35', 'thirty-five'], ['thirty-six', '36'], ['36', 'thirty-six'],
+      ['thirty-seven', '37'], ['37', 'thirty-seven'], ['thirty-eight', '38'], ['38', 'thirty-eight'], ['thirty-nine', '39'], ['39', 'thirty-nine'],
+      ['forty', '40'], ['40', 'forty'], ['forty-one', '41'], ['41', 'forty-one'], ['forty-two', '42'], ['42', 'forty-two'], ['forty-three', '43'], ['43', 'forty-three'],
+      ['forty-four', '44'], ['44', 'forty-four'], ['forty-five', '45'], ['45', 'forty-five'], ['forty-six', '46'], ['46', 'forty-six'],
+      ['forty-seven', '47'], ['47', 'forty-seven'], ['forty-eight', '48'], ['48', 'forty-eight'], ['forty-nine', '49'], ['49', 'forty-nine'],
+      ['fifty', '50'], ['50', 'fifty'], ['fifty-one', '51'], ['51', 'fifty-one'], ['fifty-two', '52'], ['52', 'fifty-two'], ['fifty-three', '53'], ['53', 'fifty-three'],
+      ['fifty-four', '54'], ['54', 'fifty-four'], ['fifty-five', '55'], ['55', 'fifty-five'], ['fifty-six', '56'], ['56', 'fifty-six'],
+      ['fifty-seven', '57'], ['57', 'fifty-seven'], ['fifty-eight', '58'], ['58', 'fifty-eight'], ['fifty-nine', '59'], ['59', 'fifty-nine'],
+      ['sixty', '60'], ['60', 'sixty'], ['sixty-one', '61'], ['61', 'sixty-one'], ['sixty-two', '62'], ['62', 'sixty-two'], ['sixty-three', '63'], ['63', 'sixty-three'],
+      ['sixty-four', '64'], ['64', 'sixty-four'], ['sixty-five', '65'], ['65', 'sixty-five'], ['sixty-six', '66'], ['66', 'sixty-six'],
+      ['sixty-seven', '67'], ['67', 'sixty-seven'], ['sixty-eight', '68'], ['68', 'sixty-eight'], ['sixty-nine', '69'], ['69', 'sixty-nine'],
+      ['seventy', '70'], ['70', 'seventy'], ['seventy-one', '71'], ['71', 'seventy-one'], ['seventy-two', '72'], ['72', 'seventy-two'], ['seventy-three', '73'], ['73', 'seventy-three'],
+      ['seventy-four', '74'], ['74', 'seventy-four'], ['seventy-five', '75'], ['75', 'seventy-five'], ['seventy-six', '76'], ['76', 'seventy-six'],
+      ['seventy-seven', '77'], ['77', 'seventy-seven'], ['seventy-eight', '78'], ['78', 'seventy-eight'], ['seventy-nine', '79'], ['79', 'seventy-nine'],
+      ['eighty', '80'], ['80', 'eighty'], ['eighty-one', '81'], ['81', 'eighty-one'], ['eighty-two', '82'], ['82', 'eighty-two'], ['eighty-three', '83'], ['83', 'eighty-three'],
+      ['eighty-four', '84'], ['84', 'eighty-four'], ['eighty-five', '85'], ['85', 'eighty-five'], ['eighty-six', '86'], ['86', 'eighty-six'],
+      ['eighty-seven', '87'], ['87', 'eighty-seven'], ['eighty-eight', '88'], ['88', 'eighty-eight'], ['eighty-nine', '89'], ['89', 'eighty-nine'],
+      ['ninety', '90'], ['90', 'ninety'], ['ninety-one', '91'], ['91', 'ninety-one'], ['ninety-two', '92'], ['92', 'ninety-two'], ['ninety-three', '93'], ['93', 'ninety-three'],
+      ['ninety-four', '94'], ['94', 'ninety-four'], ['ninety-five', '95'], ['95', 'ninety-five'], ['ninety-six', '96'], ['96', 'ninety-six'],
+      ['ninety-seven', '97'], ['97', 'ninety-seven'], ['ninety-eight', '98'], ['98', 'ninety-eight'], ['ninety-nine', '99'], ['99', 'ninety-nine'],
+      ['one hundred', '100'], ['100', 'one hundred'],
+      // Verbal-Roman (1-30)
+      ['one', 'I'], ['I', 'one'], ['two', 'II'], ['II', 'two'], ['three', 'III'], ['III', 'three'], ['four', 'IV'], ['IV', 'four'], ['five', 'V'], ['V', 'five'],
+      ['six', 'VI'], ['VI', 'six'], ['seven', 'VII'], ['VII', 'seven'], ['eight', 'VIII'], ['VIII', 'eight'], ['nine', 'IX'], ['IX', 'nine'], ['ten', 'X'], ['X', 'ten'],
+      ['eleven', 'XI'], ['XI', 'eleven'], ['twelve', 'XII'], ['XII', 'twelve'], ['thirteen', 'XIII'], ['XIII', 'thirteen'], ['fourteen', 'XIV'], ['XIV', 'fourteen'],
+      ['fifteen', 'XV'], ['XV', 'fifteen'], ['sixteen', 'XVI'], ['XVI', 'sixteen'], ['seventeen', 'XVII'], ['XVII', 'seventeen'], ['eighteen', 'XVIII'], ['XVIII', 'eighteen'],
+      ['nineteen', 'XIX'], ['XIX', 'nineteen'], ['twenty', 'XX'], ['XX', 'twenty'], ['twenty-one', 'XXI'], ['XXI', 'twenty-one'], ['twenty-two', 'XXII'], ['XXII', 'twenty-two'],
+      ['twenty-three', 'XXIII'], ['XXIII', 'twenty-three'], ['twenty-four', 'XXIV'], ['XXIV', 'twenty-four'], ['twenty-five', 'XXV'], ['XXV', 'twenty-five'],
+      ['twenty-six', 'XXVI'], ['XXVI', 'twenty-six'], ['twenty-seven', 'XXVII'], ['XXVII', 'twenty-seven'], ['twenty-eight', 'XXVIII'], ['XXVIII', 'twenty-eight'],
+      ['twenty-nine', 'XXIX'], ['XXIX', 'twenty-nine'], ['thirty', 'XXX'], ['XXX', 'thirty'],
+      // Verbal-Chinese (1-9)
+      ['one', '一'], ['一', 'one'], ['two', '二'], ['二', 'two'], ['three', '三'], ['三', 'three'], ['four', '四'], ['四', 'four'], ['five', '五'], ['五', 'five'],
+      ['six', '六'], ['六', 'six'], ['seven', '七'], ['七', 'seven'], ['eight', '八'], ['八', 'eight'], ['nine', '九'], ['九', 'nine'],
+      // Verbal-Korean (1-9)
+      ['one', '일'], ['일', 'one'], ['two', '이'], ['이', 'two'], ['three', '삼'], ['삼', 'three'], ['four', '사'], ['사', 'four'], ['five', '오'], ['오', 'five'],
+      ['six', '육'], ['육', 'six'], ['seven', '칠'], ['칠', 'seven'], ['eight', '팔'], ['팔', 'eight'], ['nine', '구'], ['구', 'nine'],
+      // More verbal same
+      ['ten', 'ten'], ['eleven', 'eleven'], ['twelve', 'twelve'], ['thirteen', 'thirteen'], ['fourteen', 'fourteen'], ['fifteen', 'fifteen'],
+      ['sixteen', 'sixteen'], ['seventeen', 'seventeen'], ['eighteen', 'eighteen'], ['nineteen', 'nineteen'],
+      ['twenty', 'twenty'], ['twenty-one', 'twenty-one'], ['twenty-two', 'twenty-two'], ['twenty-three', 'twenty-three'], ['twenty-four', 'twenty-four'], ['twenty-five', 'twenty-five'],
+      ['thirty', 'thirty'], ['thirty-one', 'thirty-one'], ['thirty-two', 'thirty-two'], ['thirty-three', 'thirty-three'], ['thirty-four', 'thirty-four'], ['thirty-five', 'thirty-five'],
+      ['forty', 'forty'], ['forty-one', 'forty-one'], ['forty-two', 'forty-two'], ['fifty', 'fifty'], ['sixty', 'sixty'], ['seventy', 'seventy'], ['eighty', 'eighty'], ['ninety', 'ninety'],
+      ['one hundred', 'one hundred'], ['two hundred', 'two hundred'], ['three hundred', 'three hundred'], ['four hundred', 'four hundred'], ['five hundred', 'five hundred'],
+      ['six hundred', 'six hundred'], ['seven hundred', 'seven hundred'], ['eight hundred', 'eight hundred'], ['nine hundred', 'nine hundred'], ['one thousand', 'one thousand']
     ],
 
     // Level 3 task: Parity judgment - same format
@@ -1865,7 +2114,112 @@ const CognitiveTaskGame = () => {
       ['XXII', 'XXIV'], ['XXII', 'XXVI'], ['XXII', 'XXVIII'], ['XXII', 'XXX'],
       ['XXIV', 'XXVI'], ['XXIV', 'XXVIII'], ['XXIV', 'XXX'],
       ['XXVI', 'XXVIII'], ['XXVI', 'XXX'],
-      ['XXVIII', 'XXX']
+      ['XXVIII', 'XXX'],
+
+      // Additional parity-same-format pairs - hundreds more combinations
+      // More both odd - Arabic (100-999)
+      ['101', '103'], ['101', '105'], ['101', '107'], ['101', '109'], ['103', '105'], ['103', '107'], ['103', '109'],
+      ['105', '107'], ['105', '109'], ['107', '109'],
+      ['111', '113'], ['111', '115'], ['111', '117'], ['111', '119'], ['113', '115'], ['113', '117'], ['113', '119'],
+      ['115', '117'], ['115', '119'], ['117', '119'],
+      ['121', '123'], ['121', '125'], ['121', '127'], ['121', '129'], ['123', '125'], ['123', '127'], ['123', '129'],
+      ['125', '127'], ['125', '129'], ['127', '129'],
+      ['131', '133'], ['131', '135'], ['131', '137'], ['131', '139'], ['133', '135'], ['133', '137'], ['133', '139'],
+      ['135', '137'], ['135', '139'], ['137', '139'],
+      ['141', '143'], ['141', '145'], ['143', '147'], ['145', '149'],
+      ['151', '153'], ['151', '155'], ['153', '157'], ['155', '159'],
+      ['161', '163'], ['161', '165'], ['163', '167'], ['165', '169'],
+      ['171', '173'], ['171', '175'], ['173', '177'], ['175', '179'],
+      ['181', '183'], ['181', '185'], ['183', '187'], ['185', '189'],
+      ['191', '193'], ['191', '195'], ['193', '197'], ['195', '199'],
+      ['201', '203'], ['201', '205'], ['203', '207'], ['205', '209'],
+      ['301', '303'], ['301', '305'], ['303', '307'], ['305', '309'],
+      ['401', '403'], ['401', '405'], ['403', '407'], ['405', '409'],
+      ['501', '503'], ['501', '505'], ['503', '507'], ['505', '509'],
+      ['601', '603'], ['601', '605'], ['603', '607'], ['605', '609'],
+      ['701', '703'], ['701', '705'], ['703', '707'], ['705', '709'],
+      ['801', '803'], ['801', '805'], ['803', '807'], ['805', '809'],
+      ['901', '903'], ['901', '905'], ['903', '907'], ['905', '909'],
+      // More both even - Arabic (100-999)
+      ['100', '102'], ['100', '104'], ['100', '106'], ['100', '108'], ['102', '104'], ['102', '106'], ['102', '108'],
+      ['104', '106'], ['104', '108'], ['106', '108'],
+      ['110', '112'], ['110', '114'], ['110', '116'], ['110', '118'], ['112', '114'], ['112', '116'], ['112', '118'],
+      ['114', '116'], ['114', '118'], ['116', '118'],
+      ['120', '122'], ['120', '124'], ['120', '126'], ['120', '128'], ['122', '124'], ['122', '126'], ['122', '128'],
+      ['124', '126'], ['124', '128'], ['126', '128'],
+      ['130', '132'], ['130', '134'], ['130', '136'], ['130', '138'], ['132', '134'], ['132', '136'], ['132', '138'],
+      ['134', '136'], ['134', '138'], ['136', '138'],
+      ['140', '142'], ['140', '144'], ['142', '146'], ['144', '148'],
+      ['150', '152'], ['150', '154'], ['152', '156'], ['154', '158'],
+      ['160', '162'], ['160', '164'], ['162', '166'], ['164', '168'],
+      ['170', '172'], ['170', '174'], ['172', '176'], ['174', '178'],
+      ['180', '182'], ['180', '184'], ['182', '186'], ['184', '188'],
+      ['190', '192'], ['190', '194'], ['192', '196'], ['194', '198'],
+      ['200', '202'], ['200', '204'], ['202', '206'], ['204', '208'],
+      ['300', '302'], ['300', '304'], ['302', '306'], ['304', '308'],
+      ['400', '402'], ['400', '404'], ['402', '406'], ['404', '408'],
+      ['500', '502'], ['500', '504'], ['502', '506'], ['504', '508'],
+      ['600', '602'], ['600', '604'], ['602', '606'], ['604', '608'],
+      ['700', '702'], ['700', '704'], ['702', '706'], ['704', '708'],
+      ['800', '802'], ['800', '804'], ['802', '806'], ['804', '808'],
+      ['900', '902'], ['900', '904'], ['902', '906'], ['904', '908'],
+      // Verbal odd pairs
+      ['one', 'three'], ['one', 'five'], ['one', 'seven'], ['one', 'nine'], ['three', 'five'], ['three', 'seven'], ['three', 'nine'],
+      ['five', 'seven'], ['five', 'nine'], ['seven', 'nine'],
+      ['eleven', 'thirteen'], ['eleven', 'fifteen'], ['eleven', 'seventeen'], ['eleven', 'nineteen'], ['thirteen', 'fifteen'], ['thirteen', 'seventeen'], ['thirteen', 'nineteen'],
+      ['fifteen', 'seventeen'], ['fifteen', 'nineteen'], ['seventeen', 'nineteen'],
+      ['twenty-one', 'twenty-three'], ['twenty-one', 'twenty-five'], ['twenty-one', 'twenty-seven'], ['twenty-one', 'twenty-nine'],
+      ['twenty-three', 'twenty-five'], ['twenty-three', 'twenty-seven'], ['twenty-three', 'twenty-nine'],
+      ['twenty-five', 'twenty-seven'], ['twenty-five', 'twenty-nine'], ['twenty-seven', 'twenty-nine'],
+      ['thirty-one', 'thirty-three'], ['thirty-one', 'thirty-five'], ['thirty-one', 'thirty-seven'], ['thirty-one', 'thirty-nine'],
+      ['thirty-three', 'thirty-five'], ['thirty-three', 'thirty-seven'], ['thirty-three', 'thirty-nine'],
+      ['thirty-five', 'thirty-seven'], ['thirty-five', 'thirty-nine'], ['thirty-seven', 'thirty-nine'],
+      ['forty-one', 'forty-three'], ['forty-one', 'forty-five'], ['forty-one', 'forty-seven'], ['forty-one', 'forty-nine'],
+      ['forty-three', 'forty-five'], ['forty-three', 'forty-seven'], ['forty-three', 'forty-nine'],
+      ['forty-five', 'forty-seven'], ['forty-five', 'forty-nine'], ['forty-seven', 'forty-nine'],
+      ['fifty-one', 'fifty-three'], ['fifty-one', 'fifty-five'], ['fifty-one', 'fifty-seven'], ['fifty-one', 'fifty-nine'],
+      ['fifty-three', 'fifty-five'], ['fifty-three', 'fifty-seven'], ['fifty-three', 'fifty-nine'],
+      ['fifty-five', 'fifty-seven'], ['fifty-five', 'fifty-nine'], ['fifty-seven', 'fifty-nine'],
+      ['sixty-one', 'sixty-three'], ['sixty-one', 'sixty-five'], ['sixty-one', 'sixty-seven'], ['sixty-one', 'sixty-nine'],
+      ['sixty-three', 'sixty-five'], ['sixty-three', 'sixty-seven'], ['sixty-three', 'sixty-nine'],
+      ['sixty-five', 'sixty-seven'], ['sixty-five', 'sixty-nine'], ['sixty-seven', 'sixty-nine'],
+      ['seventy-one', 'seventy-three'], ['seventy-one', 'seventy-five'], ['seventy-one', 'seventy-seven'], ['seventy-one', 'seventy-nine'],
+      ['seventy-three', 'seventy-five'], ['seventy-three', 'seventy-seven'], ['seventy-three', 'seventy-nine'],
+      ['seventy-five', 'seventy-seven'], ['seventy-five', 'seventy-nine'], ['seventy-seven', 'seventy-nine'],
+      ['eighty-one', 'eighty-three'], ['eighty-one', 'eighty-five'], ['eighty-one', 'eighty-seven'], ['eighty-one', 'eighty-nine'],
+      ['eighty-three', 'eighty-five'], ['eighty-three', 'eighty-seven'], ['eighty-three', 'eighty-nine'],
+      ['eighty-five', 'eighty-seven'], ['eighty-five', 'eighty-nine'], ['eighty-seven', 'eighty-nine'],
+      ['ninety-one', 'ninety-three'], ['ninety-one', 'ninety-five'], ['ninety-one', 'ninety-seven'], ['ninety-one', 'ninety-nine'],
+      ['ninety-three', 'ninety-five'], ['ninety-three', 'ninety-seven'], ['ninety-three', 'ninety-nine'],
+      ['ninety-five', 'ninety-seven'], ['ninety-five', 'ninety-nine'], ['ninety-seven', 'ninety-nine'],
+      // Verbal even pairs
+      ['two', 'four'], ['two', 'six'], ['two', 'eight'], ['four', 'six'], ['four', 'eight'], ['six', 'eight'],
+      ['ten', 'twelve'], ['ten', 'fourteen'], ['ten', 'sixteen'], ['ten', 'eighteen'], ['twelve', 'fourteen'], ['twelve', 'sixteen'], ['twelve', 'eighteen'],
+      ['fourteen', 'sixteen'], ['fourteen', 'eighteen'], ['sixteen', 'eighteen'],
+      ['twenty', 'twenty-two'], ['twenty', 'twenty-four'], ['twenty', 'twenty-six'], ['twenty', 'twenty-eight'],
+      ['twenty-two', 'twenty-four'], ['twenty-two', 'twenty-six'], ['twenty-two', 'twenty-eight'],
+      ['twenty-four', 'twenty-six'], ['twenty-four', 'twenty-eight'], ['twenty-six', 'twenty-eight'],
+      ['thirty', 'thirty-two'], ['thirty', 'thirty-four'], ['thirty', 'thirty-six'], ['thirty', 'thirty-eight'],
+      ['thirty-two', 'thirty-four'], ['thirty-two', 'thirty-six'], ['thirty-two', 'thirty-eight'],
+      ['thirty-four', 'thirty-six'], ['thirty-four', 'thirty-eight'], ['thirty-six', 'thirty-eight'],
+      ['forty', 'forty-two'], ['forty', 'forty-four'], ['forty', 'forty-six'], ['forty', 'forty-eight'],
+      ['forty-two', 'forty-four'], ['forty-two', 'forty-six'], ['forty-two', 'forty-eight'],
+      ['forty-four', 'forty-six'], ['forty-four', 'forty-eight'], ['forty-six', 'forty-eight'],
+      ['fifty', 'fifty-two'], ['fifty', 'fifty-four'], ['fifty', 'fifty-six'], ['fifty', 'fifty-eight'],
+      ['fifty-two', 'fifty-four'], ['fifty-two', 'fifty-six'], ['fifty-two', 'fifty-eight'],
+      ['fifty-four', 'fifty-six'], ['fifty-four', 'fifty-eight'], ['fifty-six', 'fifty-eight'],
+      ['sixty', 'sixty-two'], ['sixty', 'sixty-four'], ['sixty', 'sixty-six'], ['sixty', 'sixty-eight'],
+      ['sixty-two', 'sixty-four'], ['sixty-two', 'sixty-six'], ['sixty-two', 'sixty-eight'],
+      ['sixty-four', 'sixty-six'], ['sixty-four', 'sixty-eight'], ['sixty-six', 'sixty-eight'],
+      ['seventy', 'seventy-two'], ['seventy', 'seventy-four'], ['seventy', 'seventy-six'], ['seventy', 'seventy-eight'],
+      ['seventy-two', 'seventy-four'], ['seventy-two', 'seventy-six'], ['seventy-two', 'seventy-eight'],
+      ['seventy-four', 'seventy-six'], ['seventy-four', 'seventy-eight'], ['seventy-six', 'seventy-eight'],
+      ['eighty', 'eighty-two'], ['eighty', 'eighty-four'], ['eighty', 'eighty-six'], ['eighty', 'eighty-eight'],
+      ['eighty-two', 'eighty-four'], ['eighty-two', 'eighty-six'], ['eighty-two', 'eighty-eight'],
+      ['eighty-four', 'eighty-six'], ['eighty-four', 'eighty-eight'], ['eighty-six', 'eighty-eight'],
+      ['ninety', 'ninety-two'], ['ninety', 'ninety-four'], ['ninety', 'ninety-six'], ['ninety', 'ninety-eight'],
+      ['ninety-two', 'ninety-four'], ['ninety-two', 'ninety-six'], ['ninety-two', 'ninety-eight'],
+      ['ninety-four', 'ninety-six'], ['ninety-four', 'ninety-eight'], ['ninety-six', 'ninety-eight']
     ],
 
     // Level 4 task: Parity judgment - mixed format
@@ -1956,7 +2310,125 @@ const CognitiveTaskGame = () => {
       ['二', 'II'], ['二', 'IV'], ['二', 'VI'], ['二', 'VIII'],
       ['四', 'II'], ['四', 'VI'], ['四', 'VIII'],
       ['六', 'II'], ['六', 'IV'], ['六', 'VIII'],
-      ['八', 'II'], ['八', 'IV'], ['八', 'VI']
+      ['八', 'II'], ['八', 'IV'], ['八', 'VI'],
+
+      // Additional parity-mixed-format pairs - hundreds more combinations
+      // More odd-odd Arabic-Chinese (extend to higher numbers)
+      ['11', '一'], ['11', '三'], ['11', '五'], ['11', '七'], ['11', '九'],
+      ['13', '一'], ['13', '三'], ['13', '五'], ['13', '七'], ['13', '九'],
+      ['15', '一'], ['15', '三'], ['15', '五'], ['15', '七'], ['15', '九'],
+      ['17', '一'], ['17', '三'], ['17', '五'], ['17', '七'], ['17', '九'],
+      ['19', '一'], ['19', '三'], ['19', '五'], ['19', '七'], ['19', '九'],
+      ['21', '一'], ['21', '三'], ['21', '五'], ['21', '七'], ['21', '九'],
+      ['23', '一'], ['23', '三'], ['23', '五'], ['23', '七'], ['23', '九'],
+      ['25', '一'], ['25', '三'], ['25', '五'], ['25', '七'], ['25', '九'],
+      ['27', '一'], ['27', '三'], ['27', '五'], ['27', '七'], ['27', '九'],
+      ['29', '一'], ['29', '三'], ['29', '五'], ['29', '七'], ['29', '九'],
+      // More even-even Arabic-Chinese (extend to higher numbers)
+      ['10', '二'], ['10', '四'], ['10', '六'], ['10', '八'],
+      ['12', '二'], ['12', '四'], ['12', '六'], ['12', '八'],
+      ['14', '二'], ['14', '四'], ['14', '六'], ['14', '八'],
+      ['16', '二'], ['16', '四'], ['16', '六'], ['16', '八'],
+      ['18', '二'], ['18', '四'], ['18', '六'], ['18', '八'],
+      ['20', '二'], ['20', '四'], ['20', '六'], ['20', '八'],
+      ['22', '二'], ['22', '四'], ['22', '六'], ['22', '八'],
+      ['24', '二'], ['24', '四'], ['24', '六'], ['24', '八'],
+      ['26', '二'], ['26', '四'], ['26', '六'], ['26', '八'],
+      ['28', '二'], ['28', '四'], ['28', '六'], ['28', '八'],
+      ['30', '二'], ['30', '四'], ['30', '六'], ['30', '八'],
+      // More odd-odd Arabic-Korean (extend to higher numbers)
+      ['11', '일'], ['11', '삼'], ['11', '오'], ['11', '칠'], ['11', '구'],
+      ['13', '일'], ['13', '삼'], ['13', '오'], ['13', '칠'], ['13', '구'],
+      ['15', '일'], ['15', '삼'], ['15', '오'], ['15', '칠'], ['15', '구'],
+      ['17', '일'], ['17', '삼'], ['17', '오'], ['17', '칠'], ['17', '구'],
+      ['19', '일'], ['19', '삼'], ['19', '오'], ['19', '칠'], ['19', '구'],
+      ['21', '일'], ['21', '삼'], ['21', '오'], ['21', '칠'], ['21', '구'],
+      ['23', '일'], ['23', '삼'], ['23', '오'], ['23', '칠'], ['23', '구'],
+      ['25', '일'], ['25', '삼'], ['25', '오'], ['25', '칠'], ['25', '구'],
+      ['27', '일'], ['27', '삼'], ['27', '오'], ['27', '칠'], ['27', '구'],
+      ['29', '일'], ['29', '삼'], ['29', '오'], ['29', '칠'], ['29', '구'],
+      // More even-even Arabic-Korean (extend to higher numbers)
+      ['10', '이'], ['10', '사'], ['10', '육'], ['10', '팔'],
+      ['12', '이'], ['12', '사'], ['12', '육'], ['12', '팔'],
+      ['14', '이'], ['14', '사'], ['14', '육'], ['14', '팔'],
+      ['16', '이'], ['16', '사'], ['16', '육'], ['16', '팔'],
+      ['18', '이'], ['18', '사'], ['18', '육'], ['18', '팔'],
+      ['20', '이'], ['20', '사'], ['20', '육'], ['20', '팔'],
+      ['22', '이'], ['22', '사'], ['22', '육'], ['22', '팔'],
+      ['24', '이'], ['24', '사'], ['24', '육'], ['24', '팔'],
+      ['26', '이'], ['26', '사'], ['26', '육'], ['26', '팔'],
+      ['28', '이'], ['28', '사'], ['28', '육'], ['28', '팔'],
+      ['30', '이'], ['30', '사'], ['30', '육'], ['30', '팔'],
+      // More odd-odd Arabic-Roman (extend to 21-30)
+      ['31', 'I'], ['31', 'III'], ['31', 'V'], ['31', 'VII'], ['31', 'IX'], ['31', 'XI'], ['31', 'XIII'], ['31', 'XV'], ['31', 'XVII'], ['31', 'XIX'], ['31', 'XXI'], ['31', 'XXIII'], ['31', 'XXV'], ['31', 'XXVII'], ['31', 'XXIX'],
+      ['33', 'I'], ['33', 'III'], ['33', 'V'], ['33', 'VII'], ['33', 'IX'], ['33', 'XI'], ['33', 'XIII'], ['33', 'XV'], ['33', 'XVII'], ['33', 'XIX'], ['33', 'XXI'], ['33', 'XXIII'], ['33', 'XXV'], ['33', 'XXVII'], ['33', 'XXIX'],
+      ['35', 'I'], ['35', 'III'], ['35', 'V'], ['35', 'VII'], ['35', 'IX'], ['35', 'XI'], ['35', 'XIII'], ['35', 'XV'], ['35', 'XVII'], ['35', 'XIX'], ['35', 'XXI'], ['35', 'XXIII'], ['35', 'XXV'], ['35', 'XXVII'], ['35', 'XXIX'],
+      ['37', 'I'], ['37', 'III'], ['37', 'V'], ['37', 'VII'], ['37', 'IX'], ['37', 'XI'], ['37', 'XIII'], ['37', 'XV'], ['37', 'XVII'], ['37', 'XIX'], ['37', 'XXI'], ['37', 'XXIII'], ['37', 'XXV'], ['37', 'XXVII'], ['37', 'XXIX'],
+      ['39', 'I'], ['39', 'III'], ['39', 'V'], ['39', 'VII'], ['39', 'IX'], ['39', 'XI'], ['39', 'XIII'], ['39', 'XV'], ['39', 'XVII'], ['39', 'XIX'], ['39', 'XXI'], ['39', 'XXIII'], ['39', 'XXV'], ['39', 'XXVII'], ['39', 'XXIX'],
+      // More even-even Arabic-Roman (extend to 32-40)
+      ['32', 'II'], ['32', 'IV'], ['32', 'VI'], ['32', 'VIII'], ['32', 'X'], ['32', 'XII'], ['32', 'XIV'], ['32', 'XVI'], ['32', 'XVIII'], ['32', 'XX'], ['32', 'XXII'], ['32', 'XXIV'], ['32', 'XXVI'], ['32', 'XXVIII'], ['32', 'XXX'],
+      ['34', 'II'], ['34', 'IV'], ['34', 'VI'], ['34', 'VIII'], ['34', 'X'], ['34', 'XII'], ['34', 'XIV'], ['34', 'XVI'], ['34', 'XVIII'], ['34', 'XX'], ['34', 'XXII'], ['34', 'XXIV'], ['34', 'XXVI'], ['34', 'XXVIII'], ['34', 'XXX'],
+      ['36', 'II'], ['36', 'IV'], ['36', 'VI'], ['36', 'VIII'], ['36', 'X'], ['36', 'XII'], ['36', 'XIV'], ['36', 'XVI'], ['36', 'XVIII'], ['36', 'XX'], ['36', 'XXII'], ['36', 'XXIV'], ['36', 'XXVI'], ['36', 'XXVIII'], ['36', 'XXX'],
+      ['38', 'II'], ['38', 'IV'], ['38', 'VI'], ['38', 'VIII'], ['38', 'X'], ['38', 'XII'], ['38', 'XIV'], ['38', 'XVI'], ['38', 'XVIII'], ['38', 'XX'], ['38', 'XXII'], ['38', 'XXIV'], ['38', 'XXVI'], ['38', 'XXVIII'], ['38', 'XXX'],
+      ['40', 'II'], ['40', 'IV'], ['40', 'VI'], ['40', 'VIII'], ['40', 'X'], ['40', 'XII'], ['40', 'XIV'], ['40', 'XVI'], ['40', 'XVIII'], ['40', 'XX'], ['40', 'XXII'], ['40', 'XXIV'], ['40', 'XXVI'], ['40', 'XXVIII'], ['40', 'XXX'],
+      // Verbal-Arabic odd-odd mixed
+      ['one', '3'], ['one', '5'], ['one', '7'], ['one', '9'], ['one', '11'], ['one', '13'], ['one', '15'], ['one', '17'], ['one', '19'], ['one', '21'], ['one', '23'], ['one', '25'], ['one', '27'], ['one', '29'],
+      ['three', '1'], ['three', '5'], ['three', '7'], ['three', '9'], ['three', '11'], ['three', '13'], ['three', '15'], ['three', '17'], ['three', '19'], ['three', '21'], ['three', '23'], ['three', '25'], ['three', '27'], ['three', '29'],
+      ['five', '1'], ['five', '3'], ['five', '7'], ['five', '9'], ['five', '11'], ['five', '13'], ['five', '15'], ['five', '17'], ['five', '19'], ['five', '21'], ['five', '23'], ['five', '25'], ['five', '27'], ['five', '29'],
+      ['seven', '1'], ['seven', '3'], ['seven', '5'], ['seven', '9'], ['seven', '11'], ['seven', '13'], ['seven', '15'], ['seven', '17'], ['seven', '19'], ['seven', '21'], ['seven', '23'], ['seven', '25'], ['seven', '27'], ['seven', '29'],
+      ['nine', '1'], ['nine', '3'], ['nine', '5'], ['nine', '7'], ['nine', '11'], ['nine', '13'], ['nine', '15'], ['nine', '17'], ['nine', '19'], ['nine', '21'], ['nine', '23'], ['nine', '25'], ['nine', '27'], ['nine', '29'],
+      ['eleven', '1'], ['eleven', '3'], ['eleven', '5'], ['eleven', '7'], ['eleven', '9'], ['eleven', '13'], ['eleven', '15'], ['eleven', '17'], ['eleven', '19'], ['eleven', '21'], ['eleven', '23'], ['eleven', '25'], ['eleven', '27'], ['eleven', '29'],
+      ['thirteen', '1'], ['thirteen', '3'], ['thirteen', '5'], ['thirteen', '7'], ['thirteen', '9'], ['thirteen', '11'], ['thirteen', '15'], ['thirteen', '17'], ['thirteen', '19'], ['thirteen', '21'], ['thirteen', '23'], ['thirteen', '25'], ['thirteen', '27'], ['thirteen', '29'],
+      ['fifteen', '1'], ['fifteen', '3'], ['fifteen', '5'], ['fifteen', '7'], ['fifteen', '9'], ['fifteen', '11'], ['fifteen', '13'], ['fifteen', '17'], ['fifteen', '19'], ['fifteen', '21'], ['fifteen', '23'], ['fifteen', '25'], ['fifteen', '27'], ['fifteen', '29'],
+      ['seventeen', '1'], ['seventeen', '3'], ['seventeen', '5'], ['seventeen', '7'], ['seventeen', '9'], ['seventeen', '11'], ['seventeen', '13'], ['seventeen', '15'], ['seventeen', '19'], ['seventeen', '21'], ['seventeen', '23'], ['seventeen', '25'], ['seventeen', '27'], ['seventeen', '29'],
+      ['nineteen', '1'], ['nineteen', '3'], ['nineteen', '5'], ['nineteen', '7'], ['nineteen', '9'], ['nineteen', '11'], ['nineteen', '13'], ['nineteen', '15'], ['nineteen', '17'], ['nineteen', '21'], ['nineteen', '23'], ['nineteen', '25'], ['nineteen', '27'], ['nineteen', '29'],
+      // Verbal-Arabic even-even mixed
+      ['two', '4'], ['two', '6'], ['two', '8'], ['two', '10'], ['two', '12'], ['two', '14'], ['two', '16'], ['two', '18'], ['two', '20'], ['two', '22'], ['two', '24'], ['two', '26'], ['two', '28'], ['two', '30'],
+      ['four', '2'], ['four', '6'], ['four', '8'], ['four', '10'], ['four', '12'], ['four', '14'], ['four', '16'], ['four', '18'], ['four', '20'], ['four', '22'], ['four', '24'], ['four', '26'], ['four', '28'], ['four', '30'],
+      ['six', '2'], ['six', '4'], ['six', '8'], ['six', '10'], ['six', '12'], ['six', '14'], ['six', '16'], ['six', '18'], ['six', '20'], ['six', '22'], ['six', '24'], ['six', '26'], ['six', '28'], ['six', '30'],
+      ['eight', '2'], ['eight', '4'], ['eight', '6'], ['eight', '10'], ['eight', '12'], ['eight', '14'], ['eight', '16'], ['eight', '18'], ['eight', '20'], ['eight', '22'], ['eight', '24'], ['eight', '26'], ['eight', '28'], ['eight', '30'],
+      ['ten', '2'], ['ten', '4'], ['ten', '6'], ['ten', '8'], ['ten', '12'], ['ten', '14'], ['ten', '16'], ['ten', '18'], ['ten', '20'], ['ten', '22'], ['ten', '24'], ['ten', '26'], ['ten', '28'], ['ten', '30'],
+      ['twelve', '2'], ['twelve', '4'], ['twelve', '6'], ['twelve', '8'], ['twelve', '10'], ['twelve', '14'], ['twelve', '16'], ['twelve', '18'], ['twelve', '20'], ['twelve', '22'], ['twelve', '24'], ['twelve', '26'], ['twelve', '28'], ['twelve', '30'],
+      ['fourteen', '2'], ['fourteen', '4'], ['fourteen', '6'], ['fourteen', '8'], ['fourteen', '10'], ['fourteen', '12'], ['fourteen', '16'], ['fourteen', '18'], ['fourteen', '20'], ['fourteen', '22'], ['fourteen', '24'], ['fourteen', '26'], ['fourteen', '28'], ['fourteen', '30'],
+      ['sixteen', '2'], ['sixteen', '4'], ['sixteen', '6'], ['sixteen', '8'], ['sixteen', '10'], ['sixteen', '12'], ['sixteen', '14'], ['sixteen', '18'], ['sixteen', '20'], ['sixteen', '22'], ['sixteen', '24'], ['sixteen', '26'], ['sixteen', '28'], ['sixteen', '30'],
+      ['eighteen', '2'], ['eighteen', '4'], ['eighteen', '6'], ['eighteen', '8'], ['eighteen', '10'], ['eighteen', '12'], ['eighteen', '14'], ['eighteen', '16'], ['eighteen', '20'], ['eighteen', '22'], ['eighteen', '24'], ['eighteen', '26'], ['eighteen', '28'], ['eighteen', '30'],
+      ['twenty', '2'], ['twenty', '4'], ['twenty', '6'], ['twenty', '8'], ['twenty', '10'], ['twenty', '12'], ['twenty', '14'], ['twenty', '16'], ['twenty', '18'], ['twenty', '22'], ['twenty', '24'], ['twenty', '26'], ['twenty', '28'], ['twenty', '30'],
+      // Verbal-Roman odd-odd mixed
+      ['one', 'III'], ['one', 'V'], ['one', 'VII'], ['one', 'IX'], ['one', 'XI'], ['one', 'XIII'], ['one', 'XV'], ['one', 'XVII'], ['one', 'XIX'], ['one', 'XXI'], ['one', 'XXIII'], ['one', 'XXV'], ['one', 'XXVII'], ['one', 'XXIX'],
+      ['three', 'I'], ['three', 'V'], ['three', 'VII'], ['three', 'IX'], ['three', 'XI'], ['three', 'XIII'], ['three', 'XV'], ['three', 'XVII'], ['three', 'XIX'], ['three', 'XXI'], ['three', 'XXIII'], ['three', 'XXV'], ['three', 'XXVII'], ['three', 'XXIX'],
+      ['five', 'I'], ['five', 'III'], ['five', 'VII'], ['five', 'IX'], ['five', 'XI'], ['five', 'XIII'], ['five', 'XV'], ['five', 'XVII'], ['five', 'XIX'], ['five', 'XXI'], ['five', 'XXIII'], ['five', 'XXV'], ['five', 'XXVII'], ['five', 'XXIX'],
+      ['seven', 'I'], ['seven', 'III'], ['seven', 'V'], ['seven', 'IX'], ['seven', 'XI'], ['seven', 'XIII'], ['seven', 'XV'], ['seven', 'XVII'], ['seven', 'XIX'], ['seven', 'XXI'], ['seven', 'XXIII'], ['seven', 'XXV'], ['seven', 'XXVII'], ['seven', 'XXIX'],
+      ['nine', 'I'], ['nine', 'III'], ['nine', 'V'], ['nine', 'VII'], ['nine', 'XI'], ['nine', 'XIII'], ['nine', 'XV'], ['nine', 'XVII'], ['nine', 'XIX'], ['nine', 'XXI'], ['nine', 'XXIII'], ['nine', 'XXV'], ['nine', 'XXVII'], ['nine', 'XXIX'],
+      ['eleven', 'I'], ['eleven', 'III'], ['eleven', 'V'], ['eleven', 'VII'], ['eleven', 'IX'], ['eleven', 'XIII'], ['eleven', 'XV'], ['eleven', 'XVII'], ['eleven', 'XIX'], ['eleven', 'XXI'], ['eleven', 'XXIII'], ['eleven', 'XXV'], ['eleven', 'XXVII'], ['eleven', 'XXIX'],
+      ['thirteen', 'I'], ['thirteen', 'III'], ['thirteen', 'V'], ['thirteen', 'VII'], ['thirteen', 'IX'], ['thirteen', 'XI'], ['thirteen', 'XV'], ['thirteen', 'XVII'], ['thirteen', 'XIX'], ['thirteen', 'XXI'], ['thirteen', 'XXIII'], ['thirteen', 'XXV'], ['thirteen', 'XXVII'], ['thirteen', 'XXIX'],
+      ['fifteen', 'I'], ['fifteen', 'III'], ['fifteen', 'V'], ['fifteen', 'VII'], ['fifteen', 'IX'], ['fifteen', 'XI'], ['fifteen', 'XIII'], ['fifteen', 'XVII'], ['fifteen', 'XIX'], ['fifteen', 'XXI'], ['fifteen', 'XXIII'], ['fifteen', 'XXV'], ['fifteen', 'XXVII'], ['fifteen', 'XXIX'],
+      ['seventeen', 'I'], ['seventeen', 'III'], ['seventeen', 'V'], ['seventeen', 'VII'], ['seventeen', 'IX'], ['seventeen', 'XI'], ['seventeen', 'XIII'], ['seventeen', 'XV'], ['seventeen', 'XIX'], ['seventeen', 'XXI'], ['seventeen', 'XXIII'], ['seventeen', 'XXV'], ['seventeen', 'XXVII'], ['seventeen', 'XXIX'],
+      ['nineteen', 'I'], ['nineteen', 'III'], ['nineteen', 'V'], ['nineteen', 'VII'], ['nineteen', 'IX'], ['nineteen', 'XI'], ['nineteen', 'XIII'], ['nineteen', 'XV'], ['nineteen', 'XVII'], ['nineteen', 'XXI'], ['nineteen', 'XXIII'], ['nineteen', 'XXV'], ['nineteen', 'XXVII'], ['nineteen', 'XXIX'],
+      // Verbal-Roman even-even mixed
+      ['two', 'IV'], ['two', 'VI'], ['two', 'VIII'], ['two', 'X'], ['two', 'XII'], ['two', 'XIV'], ['two', 'XVI'], ['two', 'XVIII'], ['two', 'XX'], ['two', 'XXII'], ['two', 'XXIV'], ['two', 'XXVI'], ['two', 'XXVIII'], ['two', 'XXX'],
+      ['four', 'II'], ['four', 'VI'], ['four', 'VIII'], ['four', 'X'], ['four', 'XII'], ['four', 'XIV'], ['four', 'XVI'], ['four', 'XVIII'], ['four', 'XX'], ['four', 'XXII'], ['four', 'XXIV'], ['four', 'XXVI'], ['four', 'XXVIII'], ['four', 'XXX'],
+      ['six', 'II'], ['six', 'IV'], ['six', 'VIII'], ['six', 'X'], ['six', 'XII'], ['six', 'XIV'], ['six', 'XVI'], ['six', 'XVIII'], ['six', 'XX'], ['six', 'XXII'], ['six', 'XXIV'], ['six', 'XXVI'], ['six', 'XXVIII'], ['six', 'XXX'],
+      ['eight', 'II'], ['eight', 'IV'], ['eight', 'VI'], ['eight', 'X'], ['eight', 'XII'], ['eight', 'XIV'], ['eight', 'XVI'], ['eight', 'XVIII'], ['eight', 'XX'], ['eight', 'XXII'], ['eight', 'XXIV'], ['eight', 'XXVI'], ['eight', 'XXVIII'], ['eight', 'XXX'],
+      ['ten', 'II'], ['ten', 'IV'], ['ten', 'VI'], ['ten', 'VIII'], ['ten', 'XII'], ['ten', 'XIV'], ['ten', 'XVI'], ['ten', 'XVIII'], ['ten', 'XX'], ['ten', 'XXII'], ['ten', 'XXIV'], ['ten', 'XXVI'], ['ten', 'XXVIII'], ['ten', 'XXX'],
+      ['twelve', 'II'], ['twelve', 'IV'], ['twelve', 'VI'], ['twelve', 'VIII'], ['twelve', 'X'], ['twelve', 'XIV'], ['twelve', 'XVI'], ['twelve', 'XVIII'], ['twelve', 'XX'], ['twelve', 'XXII'], ['twelve', 'XXIV'], ['twelve', 'XXVI'], ['twelve', 'XXVIII'], ['twelve', 'XXX'],
+      ['fourteen', 'II'], ['fourteen', 'IV'], ['fourteen', 'VI'], ['fourteen', 'VIII'], ['fourteen', 'X'], ['fourteen', 'XII'], ['fourteen', 'XVI'], ['fourteen', 'XVIII'], ['fourteen', 'XX'], ['fourteen', 'XXII'], ['fourteen', 'XXIV'], ['fourteen', 'XXVI'], ['fourteen', 'XXVIII'], ['fourteen', 'XXX'],
+      ['sixteen', 'II'], ['sixteen', 'IV'], ['sixteen', 'VI'], ['sixteen', 'VIII'], ['sixteen', 'X'], ['sixteen', 'XII'], ['sixteen', 'XIV'], ['sixteen', 'XVIII'], ['sixteen', 'XX'], ['sixteen', 'XXII'], ['sixteen', 'XXIV'], ['sixteen', 'XXVI'], ['sixteen', 'XXVIII'], ['sixteen', 'XXX'],
+      ['eighteen', 'II'], ['eighteen', 'IV'], ['eighteen', 'VI'], ['eighteen', 'VIII'], ['eighteen', 'X'], ['eighteen', 'XII'], ['eighteen', 'XIV'], ['eighteen', 'XVI'], ['eighteen', 'XX'], ['eighteen', 'XXII'], ['eighteen', 'XXIV'], ['eighteen', 'XXVI'], ['eighteen', 'XXVIII'], ['eighteen', 'XXX'],
+      ['twenty', 'II'], ['twenty', 'IV'], ['twenty', 'VI'], ['twenty', 'VIII'], ['twenty', 'X'], ['twenty', 'XII'], ['twenty', 'XIV'], ['twenty', 'XVI'], ['twenty', 'XVIII'], ['twenty', 'XXII'], ['twenty', 'XXIV'], ['twenty', 'XXVI'], ['twenty', 'XXVIII'], ['twenty', 'XXX'],
+      // Verbal-Chinese odd-odd mixed
+      ['one', '三'], ['one', '五'], ['one', '七'], ['one', '九'], ['three', '一'], ['three', '五'], ['three', '七'], ['three', '九'],
+      ['five', '一'], ['five', '三'], ['five', '七'], ['five', '九'], ['seven', '一'], ['seven', '三'], ['seven', '五'], ['seven', '九'],
+      ['nine', '一'], ['nine', '三'], ['nine', '五'], ['nine', '七'],
+      // Verbal-Chinese even-even mixed
+      ['two', '四'], ['two', '六'], ['two', '八'], ['four', '二'], ['four', '六'], ['four', '八'],
+      ['six', '二'], ['six', '四'], ['six', '八'], ['eight', '二'], ['eight', '四'], ['eight', '六'],
+      // Verbal-Korean odd-odd mixed
+      ['one', '삼'], ['one', '오'], ['one', '칠'], ['one', '구'], ['three', '일'], ['three', '오'], ['three', '칠'], ['three', '구'],
+      ['five', '일'], ['five', '삼'], ['five', '칠'], ['five', '구'], ['seven', '일'], ['seven', '삼'], ['seven', '오'], ['seven', '구'],
+      ['nine', '일'], ['nine', '삼'], ['nine', '오'], ['nine', '칠'],
+      // Verbal-Korean even-even mixed
+      ['two', '사'], ['two', '육'], ['two', '팔'], ['four', '이'], ['four', '육'], ['four', '팔'],
+      ['six', '이'], ['six', '사'], ['six', '팔'], ['eight', '이'], ['eight', '사'], ['eight', '육']
     ],
 
     'whole-part': [
@@ -4519,6 +4991,7 @@ const CognitiveTaskGame = () => {
     // Start training session timer
     const startTime = Date.now();
     setSessionStartTime(startTime);
+    setAccumulatedSessionTime(0); // Reset accumulated time for new session
     console.log('⏱️ Training session started at:', new Date(startTime).toISOString());
     console.log('⏱️ Session start timestamp:', startTime);
 
@@ -4917,6 +5390,7 @@ const CognitiveTaskGame = () => {
         console.log('🔄 Returned to menu - used pairs cleared');
         // Reset session start time when returning to menu
         setSessionStartTime(null);
+        setAccumulatedSessionTime(0);
         console.log('⏱️ Session timer reset (returned to menu)');
         setGameState('menu');
         setFeedback(null);
@@ -5724,6 +6198,7 @@ const CognitiveTaskGame = () => {
                 console.log('🔄 Returned to menu - used pairs cleared');
                 // Reset session start time when returning to menu
                 setSessionStartTime(null);
+                setAccumulatedSessionTime(0);
                 console.log('⏱️ Session timer reset (returned to menu)');
                 setGameState('menu');
               }}
