@@ -4531,8 +4531,10 @@ const CognitiveTaskGame = () => {
 
     let totalTasks = numTasks;
     let matchPercent = matchPercentage;
+    let currentLevel = level; // Use current level by default
 
     if (selectedMode === 'adaptive') {
+      currentLevel = savedAdaptiveLevel; // Use saved level for adaptive mode
       setLevel(savedAdaptiveLevel);
       totalTasks = 32;
       setNumTasks(32);
@@ -4551,33 +4553,39 @@ const CognitiveTaskGame = () => {
     setUsedPairs(new Set()); // Clear used pairs for new session
     setResponseTimes([]); // Clear response times for new session
     console.log('🔄 Used pairs cleared - all words/numbers available again');
-    prepareNextTask();
+    prepareNextTask(currentLevel, selectedMode); // Pass current level and mode explicitly
   };
 
-  const prepareNextTask = () => {
+  const prepareNextTask = (overrideLevel = null, overrideMode = null) => {
+    // Use override values if provided (for initial task), otherwise use state values
+    const currentLevel = overrideLevel !== null ? overrideLevel : level;
+    const currentMode = overrideMode !== null ? overrideMode : mode;
+
+    console.log(`🎯 prepareNextTask - Level: ${currentLevel}, Mode: ${currentMode}, Experimental: ${experimentalMode}`);
+
     // Get available relation types based on mode, level, and experimental setting
-    let availableRelations = getRelationTypesForLevel(level, mode, experimentalMode);
+    let availableRelations = getRelationTypesForLevel(currentLevel, currentMode, experimentalMode);
 
     // In manual mode, further filter to only selected relationship types
-    if (mode === 'manual') {
+    if (currentMode === 'manual') {
       availableRelations = availableRelations.filter(key => selectedRelationTypes[key]);
 
       // If no relations are selected, fall back to all available relations for this level
       if (availableRelations.length === 0) {
         console.warn('⚠️ No relationship types selected, using all types for this level');
-        availableRelations = getRelationTypesForLevel(level, mode, experimentalMode);
+        availableRelations = getRelationTypesForLevel(currentLevel, currentMode, experimentalMode);
       }
     }
 
     // Log which relation types are being used (helpful for debugging)
-    if (mode === 'adaptive' && !experimentalMode) {
+    if (currentMode === 'adaptive' && !experimentalMode) {
       const levelDescriptions = {
         1: 'Physical property (same format)',
         2: 'Semantic property (same meaning)',
         3: 'Conceptual (parity-same-format)',
       };
-      const desc = levelDescriptions[level] || 'Conceptual (parity-mixed-format)';
-      console.log(`📚 Level ${level} - ${desc}:`, availableRelations);
+      const desc = levelDescriptions[currentLevel] || 'Conceptual (parity-mixed-format)';
+      console.log(`📚 Level ${currentLevel} - ${desc}:`, availableRelations);
     }
 
     const selectedRelation = availableRelations[Math.floor(Math.random() * availableRelations.length)];
