@@ -5109,10 +5109,23 @@ const CognitiveTaskGame = () => {
                 <p className="text-2xl font-bold text-blue-400">
                   {formatTime(totalTrainingMinutes, 0)}
                 </p>
-                {savedAdaptiveLevel > 1 && totalTrainingMinutes > 0 && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    {(totalTrainingMinutes / savedAdaptiveLevel).toFixed(1)} min/level
-                  </p>
+                {trainingSessions && trainingSessions.length > 0 && totalTrainingMinutes > 0 && (
+                  <>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {(totalTrainingMinutes / trainingSessions.length).toFixed(1)} min/session (32 trials)
+                    </p>
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-700 rounded-full h-1.5">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-cyan-500 h-1.5 rounded-full transition-all"
+                          style={{ width: `${Math.min(100, Math.max(0, 100 - ((totalTrainingMinutes / trainingSessions.length) / 10 * 100)))}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Avg: {(totalTrainingMinutes / trainingSessions.length).toFixed(1)} min/session
+                      </p>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -6126,7 +6139,9 @@ const CognitiveTaskGame = () => {
                               <>
                                 {entry.total_training_minutes} min
                                 <div className="text-xs text-gray-400 mt-1">
-                                  {(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level
+                                  {entry.training_sessions && entry.training_sessions.length > 0
+                                    ? `${(entry.total_training_minutes / entry.training_sessions.length).toFixed(1)} min/session`
+                                    : '-'}
                                 </div>
                               </>
                             ) : (
@@ -6176,7 +6191,10 @@ const CognitiveTaskGame = () => {
                           </div>
                           {entry.total_training_minutes && (
                             <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-blue-400`}>
-                              Total: {entry.total_training_minutes} min ({(entry.total_training_minutes / entry.highest_level).toFixed(1)} min/level)
+                              Total: {entry.total_training_minutes} min
+                              {entry.training_sessions && entry.training_sessions.length > 0 && (
+                                <> ({(entry.total_training_minutes / entry.training_sessions.length).toFixed(1)} min/session)</>
+                              )}
                             </div>
                           )}
                           {(() => {
