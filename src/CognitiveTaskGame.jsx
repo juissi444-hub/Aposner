@@ -5391,6 +5391,9 @@ const CognitiveTaskGame = () => {
                 <div className="flex-1">
                   <p className="text-lg font-medium">Daily Training Goal: {trainingGoalMinutes} minutes</p>
                   <p className="text-sm text-gray-400">Set your daily training time target (0-500 minutes)</p>
+                  <p className="text-xs text-blue-300 mt-2 italic">
+                    For reference: In the study, Aposner was trained for 12 consecutive days for 25 mins per day and it was a great success.
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
