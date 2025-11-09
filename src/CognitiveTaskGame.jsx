@@ -4572,13 +4572,7 @@ const CognitiveTaskGame = () => {
 
     // Log which relation types are being used (helpful for debugging)
     if (currentMode === 'adaptive' && !experimentalMode) {
-      const levelDescriptions = {
-        1: 'Physical property (same format)',
-        2: 'Semantic property (same meaning)',
-        3: 'Conceptual (parity-same-format)',
-      };
-      const desc = levelDescriptions[currentLevel] || 'Conceptual (parity-mixed-format)';
-      console.log(`📚 Level ${currentLevel} - ${desc}:`, availableRelations);
+      console.log(`📚 Level ${currentLevel} - All 4 relation types available:`, availableRelations);
     }
 
     const selectedRelation = availableRelations[Math.floor(Math.random() * availableRelations.length)];
