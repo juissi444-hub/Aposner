@@ -165,6 +165,9 @@ const CognitiveTaskGame = () => {
   });
   const [showVerbalSettings, setShowVerbalSettings] = useState(false);
 
+  // UI language selection
+  const [uiLanguage, setUiLanguage] = useState('english');
+
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
@@ -672,6 +675,13 @@ const CognitiveTaskGame = () => {
 
     // Save to server (optional - we could add a verbal_languages column to the database)
     // For now, we're only saving to localStorage
+  };
+
+  // Change UI language
+  const changeUILanguage = async (language) => {
+    setUiLanguage(language);
+    localStorage.setItem('uiLanguage', language);
+    console.log('🌐 UI language changed to:', language);
   };
 
   // Stop all currently playing sounds
@@ -1582,6 +1592,13 @@ const CognitiveTaskGame = () => {
         console.warn('Failed to parse verbal languages settings:', err);
       }
     }
+
+    // Load UI language setting
+    const savedUILang = localStorage.getItem('uiLanguage');
+    if (savedUILang) {
+      setUiLanguage(savedUILang);
+      console.log('📥 Loaded UI language setting:', savedUILang);
+    }
   }, []);
 
   // Play success sound on perfect score
@@ -1923,14 +1940,11 @@ const CognitiveTaskGame = () => {
     return Object.keys(relationTypes);
   };
 
-  // Generate verbal number pairs dynamically for all enabled languages
-  const generateVerbalPairs = (languagesEnabled) => {
+  // Generate SAME FORMAT verbal pairs (verbal-verbal within same language)
+  const generateVerbalSameFormatPairs = (languagesEnabled) => {
     const pairs = [];
-
-    // Get list of enabled languages
     const enabledLangs = Object.keys(languagesEnabled).filter(lang => languagesEnabled[lang]);
 
-    // Generate pairs for each enabled language
     enabledLangs.forEach(language => {
       const getNum = (n) => getVerbalNumber(n, language);
 
@@ -1982,6 +1996,161 @@ const CognitiveTaskGame = () => {
           }
         }
       });
+    });
+
+    return pairs;
+  };
+
+  // Generate SAME MEANING pairs (verbal-Arabic, verbal-Roman, verbal-Chinese, verbal-Korean)
+  const generateVerbalMeaningPairs = (languagesEnabled, chineseEnabled, koreanEnabled) => {
+    const pairs = [];
+    const enabledLangs = Object.keys(languagesEnabled).filter(lang => languagesEnabled[lang]);
+
+    // Helper to convert number to Roman numerals (1-30)
+    const toRoman = (num) => {
+      const romanMap = {
+        1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X',
+        11: 'XI', 12: 'XII', 13: 'XIII', 14: 'XIV', 15: 'XV', 16: 'XVI', 17: 'XVII', 18: 'XVIII', 19: 'XIX', 20: 'XX',
+        21: 'XXI', 22: 'XXII', 23: 'XXIII', 24: 'XXIV', 25: 'XXV', 26: 'XXVI', 27: 'XXVII', 28: 'XXVIII', 29: 'XXIX', 30: 'XXX'
+      };
+      return romanMap[num] || num.toString();
+    };
+
+    // Helper to convert to Chinese numerals (1-9)
+    const toChinese = (num) => {
+      const chineseMap = { 1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '七', 8: '八', 9: '九' };
+      return chineseMap[num] || num.toString();
+    };
+
+    // Helper to convert to Korean numerals (1-9)
+    const toKorean = (num) => {
+      const koreanMap = { 1: '일', 2: '이', 3: '삼', 4: '사', 5: '오', 6: '육', 7: '칠', 8: '팔', 9: '구' };
+      return koreanMap[num] || num.toString();
+    };
+
+    enabledLangs.forEach(language => {
+      // Verbal-Arabic (1-100)
+      for (let i = 1; i <= 100; i++) {
+        pairs.push([getVerbalNumber(i, language), i.toString()]);
+        pairs.push([i.toString(), getVerbalNumber(i, language)]);
+      }
+
+      // Verbal-Roman (1-30)
+      for (let i = 1; i <= 30; i++) {
+        pairs.push([getVerbalNumber(i, language), toRoman(i)]);
+        pairs.push([toRoman(i), getVerbalNumber(i, language)]);
+      }
+
+      // Verbal-Chinese (1-9) - only if Chinese numerals are enabled
+      if (chineseEnabled) {
+        for (let i = 1; i <= 9; i++) {
+          pairs.push([getVerbalNumber(i, language), toChinese(i)]);
+          pairs.push([toChinese(i), getVerbalNumber(i, language)]);
+        }
+      }
+
+      // Verbal-Korean (1-9) - only if Korean numerals are enabled
+      if (koreanEnabled) {
+        for (let i = 1; i <= 9; i++) {
+          pairs.push([getVerbalNumber(i, language), toKorean(i)]);
+          pairs.push([toKorean(i), getVerbalNumber(i, language)]);
+        }
+      }
+    });
+
+    return pairs;
+  };
+
+  // Generate ODD/EVEN SAME FORMAT pairs (verbal odd-odd, even-even within same language)
+  const generateVerbalParitySameFormatPairs = (languagesEnabled) => {
+    const pairs = [];
+    const enabledLangs = Object.keys(languagesEnabled).filter(lang => languagesEnabled[lang]);
+
+    enabledLangs.forEach(language => {
+      const getNum = (n) => getVerbalNumber(n, language);
+
+      // Odd-odd pairs (1-99)
+      const odds = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39,
+                    41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79,
+                    81, 83, 85, 87, 89, 91, 93, 95, 97, 99];
+      for (let i = 0; i < odds.length - 1; i++) {
+        for (let j = i + 1; j < odds.length && j <= i + 5; j++) {
+          pairs.push([getNum(odds[i]), getNum(odds[j])]);
+        }
+      }
+
+      // Even-even pairs (2-100)
+      const evens = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
+                     42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80,
+                     82, 84, 86, 88, 90, 92, 94, 96, 98, 100];
+      for (let i = 0; i < evens.length - 1; i++) {
+        for (let j = i + 1; j < evens.length && j <= i + 5; j++) {
+          pairs.push([getNum(evens[i]), getNum(evens[j])]);
+        }
+      }
+    });
+
+    return pairs;
+  };
+
+  // Generate ODD/EVEN MIXED FORMAT pairs (verbal-Arabic, verbal-Roman odd/even across formats)
+  const generateVerbalParityMixedFormatPairs = (languagesEnabled) => {
+    const pairs = [];
+    const enabledLangs = Object.keys(languagesEnabled).filter(lang => languagesEnabled[lang]);
+
+    const toRoman = (num) => {
+      const romanMap = {
+        1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X',
+        11: 'XI', 12: 'XII', 13: 'XIII', 14: 'XIV', 15: 'XV', 16: 'XVI', 17: 'XVII', 18: 'XVIII', 19: 'XIX', 20: 'XX',
+        21: 'XXI', 22: 'XXII', 23: 'XXIII', 24: 'XXIV', 25: 'XXV', 26: 'XXVI', 27: 'XXVII', 28: 'XXVIII', 29: 'XXIX', 30: 'XXX'
+      };
+      return romanMap[num] || num.toString();
+    };
+
+    enabledLangs.forEach(language => {
+      // Verbal-Arabic odd-odd pairs
+      const odds = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
+      for (let i = 0; i < odds.length; i++) {
+        for (let j = 0; j < odds.length; j++) {
+          if (i !== j) {
+            pairs.push([getVerbalNumber(odds[i], language), odds[j].toString()]);
+            pairs.push([odds[i].toString(), getVerbalNumber(odds[j], language)]);
+          }
+        }
+      }
+
+      // Verbal-Arabic even-even pairs
+      const evens = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40];
+      for (let i = 0; i < evens.length; i++) {
+        for (let j = 0; j < evens.length; j++) {
+          if (i !== j) {
+            pairs.push([getVerbalNumber(evens[i], language), evens[j].toString()]);
+            pairs.push([evens[i].toString(), getVerbalNumber(evens[j], language)]);
+          }
+        }
+      }
+
+      // Verbal-Roman odd-odd pairs (1-29)
+      const romanOdds = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29];
+      for (let i = 0; i < romanOdds.length; i++) {
+        for (let j = 0; j < romanOdds.length; j++) {
+          if (i !== j) {
+            pairs.push([getVerbalNumber(romanOdds[i], language), toRoman(romanOdds[j])]);
+            pairs.push([toRoman(romanOdds[i]), getVerbalNumber(romanOdds[j], language)]);
+          }
+        }
+      }
+
+      // Verbal-Roman even-even pairs (2-30)
+      const romanEvens = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
+      for (let i = 0; i < romanEvens.length; i++) {
+        for (let j = 0; j < romanEvens.length; j++) {
+          if (i !== j) {
+            pairs.push([getVerbalNumber(romanEvens[i], language), toRoman(romanEvens[j])]);
+            pairs.push([toRoman(romanEvens[i]), getVerbalNumber(romanEvens[j], language)]);
+          }
+        }
+      }
     });
 
     return pairs;
@@ -2056,7 +2225,7 @@ const CognitiveTaskGame = () => {
       ['XX', 'XXIII'], ['XXI', 'XXIV'], ['XXII', 'XXV'], ['XXIII', 'XXVI'], ['XXIV', 'XXVII'], ['XXV', 'XXVIII'], ['XXVI', 'XXIX'], ['XXVII', 'XXX'],
 
       // Verbal-Verbal pairs (dynamically generated for all enabled languages)
-      ...generateVerbalPairs(verbalLanguagesEnabled)
+      ...generateVerbalSameFormatPairs(verbalLanguagesEnabled)
     ],
 
     'meaning': [
@@ -2194,7 +2363,10 @@ const CognitiveTaskGame = () => {
       ['thirty', 'thirty'], ['thirty-one', 'thirty-one'], ['thirty-two', 'thirty-two'], ['thirty-three', 'thirty-three'], ['thirty-four', 'thirty-four'], ['thirty-five', 'thirty-five'],
       ['forty', 'forty'], ['forty-one', 'forty-one'], ['forty-two', 'forty-two'], ['fifty', 'fifty'], ['sixty', 'sixty'], ['seventy', 'seventy'], ['eighty', 'eighty'], ['ninety', 'ninety'],
       ['one hundred', 'one hundred'], ['two hundred', 'two hundred'], ['three hundred', 'three hundred'], ['four hundred', 'four hundred'], ['five hundred', 'five hundred'],
-      ['six hundred', 'six hundred'], ['seven hundred', 'seven hundred'], ['eight hundred', 'eight hundred'], ['nine hundred', 'nine hundred'], ['one thousand', 'one thousand']
+      ['six hundred', 'six hundred'], ['seven hundred', 'seven hundred'], ['eight hundred', 'eight hundred'], ['nine hundred', 'nine hundred'], ['one thousand', 'one thousand'],
+
+      // Verbal-to-other format meaning pairs (all enabled languages)
+      ...generateVerbalMeaningPairs(verbalLanguagesEnabled, chineseNumeralsEnabled, koreanNumeralsEnabled)
     ],
 
     // Level 3 task: Parity judgment - same format
@@ -2377,7 +2549,10 @@ const CognitiveTaskGame = () => {
       ['eighty-four', 'eighty-six'], ['eighty-four', 'eighty-eight'], ['eighty-six', 'eighty-eight'],
       ['ninety', 'ninety-two'], ['ninety', 'ninety-four'], ['ninety', 'ninety-six'], ['ninety', 'ninety-eight'],
       ['ninety-two', 'ninety-four'], ['ninety-two', 'ninety-six'], ['ninety-two', 'ninety-eight'],
-      ['ninety-four', 'ninety-six'], ['ninety-four', 'ninety-eight'], ['ninety-six', 'ninety-eight']
+      ['ninety-four', 'ninety-six'], ['ninety-four', 'ninety-eight'], ['ninety-six', 'ninety-eight'],
+
+      // Verbal odd/even same format pairs (all enabled languages)
+      ...generateVerbalParitySameFormatPairs(verbalLanguagesEnabled)
     ],
 
     // Level 4 task: Parity judgment - mixed format
@@ -2586,7 +2761,10 @@ const CognitiveTaskGame = () => {
       ['nine', '일'], ['nine', '삼'], ['nine', '오'], ['nine', '칠'],
       // Verbal-Korean even-even mixed
       ['two', '사'], ['two', '육'], ['two', '팔'], ['four', '이'], ['four', '육'], ['four', '팔'],
-      ['six', '이'], ['six', '사'], ['six', '팔'], ['eight', '이'], ['eight', '사'], ['eight', '육']
+      ['six', '이'], ['six', '사'], ['six', '팔'], ['eight', '이'], ['eight', '사'], ['eight', '육'],
+
+      // Verbal odd/even mixed format pairs (all enabled languages)
+      ...generateVerbalParityMixedFormatPairs(verbalLanguagesEnabled)
     ],
 
     'whole-part': [
@@ -5964,7 +6142,7 @@ const CognitiveTaskGame = () => {
               className="flex justify-between items-center cursor-pointer"
               onClick={() => setShowVerbalSettings(!showVerbalSettings)}
             >
-              <h2 className="text-2xl font-semibold text-yellow-400">🗣️ Verbal Number Languages</h2>
+              <h2 className="text-2xl font-semibold text-yellow-400">🔢 Enable Numerals in Different Languages</h2>
               <button className="text-2xl text-yellow-400 hover:text-yellow-300 transition-colors">
                 {showVerbalSettings ? '▼' : '▶'}
               </button>
@@ -5973,7 +6151,7 @@ const CognitiveTaskGame = () => {
             {showVerbalSettings && (
               <div className="space-y-4 pt-4">
                 <p className="text-sm text-gray-300">
-                  Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in training. All enabled languages can be mixed together.
+                  Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in all training modes: Same Format, Same Meaning, and Odd/Even tasks. All enabled languages can be mixed together.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
@@ -6003,6 +6181,45 @@ const CognitiveTaskGame = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* UI Language Selection */}
+          <div className="bg-gradient-to-r from-purple-900 to-pink-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold text-yellow-400 mb-4">🌐 Interface Language</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              Select the language for the user interface. This changes the language of buttons, labels, and instructions throughout the app.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { lang: 'english', flag: '🇬🇧', name: 'English' },
+                { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
+                { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
+                { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
+                { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
+                { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
+                { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
+                { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+              ].map(({ lang, flag, name }) => (
+                <button
+                  key={lang}
+                  onClick={() => changeUILanguage(lang)}
+                  className={`px-4 py-3 rounded-lg font-bold transition-all ${
+                    uiLanguage === lang
+                      ? 'bg-pink-600 hover:bg-pink-700 text-white ring-2 ring-pink-400'
+                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{flag}</div>
+                  <div className="text-sm">{name}</div>
+                  {uiLanguage === lang && <div className="text-xs mt-1">✓ Active</div>}
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 p-3 bg-black/30 rounded-lg">
+              <p className="text-xs text-gray-400">
+                <strong>Note:</strong> Currently this setting is saved but full UI translation is not yet implemented. This feature will be expanded in future updates.
+              </p>
+            </div>
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
