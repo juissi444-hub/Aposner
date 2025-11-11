@@ -167,6 +167,7 @@ const CognitiveTaskGame = () => {
 
   // UI language selection
   const [uiLanguage, setUiLanguage] = useState('english');
+  const [showLanguageSettings, setShowLanguageSettings] = useState(false);
 
   // Translation dictionary for all UI text
   const translations = {
@@ -254,6 +255,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'Back to Menu',
       yes: 'Yes',
       no: 'No',
+      continue: 'Continue',
+      match: 'Match',
+      noMatch: 'No Match',
+      answerNow: 'Answer NOW!',
+      pressSpace: 'Press Space',
+      pressEsc: 'Press Esc',
+      pressF: 'Press F',
+      pressJ: 'Press J',
 
       // Game feedback
       correct: 'Correct',
@@ -385,6 +394,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'Volver al menú',
       yes: 'Sí',
       no: 'No',
+      continue: 'Continuar',
+      match: 'Coincide',
+      noMatch: 'No coincide',
+      answerNow: '¡Responde AHORA!',
+      pressSpace: 'Presiona Espacio',
+      pressEsc: 'Presiona Esc',
+      pressF: 'Presiona F',
+      pressJ: 'Presiona J',
 
       // Game feedback
       correct: 'Correcto',
@@ -516,6 +533,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'Tillbaka till menyn',
       yes: 'Ja',
       no: 'Nej',
+      continue: 'Fortsätt',
+      match: 'Matchning',
+      noMatch: 'Ingen matchning',
+      answerNow: 'Svara NU!',
+      pressSpace: 'Tryck Mellanslag',
+      pressEsc: 'Tryck Esc',
+      pressF: 'Tryck F',
+      pressJ: 'Tryck J',
 
       // Game feedback
       correct: 'Rätt',
@@ -647,6 +672,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'Takaisin valikkoon',
       yes: 'Kyllä',
       no: 'Ei',
+      continue: 'Jatka',
+      match: 'Osuma',
+      noMatch: 'Ei osumaa',
+      answerNow: 'Vastaa NYT!',
+      pressSpace: 'Paina Välilyönti',
+      pressEsc: 'Paina Esc',
+      pressF: 'Paina F',
+      pressJ: 'Paina J',
 
       // Game feedback
       correct: 'Oikein',
@@ -778,6 +811,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'Вернуться в меню',
       yes: 'Да',
       no: 'Нет',
+      continue: 'Продолжить',
+      match: 'Совпадение',
+      noMatch: 'Не совпадает',
+      answerNow: 'Ответьте СЕЙЧАС!',
+      pressSpace: 'Нажмите Пробел',
+      pressEsc: 'Нажмите Esc',
+      pressF: 'Нажмите F',
+      pressJ: 'Нажмите J',
 
       // Game feedback
       correct: 'Правильно',
@@ -909,6 +950,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'العودة إلى القائمة',
       yes: 'نعم',
       no: 'لا',
+      continue: 'متابعة',
+      match: 'تطابق',
+      noMatch: 'لا يتطابق',
+      answerNow: 'أجب الآن!',
+      pressSpace: 'اضغط مسافة',
+      pressEsc: 'اضغط Esc',
+      pressF: 'اضغط F',
+      pressJ: 'اضغط J',
 
       // Game feedback
       correct: 'صحيح',
@@ -1040,6 +1089,14 @@ const CognitiveTaskGame = () => {
       backToMenu: 'メニューに戻る',
       yes: 'はい',
       no: 'いいえ',
+      continue: '続ける',
+      match: '一致',
+      noMatch: '不一致',
+      answerNow: '今すぐ答えて！',
+      pressSpace: 'スペースを押す',
+      pressEsc: 'Escを押す',
+      pressF: 'Fを押す',
+      pressJ: 'Jを押す',
 
       // Game feedback
       correct: '正解',
@@ -1171,6 +1228,14 @@ const CognitiveTaskGame = () => {
       backToMenu: '返回菜单',
       yes: '是',
       no: '否',
+      continue: '继续',
+      match: '匹配',
+      noMatch: '不匹配',
+      answerNow: '立即回答！',
+      pressSpace: '按空格',
+      pressEsc: '按Esc',
+      pressF: '按F',
+      pressJ: '按J',
 
       // Game feedback
       correct: '正确',
@@ -6955,36 +7020,45 @@ const CognitiveTaskGame = () => {
 
           {/* UI Language Selection - Prioritized Setting */}
           <div className="bg-gradient-to-r from-purple-900 to-pink-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold text-yellow-400 mb-4">🌐 {t('interfaceLanguage')}</h2>
-            <p className="text-sm text-gray-300 mb-4">
-              {t('interfaceLanguageDesc')}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { lang: 'english', flag: '🇬🇧', name: 'English' },
-                { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
-                { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
-                { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
-                { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
-                { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
-                { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
-                { lang: 'chinese', flag: '🇨🇳', name: '中文' }
-              ].map(({ lang, flag, name }) => (
-                <button
-                  key={lang}
-                  onClick={() => changeUILanguage(lang)}
-                  className={`px-4 py-3 rounded-lg font-bold transition-all ${
-                    uiLanguage === lang
-                      ? 'bg-pink-600 hover:bg-pink-700 text-white ring-2 ring-pink-400'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{flag}</div>
-                  <div className="text-sm">{name}</div>
-                  {uiLanguage === lang && <div className="text-xs mt-1">✓ {t('active')}</div>}
-                </button>
-              ))}
+            <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowLanguageSettings(!showLanguageSettings)}>
+              <h2 className="text-2xl font-semibold text-yellow-400">🌐 {t('interfaceLanguage')}</h2>
+              <button className="text-yellow-400 text-2xl font-bold hover:text-yellow-300 transition-colors">
+                {showLanguageSettings ? '▼' : '▶'}
+              </button>
             </div>
+            {showLanguageSettings && (
+              <div className="space-y-4 pt-4">
+                <p className="text-sm text-gray-300">
+                  {t('interfaceLanguageDesc')}
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { lang: 'english', flag: '🇬🇧', name: 'English' },
+                    { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
+                    { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
+                    { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
+                    { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
+                    { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
+                    { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
+                    { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+                  ].map(({ lang, flag, name }) => (
+                    <button
+                      key={lang}
+                      onClick={() => changeUILanguage(lang)}
+                      className={`px-4 py-3 rounded-lg font-bold transition-all ${
+                        uiLanguage === lang
+                          ? 'bg-pink-600 hover:bg-pink-700 text-white ring-2 ring-pink-400'
+                          : 'bg-gray-700 hover:bg-gray-600 text-white'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{flag}</div>
+                      <div className="text-sm">{name}</div>
+                      {uiLanguage === lang && <div className="text-xs mt-1">✓ {t('active')}</div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {savedAdaptiveLevel > 1 && (
@@ -7233,7 +7307,7 @@ const CognitiveTaskGame = () => {
               className="flex justify-between items-center cursor-pointer"
               onClick={() => setShowVerbalSettings(!showVerbalSettings)}
             >
-              <h2 className="text-2xl font-semibold text-yellow-400">🔢 Enable Numerals in Different Languages</h2>
+              <h2 className="text-2xl font-semibold text-yellow-400">🔢 {t('verbalNumbers')}</h2>
               <button className="text-2xl text-yellow-400 hover:text-yellow-300 transition-colors">
                 {showVerbalSettings ? '▼' : '▶'}
               </button>
@@ -7242,7 +7316,7 @@ const CognitiveTaskGame = () => {
             {showVerbalSettings && (
               <div className="space-y-4 pt-4">
                 <p className="text-sm text-gray-300">
-                  Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in all training modes: Same Format, Same Meaning, and Odd/Even tasks. All enabled languages can be mixed together.
+                  {t('verbalNumbersDesc')}
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
@@ -7266,7 +7340,7 @@ const CognitiveTaskGame = () => {
                     >
                       <div className="text-2xl mb-1">{flag}</div>
                       <div className="text-sm">{name}</div>
-                      {verbalLanguagesEnabled[lang] && <div className="text-xs mt-1">✓ Enabled</div>}
+                      {verbalLanguagesEnabled[lang] && <div className="text-xs mt-1">✓ {t('enabled')}</div>}
                     </button>
                   ))}
                 </div>
@@ -7489,21 +7563,21 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Select Mode</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t('selectMode')}</h2>
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => startGame('manual')}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-4 rounded-lg text-lg"
               >
-                Manual Mode
+                {t('manualMode')}
               </button>
               <button
                 onClick={() => startGame('adaptive')}
                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-4 rounded-lg text-lg"
               >
-                Adaptive Mode{experimentalMode && <span className="text-orange-300"> (Experimental)</span>}
+                {t('adaptiveMode')}{experimentalMode && <span className="text-orange-300"> ({t('experimentalMode')})</span>}
                 {savedAdaptiveLevel > 1 && (
-                  <div className="text-sm mt-1 text-yellow-300">Continue from Level {savedAdaptiveLevel}</div>
+                  <div className="text-sm mt-1 text-yellow-300">{t('level')} {savedAdaptiveLevel}</div>
                 )}
               </button>
             </div>
@@ -7519,10 +7593,10 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Manual Mode Settings</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t('manualModeSettings')}</h2>
             <div>
               <label className="block text-sm font-medium mb-2">
-                Level: {level} ({getTimeForLevel(level)}ms per task)
+                {t('level')}: {level} ({getTimeForLevel(level)}ms per task)
               </label>
               <input
                 type="range"
@@ -7536,7 +7610,7 @@ const CognitiveTaskGame = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Number of Tasks: {numTasks}
+                {t('numberOfTasks')}: {numTasks}
               </label>
               <input
                 type="range"
@@ -7550,7 +7624,7 @@ const CognitiveTaskGame = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Match Percentage: {matchPercentage}% (matches) / {100 - matchPercentage}% (non-matches)
+                {t('matchPercentage')}: {matchPercentage}% / {100 - matchPercentage}%
               </label>
               <input
                 type="range"
@@ -7562,7 +7636,7 @@ const CognitiveTaskGame = () => {
                 className="w-full"
               />
               <p className="text-xs text-gray-400 mt-1">
-                Controls the proportion of matching vs non-matching tasks. Standard adaptive mode always uses 50/50.
+                {t('matchPercentageDesc')}
               </p>
             </div>
 
@@ -7693,15 +7767,15 @@ const CognitiveTaskGame = () => {
               }}
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-lg order-2 sm:order-1"
             >
-              <span className="block sm:inline">Back to Menu</span>
-              <span className="hidden sm:inline text-sm text-gray-300 ml-2">(Press Esc)</span>
+              <span className="block sm:inline">{t('backToMenu')}</span>
+              <span className="hidden sm:inline text-sm text-gray-300 ml-2">({t('pressEsc')})</span>
             </button>
             <button
               onClick={handleSpacePress}
               className="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg text-2xl active:bg-green-800 touch-manipulation order-1 sm:order-2"
             >
-              <span className="block sm:inline">Continue</span>
-              <span className="hidden sm:inline text-lg text-green-200 ml-2">(Press Space)</span>
+              <span className="block sm:inline">{t('continue')}</span>
+              <span className="hidden sm:inline text-lg text-green-200 ml-2">({t('pressSpace')})</span>
             </button>
           </div>
         </div>
@@ -7710,8 +7784,8 @@ const CognitiveTaskGame = () => {
       {gameState === 'showWords' && !feedback && (
         <div className="text-center space-y-8">
           <div className="text-sm text-gray-400">
-            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">Level {level}{experimentalMode && <span className="text-orange-300"> (Experimental)</span>}</div>}
-            Task {currentTask + 1} / {numTasks}
+            {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">{t('level')} {level}{experimentalMode && <span className="text-orange-300"> ({t('experimentalMode')})</span>}</div>}
+            {t('task')} {currentTask + 1} / {numTasks}
           </div>
           <div className="text-6xl font-bold space-x-8" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
             <span className={getNumberColor(currentWords[0])} style={{fontFamily: 'inherit'}}>{currentWords[0]}</span>
@@ -7719,23 +7793,23 @@ const CognitiveTaskGame = () => {
             <span className={getNumberColor(currentWords[1])} style={{fontFamily: 'inherit'}}>{currentWords[1]}</span>
           </div>
           <div className="text-xl text-gray-400 mt-8">
-            <div className="font-bold text-white mb-2">Answer NOW!</div>
-            <div className="hidden md:block">J = Match | F = No Match</div>
+            <div className="font-bold text-white mb-2">{t('answerNow')}</div>
+            <div className="hidden md:block">J = {t('match')} | F = {t('noMatch')}</div>
           </div>
           <div className="flex gap-4 justify-center mt-6 px-4 w-full max-w-md mx-auto">
             <button
               onClick={() => handleResponse(false)}
               className="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-8 px-6 rounded-lg text-2xl touch-manipulation"
             >
-              No Match
-              <div className="text-sm mt-1 opacity-75">Press F</div>
+              {t('noMatch')}
+              <div className="text-sm mt-1 opacity-75">{t('pressF')}</div>
             </button>
             <button
               onClick={() => handleResponse(true)}
               className="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-8 px-6 rounded-lg text-2xl touch-manipulation"
             >
-              Match
-              <div className="text-sm mt-1 opacity-75">Press J</div>
+              {t('match')}
+              <div className="text-sm mt-1 opacity-75">{t('pressJ')}</div>
             </button>
           </div>
           <button
