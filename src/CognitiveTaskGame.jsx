@@ -6371,7 +6371,7 @@ const CognitiveTaskGame = () => {
                 {score} / {numTasks} correct
               </div>
               <div className="text-xl text-gray-300">
-                You need 90% (27/30) to advance to the next level
+                You need 90% (29/{numTasks}) to advance to the next level
               </div>
               <button
                 onClick={() => {
