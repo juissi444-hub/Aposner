@@ -152,8 +152,18 @@ const CognitiveTaskGame = () => {
   const [showChineseReference, setShowChineseReference] = useState(false);
   const [showKoreanReference, setShowKoreanReference] = useState(false);
 
-  // Verbal number language selection
-  const [verbalLanguage, setVerbalLanguage] = useState('english');
+  // Verbal number language selection - multiple languages can be enabled
+  const [verbalLanguagesEnabled, setVerbalLanguagesEnabled] = useState({
+    english: true,
+    spanish: false,
+    swedish: false,
+    finnish: false,
+    russian: false,
+    arabic: false,
+    japanese: false,
+    chinese: false
+  });
+  const [showVerbalSettings, setShowVerbalSettings] = useState(false);
 
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
@@ -650,13 +660,17 @@ const CognitiveTaskGame = () => {
     }
   };
 
-  // Change verbal number language
-  const changeVerbalLanguage = async (newLanguage) => {
-    setVerbalLanguage(newLanguage);
-    localStorage.setItem('verbalLanguage', newLanguage);
-    console.log('🗣️ Verbal language changed to:', newLanguage);
+  // Toggle verbal number language on/off
+  const toggleVerbalLanguage = async (language) => {
+    const newState = {
+      ...verbalLanguagesEnabled,
+      [language]: !verbalLanguagesEnabled[language]
+    };
+    setVerbalLanguagesEnabled(newState);
+    localStorage.setItem('verbalLanguagesEnabled', JSON.stringify(newState));
+    console.log('🗣️ Verbal language toggled:', language, '=', !verbalLanguagesEnabled[language]);
 
-    // Save to server (optional - we could add a verbal_language column to the database)
+    // Save to server (optional - we could add a verbal_languages column to the database)
     // For now, we're only saving to localStorage
   };
 
@@ -1557,11 +1571,16 @@ const CognitiveTaskGame = () => {
     setKoreanNumeralsEnabled(koreanEnabled);
     console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled);
 
-    // Load verbal language setting
-    const savedVerbalLang = localStorage.getItem('verbalLanguage');
-    if (savedVerbalLang && numberToWords[savedVerbalLang]) {
-      setVerbalLanguage(savedVerbalLang);
-      console.log('📥 Loaded verbal language setting:', savedVerbalLang);
+    // Load verbal languages settings
+    const savedVerbalLangs = localStorage.getItem('verbalLanguagesEnabled');
+    if (savedVerbalLangs) {
+      try {
+        const parsed = JSON.parse(savedVerbalLangs);
+        setVerbalLanguagesEnabled(parsed);
+        console.log('📥 Loaded verbal languages settings:', parsed);
+      } catch (err) {
+        console.warn('Failed to parse verbal languages settings:', err);
+      }
     }
   }, []);
 
@@ -1852,8 +1871,8 @@ const CognitiveTaskGame = () => {
     }
   };
 
-  // Helper function to get verbal number in selected language
-  const getVerbalNumber = (num, lang = verbalLanguage) => {
+  // Helper function to get verbal number in specified language
+  const getVerbalNumber = (num, lang) => {
     if (numberToWords[lang]) {
       return numberToWords[lang](num);
     }
@@ -1904,58 +1923,65 @@ const CognitiveTaskGame = () => {
     return Object.keys(relationTypes);
   };
 
-  // Generate verbal number pairs dynamically based on selected language
-  const generateVerbalPairs = (language) => {
+  // Generate verbal number pairs dynamically for all enabled languages
+  const generateVerbalPairs = (languagesEnabled) => {
     const pairs = [];
-    const getNum = (n) => getVerbalNumber(n, language);
 
-    // 1-9 consecutive and non-consecutive
-    for (let i = 1; i <= 8; i++) pairs.push([getNum(i), getNum(i + 1)]);
-    for (let i = 1; i <= 7; i++) pairs.push([getNum(i), getNum(i + 2)]);
-    for (let i = 1; i <= 6; i++) pairs.push([getNum(i), getNum(i + 3)]);
-    for (let i = 1; i <= 5; i++) pairs.push([getNum(i), getNum(i + 4)]);
-    for (let i = 1; i <= 4; i++) pairs.push([getNum(i), getNum(i + 5)]);
-    for (let i = 1; i <= 3; i++) pairs.push([getNum(i), getNum(i + 6)]);
-    for (let i = 1; i <= 2; i++) pairs.push([getNum(i), getNum(i + 7)]);
+    // Get list of enabled languages
+    const enabledLangs = Object.keys(languagesEnabled).filter(lang => languagesEnabled[lang]);
 
-    // 10-19
-    for (let i = 10; i <= 18; i++) pairs.push([getNum(i), getNum(i + 1)]);
-    for (let i = 10; i <= 16; i++) pairs.push([getNum(i), getNum(i + 2)]);
+    // Generate pairs for each enabled language
+    enabledLangs.forEach(language => {
+      const getNum = (n) => getVerbalNumber(n, language);
 
-    // 20-99 (key ranges)
-    const tens = [20, 30, 40, 50, 60, 70, 80, 90];
-    tens.forEach(base => {
-      pairs.push([getNum(base), getNum(base + 1)]);
-      for (let i = 1; i <= 8; i++) pairs.push([getNum(base + i), getNum(base + i + 1)]);
-      pairs.push([getNum(base), getNum(base + 10)]);
-      pairs.push([getNum(base), getNum(base + 5)]);
-    });
+      // 1-9 consecutive and non-consecutive
+      for (let i = 1; i <= 8; i++) pairs.push([getNum(i), getNum(i + 1)]);
+      for (let i = 1; i <= 7; i++) pairs.push([getNum(i), getNum(i + 2)]);
+      for (let i = 1; i <= 6; i++) pairs.push([getNum(i), getNum(i + 3)]);
+      for (let i = 1; i <= 5; i++) pairs.push([getNum(i), getNum(i + 4)]);
+      for (let i = 1; i <= 4; i++) pairs.push([getNum(i), getNum(i + 5)]);
+      for (let i = 1; i <= 3; i++) pairs.push([getNum(i), getNum(i + 6)]);
+      for (let i = 1; i <= 2; i++) pairs.push([getNum(i), getNum(i + 7)]);
 
-    // 100-1000 key numbers
-    for (let h = 100; h <= 900; h += 100) {
-      pairs.push([getNum(h), getNum(h + 1)]);
-      pairs.push([getNum(h), getNum(h + 50)]);
-      if (h < 900) pairs.push([getNum(h), getNum(h + 100)]);
-    }
-    pairs.push([getNum(900), getNum(1000)]);
-    pairs.push([getNum(150), getNum(160)]);
-    pairs.push([getNum(250), getNum(260)]);
-    pairs.push([getNum(550), getNum(560)]);
+      // 10-19
+      for (let i = 10; i <= 18; i++) pairs.push([getNum(i), getNum(i + 1)]);
+      for (let i = 10; i <= 16; i++) pairs.push([getNum(i), getNum(i + 2)]);
 
-    // More non-consecutive pairs (1-9)
-    for (let i = 1; i <= 9; i++) {
-      for (let j = i + 1; j <= 9; j++) {
-        if (j - i > 1) pairs.push([getNum(i), getNum(j)]);
+      // 20-99 (key ranges)
+      const tens = [20, 30, 40, 50, 60, 70, 80, 90];
+      tens.forEach(base => {
+        pairs.push([getNum(base), getNum(base + 1)]);
+        for (let i = 1; i <= 8; i++) pairs.push([getNum(base + i), getNum(base + i + 1)]);
+        pairs.push([getNum(base), getNum(base + 10)]);
+        pairs.push([getNum(base), getNum(base + 5)]);
+      });
+
+      // 100-1000 key numbers
+      for (let h = 100; h <= 900; h += 100) {
+        pairs.push([getNum(h), getNum(h + 1)]);
+        pairs.push([getNum(h), getNum(h + 50)]);
+        if (h < 900) pairs.push([getNum(h), getNum(h + 100)]);
       }
-    }
+      pairs.push([getNum(900), getNum(1000)]);
+      pairs.push([getNum(150), getNum(160)]);
+      pairs.push([getNum(250), getNum(260)]);
+      pairs.push([getNum(550), getNum(560)]);
 
-    // 20-99 more combinations
-    tens.forEach(base => {
-      for (let i = 0; i <= 9; i++) {
-        for (let j = i + 2; j <= 9; j++) {
-          pairs.push([getNum(base + i), getNum(base + j)]);
+      // More non-consecutive pairs (1-9)
+      for (let i = 1; i <= 9; i++) {
+        for (let j = i + 1; j <= 9; j++) {
+          if (j - i > 1) pairs.push([getNum(i), getNum(j)]);
         }
       }
+
+      // 20-99 more combinations
+      tens.forEach(base => {
+        for (let i = 0; i <= 9; i++) {
+          for (let j = i + 2; j <= 9; j++) {
+            pairs.push([getNum(base + i), getNum(base + j)]);
+          }
+        }
+      });
     });
 
     return pairs;
@@ -2029,8 +2055,8 @@ const CognitiveTaskGame = () => {
       ['XX', 'XXII'], ['XXI', 'XXIII'], ['XXII', 'XXIV'], ['XXIII', 'XXV'], ['XXIV', 'XXVI'], ['XXV', 'XXVII'], ['XXVI', 'XXVIII'], ['XXVII', 'XXIX'], ['XXVIII', 'XXX'],
       ['XX', 'XXIII'], ['XXI', 'XXIV'], ['XXII', 'XXV'], ['XXIII', 'XXVI'], ['XXIV', 'XXVII'], ['XXV', 'XXVIII'], ['XXVI', 'XXIX'], ['XXVII', 'XXX'],
 
-      // Verbal-Verbal pairs (dynamically generated based on selected language)
-      ...generateVerbalPairs(verbalLanguage)
+      // Verbal-Verbal pairs (dynamically generated for all enabled languages)
+      ...generateVerbalPairs(verbalLanguagesEnabled)
     ],
 
     'meaning': [
@@ -5934,47 +5960,74 @@ const CognitiveTaskGame = () => {
 
           {/* Verbal Number Language Selection */}
           <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold text-yellow-400 mb-4">🗣️ Verbal Number Language</h2>
-            <p className="text-sm text-gray-300 mb-4">
-              Select the language for verbal numbers (e.g., "twenty-one", "vingt-et-un", "двадцать один"). This affects how number words appear in same-format and same-meaning tasks.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { lang: 'english', flag: '🇬🇧', name: 'English' },
-                { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
-                { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
-                { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
-                { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
-                { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
-                { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
-                { lang: 'chinese', flag: '🇨🇳', name: '中文' }
-              ].map(({ lang, flag, name }) => (
-                <button
-                  key={lang}
-                  onClick={() => changeVerbalLanguage(lang)}
-                  className={`px-4 py-3 rounded-lg font-bold transition-all ${
-                    verbalLanguage === lang
-                      ? 'bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-400'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{flag}</div>
-                  <div className="text-sm">{name}</div>
-                </button>
-              ))}
+            <div
+              className="flex justify-between items-center cursor-pointer"
+              onClick={() => setShowVerbalSettings(!showVerbalSettings)}
+            >
+              <h2 className="text-2xl font-semibold text-yellow-400">🗣️ Verbal Number Languages</h2>
+              <button className="text-2xl text-yellow-400 hover:text-yellow-300 transition-colors">
+                {showVerbalSettings ? '▼' : '▶'}
+              </button>
             </div>
-            <div className="mt-4 p-4 bg-black/30 rounded-lg">
-              <p className="text-xs text-gray-400">
-                <strong>Preview:</strong> Numbers 1-10 in {verbalLanguage}:
-              </p>
-              <div className="text-sm text-blue-300 mt-2 flex flex-wrap gap-2">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                  <span key={num} className="bg-black/40 px-2 py-1 rounded">
-                    {num}: {getVerbalNumber(num, verbalLanguage)}
-                  </span>
-                ))}
+
+            {showVerbalSettings && (
+              <div className="space-y-4 pt-4">
+                <p className="text-sm text-gray-300">
+                  Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in training. All enabled languages can be mixed together.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { lang: 'english', flag: '🇬🇧', name: 'English' },
+                    { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
+                    { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
+                    { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
+                    { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
+                    { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
+                    { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
+                    { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+                  ].map(({ lang, flag, name }) => (
+                    <button
+                      key={lang}
+                      onClick={() => toggleVerbalLanguage(lang)}
+                      className={`px-4 py-3 rounded-lg font-bold transition-all ${
+                        verbalLanguagesEnabled[lang]
+                          ? 'bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-400'
+                          : 'bg-gray-700 hover:bg-gray-600 text-white'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{flag}</div>
+                      <div className="text-sm">{name}</div>
+                      {verbalLanguagesEnabled[lang] && <div className="text-xs mt-1">✓ Enabled</div>}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Preview section for all enabled languages */}
+                {Object.keys(verbalLanguagesEnabled).some(lang => verbalLanguagesEnabled[lang]) && (
+                  <div className="mt-4 p-4 bg-black/30 rounded-lg space-y-3">
+                    <p className="text-xs text-gray-400">
+                      <strong>Preview:</strong> Numbers 1-10 in enabled languages:
+                    </p>
+                    {Object.keys(verbalLanguagesEnabled)
+                      .filter(lang => verbalLanguagesEnabled[lang])
+                      .map(lang => (
+                        <div key={lang} className="border-t border-gray-700 pt-2 first:border-t-0 first:pt-0">
+                          <p className="text-xs text-yellow-400 mb-1 font-semibold">
+                            {lang.charAt(0).toUpperCase() + lang.slice(1)}:
+                          </p>
+                          <div className="text-sm text-blue-300 flex flex-wrap gap-2">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                              <span key={num} className="bg-black/40 px-2 py-1 rounded">
+                                {num}: {getVerbalNumber(num, lang)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
