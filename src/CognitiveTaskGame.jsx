@@ -5611,7 +5611,7 @@ const CognitiveTaskGame = () => {
               <div className="bg-blue-950/50 p-4 rounded-lg border border-blue-700">
                 <p className="text-sm text-gray-400 mb-1">Total Training Time</p>
                 <p className="text-2xl font-bold text-blue-400">
-                  {formatTime(totalTrainingMinutes, 0)}
+                  {formatTime(totalTrainingMinutes + totalSessionMinutes, totalSessionSeconds)}
                 </p>
                 {trainingSessions && trainingSessions.length > 0 && totalTrainingMinutes > 0 && (
                   <>
@@ -5935,7 +5935,7 @@ const CognitiveTaskGame = () => {
               {totalTrainingMinutes > 0 && (
                 <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
                   <p className="text-sm text-blue-300">
-                    <strong>Total Training Time:</strong> {formatTime(totalTrainingMinutes, 0)}
+                    <strong>Total Training Time:</strong> {formatTime(totalTrainingMinutes + totalSessionMinutes, totalSessionSeconds)}
                   </p>
                   {trainingGoalMinutes > 0 && (
                     <div className="mt-2">
