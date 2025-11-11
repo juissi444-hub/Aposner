@@ -152,6 +152,9 @@ const CognitiveTaskGame = () => {
   const [showChineseReference, setShowChineseReference] = useState(false);
   const [showKoreanReference, setShowKoreanReference] = useState(false);
 
+  // Verbal number language selection
+  const [verbalLanguage, setVerbalLanguage] = useState('english');
+
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
@@ -645,6 +648,16 @@ const CognitiveTaskGame = () => {
         console.warn('⚠️ Failed to save Korean numerals setting to server:', err.message);
       }
     }
+  };
+
+  // Change verbal number language
+  const changeVerbalLanguage = async (newLanguage) => {
+    setVerbalLanguage(newLanguage);
+    localStorage.setItem('verbalLanguage', newLanguage);
+    console.log('🗣️ Verbal language changed to:', newLanguage);
+
+    // Save to server (optional - we could add a verbal_language column to the database)
+    // For now, we're only saving to localStorage
   };
 
   // Stop all currently playing sounds
@@ -1543,6 +1556,13 @@ const CognitiveTaskGame = () => {
     setChineseNumeralsEnabled(chineseEnabled);
     setKoreanNumeralsEnabled(koreanEnabled);
     console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled);
+
+    // Load verbal language setting
+    const savedVerbalLang = localStorage.getItem('verbalLanguage');
+    if (savedVerbalLang && numberToWords[savedVerbalLang]) {
+      setVerbalLanguage(savedVerbalLang);
+      console.log('📥 Loaded verbal language setting:', savedVerbalLang);
+    }
   }, []);
 
   // Play success sound on perfect score
@@ -1670,6 +1690,176 @@ const CognitiveTaskGame = () => {
     return parts.join(' ');
   };
 
+  // Multi-language number-to-word conversion system
+  const numberToWords = {
+    english: (num) => {
+      if (num === 0) return 'zero';
+      const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+      const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+      const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? '-' + ones[num % 10] : '');
+      if (num < 1000) {
+        const hundreds = Math.floor(num / 100);
+        const remainder = num % 100;
+        return ones[hundreds] + ' hundred' + (remainder ? ' ' + numberToWords.english(remainder) : '');
+      }
+      if (num === 1000) return 'one thousand';
+      return num.toString();
+    },
+
+    swedish: (num) => {
+      if (num === 0) return 'noll';
+      const ones = ['', 'ett', 'två', 'tre', 'fyra', 'fem', 'sex', 'sju', 'åtta', 'nio'];
+      const teens = ['tio', 'elva', 'tolv', 'tretton', 'fjorton', 'femton', 'sexton', 'sjutton', 'arton', 'nitton'];
+      const tens = ['', '', 'tjugo', 'trettio', 'fyrtio', 'femtio', 'sextio', 'sjuttio', 'åttio', 'nittio'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ones[num % 10] : '');
+      if (num < 1000) {
+        const hundreds = Math.floor(num / 100);
+        const remainder = num % 100;
+        return (hundreds === 1 ? 'ett' : ones[hundreds]) + 'hundra' + (remainder ? numberToWords.swedish(remainder) : '');
+      }
+      if (num === 1000) return 'ettusen';
+      return num.toString();
+    },
+
+    finnish: (num) => {
+      if (num === 0) return 'nolla';
+      const ones = ['', 'yksi', 'kaksi', 'kolme', 'neljä', 'viisi', 'kuusi', 'seitsemän', 'kahdeksan', 'yhdeksän'];
+      const teens = ['kymmenen', 'yksitoista', 'kaksitoista', 'kolmetoista', 'neljätoista', 'viisitoista',
+                     'kuusitoista', 'seitsemäntoista', 'kahdeksantoista', 'yhdeksäntoista'];
+      const tens = ['', '', 'kaksikymmentä', 'kolmekymmentä', 'neljäkymmentä', 'viisikymmentä',
+                    'kuusikymmentä', 'seitsemänkymmentä', 'kahdeksankymmentä', 'yhdeksänkymmentä'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ones[num % 10] : '');
+      if (num < 1000) {
+        const hundreds = Math.floor(num / 100);
+        const remainder = num % 100;
+        return (hundreds === 1 ? 'sata' : ones[hundreds] + 'sataa') + (remainder ? numberToWords.finnish(remainder) : '');
+      }
+      if (num === 1000) return 'tuhat';
+      return num.toString();
+    },
+
+    russian: (num) => {
+      if (num === 0) return 'ноль';
+      const ones = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+      const teens = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать',
+                     'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать'];
+      const tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто'];
+      const hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + ones[num % 10] : '');
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        return hundreds[h] + (remainder ? ' ' + numberToWords.russian(remainder) : '');
+      }
+      if (num === 1000) return 'тысяча';
+      return num.toString();
+    },
+
+    arabic: (num) => {
+      if (num === 0) return 'صفر';
+      const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة'];
+      const teens = ['عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر',
+                     'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+      const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+      const hundreds = ['', 'مئة', 'مئتان', 'ثلاثمئة', 'أربعمئة', 'خمسمئة', 'ستمئة', 'سبعمئة', 'ثمانمئة', 'تسعمئة'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) {
+        const t = Math.floor(num / 10);
+        const o = num % 10;
+        return (o ? ones[o] + ' و ' : '') + tens[t];
+      }
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        return hundreds[h] + (remainder ? ' و ' + numberToWords.arabic(remainder) : '');
+      }
+      if (num === 1000) return 'ألف';
+      return num.toString();
+    },
+
+    japanese: (num) => {
+      if (num === 0) return '零';
+      const ones = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+      const tens = ['', '十', '二十', '三十', '四十', '五十', '六十', '七十', '八十', '九十'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return '十' + (num % 10 ? ones[num % 10] : '');
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ones[num % 10] : '');
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        return (h === 1 ? '百' : ones[h] + '百') + (remainder ? numberToWords.japanese(remainder) : '');
+      }
+      if (num === 1000) return '千';
+      return num.toString();
+    },
+
+    chinese: (num) => {
+      if (num === 0) return '零';
+      const ones = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+      const tens = ['', '十', '二十', '三十', '四十', '五十', '六十', '七十', '八十', '九十'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return '十' + (num % 10 ? ones[num % 10] : '');
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ones[num % 10] : '');
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        const needsZero = remainder > 0 && remainder < 10;
+        return ones[h] + '百' + (needsZero ? '零' : '') + (remainder ? numberToWords.chinese(remainder) : '');
+      }
+      if (num === 1000) return '一千';
+      return num.toString();
+    },
+
+    spanish: (num) => {
+      if (num === 0) return 'cero';
+      const ones = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
+      const teens = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve'];
+      const twenties = ['veinte', 'veintiuno', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco',
+                        'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve'];
+      const tens = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+      const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos',
+                        'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 30) return twenties[num - 20];
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' y ' + ones[num % 10] : '');
+      if (num === 100) return 'cien';
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        return hundreds[h] + (remainder ? ' ' + numberToWords.spanish(remainder) : '');
+      }
+      if (num === 1000) return 'mil';
+      return num.toString();
+    }
+  };
+
+  // Helper function to get verbal number in selected language
+  const getVerbalNumber = (num, lang = verbalLanguage) => {
+    if (numberToWords[lang]) {
+      return numberToWords[lang](num);
+    }
+    return numberToWords.english(num); // Fallback to English
+  };
+
   const relationTypes = {
     // Level 1-2 tasks (Lower grade retrieval - from study)
     'same-format': 'Same Format (1-2, III-IV, 五-六) - Physical property',
@@ -1712,6 +1902,63 @@ const CognitiveTaskGame = () => {
 
     // Default: all types
     return Object.keys(relationTypes);
+  };
+
+  // Generate verbal number pairs dynamically based on selected language
+  const generateVerbalPairs = (language) => {
+    const pairs = [];
+    const getNum = (n) => getVerbalNumber(n, language);
+
+    // 1-9 consecutive and non-consecutive
+    for (let i = 1; i <= 8; i++) pairs.push([getNum(i), getNum(i + 1)]);
+    for (let i = 1; i <= 7; i++) pairs.push([getNum(i), getNum(i + 2)]);
+    for (let i = 1; i <= 6; i++) pairs.push([getNum(i), getNum(i + 3)]);
+    for (let i = 1; i <= 5; i++) pairs.push([getNum(i), getNum(i + 4)]);
+    for (let i = 1; i <= 4; i++) pairs.push([getNum(i), getNum(i + 5)]);
+    for (let i = 1; i <= 3; i++) pairs.push([getNum(i), getNum(i + 6)]);
+    for (let i = 1; i <= 2; i++) pairs.push([getNum(i), getNum(i + 7)]);
+
+    // 10-19
+    for (let i = 10; i <= 18; i++) pairs.push([getNum(i), getNum(i + 1)]);
+    for (let i = 10; i <= 16; i++) pairs.push([getNum(i), getNum(i + 2)]);
+
+    // 20-99 (key ranges)
+    const tens = [20, 30, 40, 50, 60, 70, 80, 90];
+    tens.forEach(base => {
+      pairs.push([getNum(base), getNum(base + 1)]);
+      for (let i = 1; i <= 8; i++) pairs.push([getNum(base + i), getNum(base + i + 1)]);
+      pairs.push([getNum(base), getNum(base + 10)]);
+      pairs.push([getNum(base), getNum(base + 5)]);
+    });
+
+    // 100-1000 key numbers
+    for (let h = 100; h <= 900; h += 100) {
+      pairs.push([getNum(h), getNum(h + 1)]);
+      pairs.push([getNum(h), getNum(h + 50)]);
+      if (h < 900) pairs.push([getNum(h), getNum(h + 100)]);
+    }
+    pairs.push([getNum(900), getNum(1000)]);
+    pairs.push([getNum(150), getNum(160)]);
+    pairs.push([getNum(250), getNum(260)]);
+    pairs.push([getNum(550), getNum(560)]);
+
+    // More non-consecutive pairs (1-9)
+    for (let i = 1; i <= 9; i++) {
+      for (let j = i + 1; j <= 9; j++) {
+        if (j - i > 1) pairs.push([getNum(i), getNum(j)]);
+      }
+    }
+
+    // 20-99 more combinations
+    tens.forEach(base => {
+      for (let i = 0; i <= 9; i++) {
+        for (let j = i + 2; j <= 9; j++) {
+          pairs.push([getNum(base + i), getNum(base + j)]);
+        }
+      }
+    });
+
+    return pairs;
   };
 
   const wordPairs = {
@@ -1782,143 +2029,8 @@ const CognitiveTaskGame = () => {
       ['XX', 'XXII'], ['XXI', 'XXIII'], ['XXII', 'XXIV'], ['XXIII', 'XXV'], ['XXIV', 'XXVI'], ['XXV', 'XXVII'], ['XXVI', 'XXVIII'], ['XXVII', 'XXIX'], ['XXVIII', 'XXX'],
       ['XX', 'XXIII'], ['XXI', 'XXIV'], ['XXII', 'XXV'], ['XXIII', 'XXVI'], ['XXIV', 'XXVII'], ['XXV', 'XXVIII'], ['XXVI', 'XXIX'], ['XXVII', 'XXX'],
 
-      // Verbal-Verbal pairs (English number words 1-1000)
-      // 1-9
-      ['one', 'two'], ['two', 'three'], ['three', 'four'], ['four', 'five'], ['five', 'six'],
-      ['six', 'seven'], ['seven', 'eight'], ['eight', 'nine'],
-      ['one', 'three'], ['two', 'four'], ['three', 'five'], ['four', 'six'], ['five', 'seven'], ['six', 'eight'], ['seven', 'nine'],
-      ['one', 'four'], ['two', 'five'], ['three', 'six'], ['four', 'seven'], ['five', 'eight'], ['six', 'nine'],
-      // 10-19
-      ['ten', 'eleven'], ['eleven', 'twelve'], ['twelve', 'thirteen'], ['thirteen', 'fourteen'], ['fourteen', 'fifteen'],
-      ['fifteen', 'sixteen'], ['sixteen', 'seventeen'], ['seventeen', 'eighteen'], ['eighteen', 'nineteen'],
-      ['ten', 'twelve'], ['eleven', 'thirteen'], ['twelve', 'fourteen'], ['thirteen', 'fifteen'],
-      // 20-99
-      ['twenty', 'twenty-one'], ['twenty-one', 'twenty-two'], ['twenty-two', 'twenty-three'], ['twenty-three', 'twenty-four'], ['twenty-four', 'twenty-five'],
-      ['twenty-five', 'twenty-six'], ['twenty-six', 'twenty-seven'], ['twenty-seven', 'twenty-eight'], ['twenty-eight', 'twenty-nine'], ['twenty-nine', 'thirty'],
-      ['thirty', 'thirty-one'], ['thirty-one', 'thirty-two'], ['thirty-two', 'thirty-three'], ['thirty-three', 'thirty-four'], ['thirty-four', 'thirty-five'],
-      ['forty', 'forty-one'], ['forty-one', 'forty-two'], ['fifty', 'fifty-one'], ['sixty', 'sixty-one'], ['seventy', 'seventy-one'],
-      ['eighty', 'eighty-one'], ['ninety', 'ninety-one'],
-      ['twenty', 'thirty'], ['thirty', 'forty'], ['forty', 'fifty'], ['fifty', 'sixty'], ['sixty', 'seventy'], ['seventy', 'eighty'], ['eighty', 'ninety'],
-      ['twenty', 'twenty-five'], ['thirty', 'thirty-five'], ['forty', 'forty-five'], ['fifty', 'fifty-five'], ['sixty', 'sixty-five'], ['seventy', 'seventy-five'],
-      // 100-999
-      ['one hundred', 'one hundred one'], ['one hundred', 'one hundred ten'], ['one hundred', 'one hundred twenty'], ['one hundred', 'two hundred'],
-      ['two hundred', 'two hundred one'], ['two hundred', 'two hundred fifty'], ['two hundred', 'three hundred'],
-      ['three hundred', 'three hundred one'], ['three hundred', 'four hundred'],
-      ['four hundred', 'four hundred fifty'], ['four hundred', 'five hundred'],
-      ['five hundred', 'five hundred fifty'], ['five hundred', 'six hundred'],
-      ['six hundred', 'six hundred fifty'], ['six hundred', 'seven hundred'],
-      ['seven hundred', 'seven hundred fifty'], ['seven hundred', 'eight hundred'],
-      ['eight hundred', 'eight hundred fifty'], ['eight hundred', 'nine hundred'],
-      ['nine hundred', 'nine hundred fifty'], ['nine hundred', 'one thousand'],
-      ['one hundred fifty', 'one hundred sixty'], ['two hundred fifty', 'two hundred sixty'], ['five hundred fifty', 'five hundred sixty'],
-
-      // Additional Arabic pairs (10-1000) - hundreds more combinations
-      ['46', '47'], ['47', '48'], ['48', '49'], ['49', '50'], ['51', '52'], ['52', '53'], ['53', '54'], ['54', '55'], ['55', '56'], ['56', '57'],
-      ['57', '58'], ['58', '59'], ['59', '60'], ['61', '62'], ['62', '63'], ['63', '64'], ['64', '65'], ['65', '66'], ['66', '67'], ['67', '68'],
-      ['68', '69'], ['69', '70'], ['71', '72'], ['72', '73'], ['73', '74'], ['74', '75'], ['75', '76'], ['76', '77'], ['77', '78'], ['78', '79'],
-      ['79', '80'], ['81', '82'], ['82', '83'], ['83', '84'], ['84', '85'], ['85', '86'], ['86', '87'], ['87', '88'], ['88', '89'], ['89', '90'],
-      ['91', '92'], ['92', '93'], ['93', '94'], ['94', '95'], ['95', '96'], ['96', '97'], ['97', '98'], ['98', '99'], ['99', '100'],
-      // More gaps in 10-99
-      ['10', '13'], ['11', '14'], ['12', '15'], ['13', '16'], ['14', '17'], ['15', '18'], ['16', '19'], ['17', '20'],
-      ['20', '23'], ['21', '24'], ['22', '25'], ['23', '26'], ['24', '27'], ['25', '28'], ['26', '29'], ['27', '30'],
-      ['30', '33'], ['31', '34'], ['32', '35'], ['33', '36'], ['34', '37'], ['35', '38'], ['36', '39'], ['37', '40'],
-      ['40', '43'], ['41', '44'], ['42', '45'], ['43', '46'], ['44', '47'], ['45', '48'], ['46', '49'], ['47', '50'],
-      ['50', '53'], ['51', '54'], ['52', '55'], ['53', '56'], ['54', '57'], ['55', '58'], ['56', '59'], ['57', '60'],
-      ['60', '63'], ['61', '64'], ['62', '65'], ['63', '66'], ['64', '67'], ['65', '68'], ['66', '69'], ['67', '70'],
-      ['70', '73'], ['71', '74'], ['72', '75'], ['73', '76'], ['74', '77'], ['75', '78'], ['76', '79'], ['77', '80'],
-      ['80', '83'], ['81', '84'], ['82', '85'], ['83', '86'], ['84', '87'], ['85', '88'], ['86', '89'], ['87', '90'],
-      ['90', '93'], ['91', '94'], ['92', '95'], ['93', '96'], ['94', '97'], ['95', '98'], ['96', '99'], ['97', '100'],
-      // Larger gaps
-      ['10', '16'], ['11', '17'], ['12', '18'], ['13', '19'], ['14', '20'], ['15', '21'], ['16', '22'], ['17', '23'], ['18', '24'], ['19', '25'],
-      ['20', '26'], ['21', '27'], ['22', '28'], ['23', '29'], ['24', '30'], ['25', '31'], ['26', '32'], ['27', '33'], ['28', '34'], ['29', '35'],
-      ['30', '36'], ['31', '37'], ['32', '38'], ['33', '39'], ['34', '40'], ['35', '41'], ['36', '42'], ['37', '43'], ['38', '44'], ['39', '45'],
-      ['40', '46'], ['41', '47'], ['42', '48'], ['43', '49'], ['44', '50'], ['45', '51'], ['46', '52'], ['47', '53'], ['48', '54'], ['49', '55'],
-      ['50', '56'], ['51', '57'], ['52', '58'], ['53', '59'], ['54', '60'], ['55', '61'], ['56', '62'], ['57', '63'], ['58', '64'], ['59', '65'],
-      ['60', '66'], ['61', '67'], ['62', '68'], ['63', '69'], ['64', '70'], ['65', '71'], ['66', '72'], ['67', '73'], ['68', '74'], ['69', '75'],
-      ['70', '76'], ['71', '77'], ['72', '78'], ['73', '79'], ['74', '80'], ['75', '81'], ['76', '82'], ['77', '83'], ['78', '84'], ['79', '85'],
-      ['80', '86'], ['81', '87'], ['82', '88'], ['83', '89'], ['84', '90'], ['85', '91'], ['86', '92'], ['87', '93'], ['88', '94'], ['89', '95'],
-      ['90', '96'], ['91', '97'], ['92', '98'], ['93', '99'], ['94', '100'],
-      // Even larger gaps
-      ['10', '18'], ['11', '19'], ['12', '20'], ['13', '21'], ['14', '22'], ['15', '23'], ['16', '24'], ['17', '25'],
-      ['20', '28'], ['21', '29'], ['22', '30'], ['23', '31'], ['24', '32'], ['25', '33'], ['26', '34'], ['27', '35'],
-      ['30', '38'], ['31', '39'], ['32', '40'], ['33', '41'], ['34', '42'], ['35', '43'], ['36', '44'], ['37', '45'],
-      ['40', '48'], ['41', '49'], ['42', '50'], ['43', '51'], ['44', '52'], ['45', '53'], ['46', '54'], ['47', '55'],
-      ['50', '58'], ['51', '59'], ['52', '60'], ['53', '61'], ['54', '62'], ['55', '63'], ['56', '64'], ['57', '65'],
-      ['60', '68'], ['61', '69'], ['62', '70'], ['63', '71'], ['64', '72'], ['65', '73'], ['66', '74'], ['67', '75'],
-      ['70', '78'], ['71', '79'], ['72', '80'], ['73', '81'], ['74', '82'], ['75', '83'], ['76', '84'], ['77', '85'],
-      ['80', '88'], ['81', '89'], ['82', '90'], ['83', '91'], ['84', '92'], ['85', '93'], ['86', '94'], ['87', '95'],
-      // 100s range - more combinations
-      ['101', '102'], ['102', '103'], ['103', '104'], ['104', '105'], ['105', '106'], ['106', '107'], ['107', '108'], ['108', '109'], ['109', '110'],
-      ['110', '111'], ['111', '112'], ['112', '113'], ['113', '114'], ['114', '115'], ['115', '116'], ['116', '117'], ['117', '118'], ['118', '119'], ['119', '120'],
-      ['120', '121'], ['121', '122'], ['122', '123'], ['123', '124'], ['124', '125'], ['125', '126'], ['130', '131'], ['140', '141'], ['150', '151'], ['160', '161'],
-      ['170', '171'], ['180', '181'], ['190', '191'],
-      ['101', '103'], ['102', '104'], ['103', '105'], ['104', '106'], ['105', '107'], ['106', '108'], ['110', '112'], ['115', '117'], ['120', '122'], ['125', '127'],
-      ['130', '132'], ['140', '142'], ['150', '152'], ['160', '162'], ['170', '172'], ['180', '182'], ['190', '192'],
-      ['101', '106'], ['102', '107'], ['103', '108'], ['110', '115'], ['120', '125'], ['130', '135'], ['140', '145'], ['150', '155'], ['160', '165'], ['170', '175'],
-      ['180', '185'], ['190', '195'],
-      ['101', '111'], ['102', '112'], ['103', '113'], ['110', '120'], ['120', '130'], ['130', '140'], ['140', '150'], ['150', '160'], ['160', '170'], ['170', '180'],
-      ['180', '190'], ['190', '200'],
-      ['105', '115'], ['115', '125'], ['125', '135'], ['135', '145'], ['145', '155'], ['155', '165'], ['165', '175'], ['175', '185'], ['185', '195'],
-      // 200s-900s range
-      ['201', '202'], ['202', '203'], ['210', '211'], ['220', '221'], ['230', '231'], ['240', '241'], ['250', '251'], ['260', '261'], ['270', '271'], ['280', '281'], ['290', '291'],
-      ['301', '302'], ['310', '311'], ['320', '321'], ['330', '331'], ['340', '341'], ['350', '351'], ['360', '361'], ['370', '371'], ['380', '381'], ['390', '391'],
-      ['401', '402'], ['410', '411'], ['420', '421'], ['430', '431'], ['440', '441'], ['450', '451'], ['460', '461'], ['470', '471'], ['480', '481'], ['490', '491'],
-      ['501', '502'], ['510', '511'], ['520', '521'], ['530', '531'], ['540', '541'], ['550', '551'], ['560', '561'], ['570', '571'], ['580', '581'], ['590', '591'],
-      ['601', '602'], ['610', '611'], ['620', '621'], ['630', '631'], ['640', '641'], ['650', '651'], ['660', '661'], ['670', '671'], ['680', '681'], ['690', '691'],
-      ['701', '702'], ['710', '711'], ['720', '721'], ['730', '731'], ['740', '741'], ['750', '751'], ['760', '761'], ['770', '771'], ['780', '781'], ['790', '791'],
-      ['801', '802'], ['810', '811'], ['820', '821'], ['830', '831'], ['840', '841'], ['850', '851'], ['860', '861'], ['870', '871'], ['880', '881'], ['890', '891'],
-      ['901', '902'], ['910', '911'], ['920', '921'], ['930', '931'], ['940', '941'], ['950', '951'], ['960', '961'], ['970', '971'], ['980', '981'], ['990', '991'],
-      // Large gaps in 100-1000
-      ['100', '125'], ['125', '150'], ['150', '175'], ['175', '200'], ['200', '225'], ['225', '250'], ['250', '275'], ['275', '300'],
-      ['300', '325'], ['325', '350'], ['350', '375'], ['375', '400'], ['400', '425'], ['425', '450'], ['450', '475'], ['475', '500'],
-      ['500', '525'], ['525', '550'], ['550', '575'], ['575', '600'], ['600', '625'], ['625', '650'], ['650', '675'], ['675', '700'],
-      ['700', '725'], ['725', '750'], ['750', '775'], ['775', '800'], ['800', '825'], ['825', '850'], ['850', '875'], ['875', '900'],
-      ['900', '925'], ['925', '950'], ['950', '975'], ['975', '1000'],
-      ['100', '130'], ['130', '160'], ['160', '190'], ['190', '220'], ['220', '250'], ['250', '280'], ['280', '310'], ['310', '340'],
-      ['340', '370'], ['370', '400'], ['400', '430'], ['430', '460'], ['460', '490'], ['490', '520'], ['520', '550'], ['550', '580'],
-      ['580', '610'], ['610', '640'], ['640', '670'], ['670', '700'], ['700', '730'], ['730', '760'], ['760', '790'], ['790', '820'],
-      ['820', '850'], ['850', '880'], ['880', '910'], ['910', '940'], ['940', '970'], ['970', '1000'],
-
-      // Many more verbal pairs
-      ['one', 'five'], ['one', 'six'], ['one', 'seven'], ['one', 'eight'], ['one', 'nine'],
-      ['two', 'six'], ['two', 'seven'], ['two', 'eight'], ['two', 'nine'],
-      ['three', 'seven'], ['three', 'eight'], ['three', 'nine'],
-      ['four', 'eight'], ['four', 'nine'],
-      ['five', 'nine'],
-      ['six', 'nine'],
-      ['seven', 'nine'],
-      ['ten', 'thirteen'], ['ten', 'fourteen'], ['ten', 'fifteen'], ['ten', 'sixteen'], ['ten', 'seventeen'], ['ten', 'eighteen'], ['ten', 'nineteen'],
-      ['eleven', 'fourteen'], ['eleven', 'fifteen'], ['eleven', 'sixteen'], ['eleven', 'seventeen'], ['eleven', 'eighteen'], ['eleven', 'nineteen'],
-      ['twelve', 'fifteen'], ['twelve', 'sixteen'], ['twelve', 'seventeen'], ['twelve', 'eighteen'], ['twelve', 'nineteen'],
-      ['thirteen', 'sixteen'], ['thirteen', 'seventeen'], ['thirteen', 'eighteen'], ['thirteen', 'nineteen'],
-      ['fourteen', 'sixteen'], ['fourteen', 'seventeen'], ['fourteen', 'eighteen'], ['fourteen', 'nineteen'],
-      ['fifteen', 'seventeen'], ['fifteen', 'eighteen'], ['fifteen', 'nineteen'],
-      ['sixteen', 'eighteen'], ['sixteen', 'nineteen'],
-      ['seventeen', 'nineteen'],
-      ['twenty', 'twenty-two'], ['twenty', 'twenty-three'], ['twenty', 'twenty-four'], ['twenty', 'twenty-six'], ['twenty', 'twenty-seven'], ['twenty', 'twenty-eight'], ['twenty', 'twenty-nine'],
-      ['thirty', 'thirty-two'], ['thirty', 'thirty-three'], ['thirty', 'thirty-four'], ['thirty', 'thirty-six'], ['thirty', 'thirty-seven'], ['thirty', 'thirty-eight'], ['thirty', 'thirty-nine'],
-      ['forty', 'forty-two'], ['forty', 'forty-three'], ['forty', 'forty-four'], ['forty', 'forty-six'], ['forty', 'forty-seven'], ['forty', 'forty-eight'], ['forty', 'forty-nine'],
-      ['fifty', 'fifty-two'], ['fifty', 'fifty-three'], ['fifty', 'fifty-four'], ['fifty', 'fifty-six'], ['fifty', 'fifty-seven'], ['fifty', 'fifty-eight'], ['fifty', 'fifty-nine'],
-      ['sixty', 'sixty-two'], ['sixty', 'sixty-three'], ['sixty', 'sixty-four'], ['sixty', 'sixty-six'], ['sixty', 'sixty-seven'], ['sixty', 'sixty-eight'], ['sixty', 'sixty-nine'],
-      ['seventy', 'seventy-two'], ['seventy', 'seventy-three'], ['seventy', 'seventy-four'], ['seventy', 'seventy-six'], ['seventy', 'seventy-seven'], ['seventy', 'seventy-eight'], ['seventy', 'seventy-nine'],
-      ['eighty', 'eighty-two'], ['eighty', 'eighty-three'], ['eighty', 'eighty-four'], ['eighty', 'eighty-six'], ['eighty', 'eighty-seven'], ['eighty', 'eighty-eight'], ['eighty', 'eighty-nine'],
-      ['ninety', 'ninety-two'], ['ninety', 'ninety-three'], ['ninety', 'ninety-four'], ['ninety', 'ninety-six'], ['ninety', 'ninety-seven'], ['ninety', 'ninety-eight'], ['ninety', 'ninety-nine'],
-      ['twenty-one', 'twenty-three'], ['twenty-two', 'twenty-four'], ['twenty-three', 'twenty-five'], ['twenty-four', 'twenty-six'], ['twenty-five', 'twenty-seven'], ['twenty-six', 'twenty-eight'], ['twenty-seven', 'twenty-nine'],
-      ['thirty-one', 'thirty-three'], ['thirty-two', 'thirty-four'], ['thirty-three', 'thirty-five'], ['forty-one', 'forty-three'], ['forty-two', 'forty-four'], ['forty-three', 'forty-five'],
-      ['fifty-one', 'fifty-three'], ['fifty-two', 'fifty-four'], ['fifty-three', 'fifty-five'], ['sixty-one', 'sixty-three'], ['sixty-two', 'sixty-four'], ['sixty-three', 'sixty-five'],
-      ['seventy-one', 'seventy-three'], ['seventy-two', 'seventy-four'], ['seventy-three', 'seventy-five'], ['eighty-one', 'eighty-three'], ['eighty-two', 'eighty-four'], ['eighty-three', 'eighty-five'],
-      ['ninety-one', 'ninety-three'], ['ninety-two', 'ninety-four'], ['ninety-three', 'ninety-five'],
-      ['ten', 'twenty'], ['ten', 'thirty'], ['ten', 'forty'], ['ten', 'fifty'], ['twenty', 'forty'], ['twenty', 'fifty'], ['twenty', 'sixty'], ['thirty', 'fifty'], ['thirty', 'sixty'], ['thirty', 'seventy'],
-      ['forty', 'sixty'], ['forty', 'seventy'], ['forty', 'eighty'], ['fifty', 'seventy'], ['fifty', 'eighty'], ['fifty', 'ninety'], ['sixty', 'eighty'], ['sixty', 'ninety'],
-      ['one hundred', 'one hundred five'], ['one hundred', 'one hundred fifteen'], ['one hundred', 'one hundred thirty'], ['one hundred', 'one hundred forty'], ['one hundred', 'one hundred fifty'],
-      ['two hundred', 'two hundred ten'], ['two hundred', 'two hundred twenty'], ['two hundred', 'two hundred thirty'], ['two hundred', 'two hundred forty'],
-      ['three hundred', 'three hundred ten'], ['three hundred', 'three hundred twenty'], ['three hundred', 'three hundred thirty'], ['three hundred', 'three hundred forty'], ['three hundred', 'three hundred fifty'],
-      ['four hundred', 'four hundred ten'], ['four hundred', 'four hundred twenty'], ['four hundred', 'four hundred thirty'], ['four hundred', 'four hundred forty'],
-      ['five hundred', 'five hundred ten'], ['five hundred', 'five hundred twenty'], ['five hundred', 'five hundred thirty'], ['five hundred', 'five hundred forty'],
-      ['six hundred', 'six hundred ten'], ['six hundred', 'six hundred twenty'], ['six hundred', 'six hundred thirty'], ['six hundred', 'six hundred forty'],
-      ['seven hundred', 'seven hundred ten'], ['seven hundred', 'seven hundred twenty'], ['seven hundred', 'seven hundred thirty'], ['seven hundred', 'seven hundred forty'],
-      ['eight hundred', 'eight hundred ten'], ['eight hundred', 'eight hundred twenty'], ['eight hundred', 'eight hundred thirty'], ['eight hundred', 'eight hundred forty'],
-      ['nine hundred', 'nine hundred ten'], ['nine hundred', 'nine hundred twenty'], ['nine hundred', 'nine hundred thirty'], ['nine hundred', 'nine hundred forty']
+      // Verbal-Verbal pairs (dynamically generated based on selected language)
+      ...generateVerbalPairs(verbalLanguage)
     ],
 
     'meaning': [
@@ -5817,6 +5929,51 @@ const CognitiveTaskGame = () => {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Verbal Number Language Selection */}
+          <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold text-yellow-400 mb-4">🗣️ Verbal Number Language</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              Select the language for verbal numbers (e.g., "twenty-one", "vingt-et-un", "двадцать один"). This affects how number words appear in same-format and same-meaning tasks.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { lang: 'english', flag: '🇬🇧', name: 'English' },
+                { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
+                { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
+                { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
+                { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
+                { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
+                { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
+                { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+              ].map(({ lang, flag, name }) => (
+                <button
+                  key={lang}
+                  onClick={() => changeVerbalLanguage(lang)}
+                  className={`px-4 py-3 rounded-lg font-bold transition-all ${
+                    verbalLanguage === lang
+                      ? 'bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-400'
+                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{flag}</div>
+                  <div className="text-sm">{name}</div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 p-4 bg-black/30 rounded-lg">
+              <p className="text-xs text-gray-400">
+                <strong>Preview:</strong> Numbers 1-10 in {verbalLanguage}:
+              </p>
+              <div className="text-sm text-blue-300 mt-2 flex flex-wrap gap-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                  <span key={num} className="bg-black/40 px-2 py-1 rounded">
+                    {num}: {getVerbalNumber(num, verbalLanguage)}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
