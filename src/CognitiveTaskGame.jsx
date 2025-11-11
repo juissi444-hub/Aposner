@@ -168,6 +168,1063 @@ const CognitiveTaskGame = () => {
   // UI language selection
   const [uiLanguage, setUiLanguage] = useState('english');
 
+  // Translation dictionary for all UI text
+  const translations = {
+    english: {
+      // Main menu
+      title: 'Adaptive Posner',
+      joinDiscord: 'Join our Discord community',
+      contactUs: 'Contact Us',
+      loggedInAs: 'Logged in as',
+      leaderboard: 'Leaderboard',
+      logout: 'Logout',
+      signInPrompt: 'Sign in to track your scores on the leaderboard!',
+      loginSignUp: 'Login / Sign Up',
+      savedProgress: 'Saved Progress',
+      currentLevel: 'Current Level',
+      highestLevelReached: 'Highest Level Reached',
+      resetProgress: 'Reset Progress',
+      trainingTime: 'Training Time',
+      todaysTraining: "Today's Training",
+      totalTrainingTime: 'Total Training Time',
+
+      // Interface Language section
+      interfaceLanguage: 'Interface Language',
+      interfaceLanguageDesc: 'Select the language for the user interface. This changes the language of buttons, labels, and instructions throughout the app.',
+      active: 'Active',
+      enabled: 'Enabled',
+
+      // Verbal Numbers section
+      verbalNumbers: 'Verbal Numbers',
+      verbalNumbersDesc: 'Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in all training modes: Same Format, Same Meaning, and Odd/Even tasks. All enabled languages can be mixed together.',
+      toggleSettings: 'Toggle Settings',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: 'Chinese Numerals',
+      koreanNumerals: 'Korean Numerals',
+      enable: 'Enable',
+      disable: 'Disable',
+      viewReference: 'View Reference',
+      chineseNumeralsDesc: 'Include traditional Chinese numerals (一, 二, 三...) in training. A visual reference guide is available below.',
+      koreanNumeralsDesc: 'Include Sino-Korean numerals (일, 이, 삼...) in training. A visual reference guide is available below.',
+
+      // Sound Settings
+      soundSettings: 'Sound Settings',
+      soundEffects: 'Sound Effects',
+      soundEffectsDesc: 'Play feedback sounds during gameplay',
+
+      // Auto Continue
+      autoContinue: 'Auto Continue',
+      enableAutoContinue: 'Enable Auto Continue',
+      autoContinueDesc: 'Automatically advance to next trial after delay',
+      delay: 'Delay',
+      second: 'second',
+      seconds: 'seconds',
+      worksInBothModes: 'Works in both Adaptive and Manual modes',
+
+      // Training Goal
+      trainingGoal: 'Training Goal',
+      dailyTrainingGoal: 'Daily Training Goal',
+      dailyGoalDesc: 'Set your daily training time target (0-500 minutes)',
+      minutes: 'minutes',
+      congratulations: 'Congratulations!',
+      reachedGoal: "You've reached your daily training goal of {goal} minutes!",
+      keepUpWork: 'Keep up the excellent work!',
+
+      // Select Mode
+      selectMode: 'Select Mode',
+      selectModeDesc: 'Choose your training mode',
+      adaptiveMode: 'Adaptive Mode',
+      adaptiveModeDesc: 'Difficulty adjusts automatically based on performance',
+      manualMode: 'Manual Mode',
+      manualModeDesc: 'Customize difficulty and task types',
+
+      // Manual Mode Settings
+      manualModeSettings: 'Manual Mode Settings',
+      numberOfTasks: 'Number of Tasks',
+      matchPercentage: 'Match Percentage',
+      matchPercentageDesc: 'Percentage of trials that should be matching pairs',
+      taskTypes: 'Task Types',
+      taskTypesDesc: 'Enable or disable specific relation types',
+      experimentalMode: 'Experimental Mode',
+      experimentalModeDesc: 'Enable experimental task types (antonyms, time, etc.)',
+
+      // Game buttons
+      play: 'Play',
+      backToMenu: 'Back to Menu',
+      yes: 'Yes',
+      no: 'No',
+
+      // Game feedback
+      correct: 'Correct',
+      wrong: 'Wrong',
+      level: 'Level',
+      task: 'Task',
+      score: 'Score',
+      responseTime: 'Response Time',
+      avgResponseTime: 'Avg Response Time',
+
+      // Level transitions
+      levelUp: 'Level Up!',
+      levelDown: 'Level Down',
+      gameOver: 'Game Over',
+      finalScore: 'Final Score',
+      finalLevel: 'Final Level',
+
+      // Auth
+      login: 'Login',
+      signup: 'Sign Up',
+      username: 'Username',
+      password: 'Password',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
+      alreadyHaveAccount: 'Already have an account?',
+      dontHaveAccount: "Don't have an account?",
+      switchToLogin: 'Switch to Login',
+      switchToSignup: 'Switch to Sign Up',
+
+      // Leaderboard
+      leaderboardTitle: 'Leaderboard - Top Performers',
+      rank: 'Rank',
+      player: 'Player',
+      highestLevel: 'Highest Level',
+      close: 'Close',
+
+      // About Us
+      aboutUs: 'About Us',
+
+      // Common
+      cancel: 'Cancel',
+      confirm: 'Confirm',
+      save: 'Save',
+      loading: 'Loading...',
+      error: 'Error',
+      success: 'Success',
+    },
+    spanish: {
+      // Main menu
+      title: 'Posner Adaptativo',
+      joinDiscord: 'Únete a nuestra comunidad de Discord',
+      contactUs: 'Contáctanos',
+      loggedInAs: 'Conectado como',
+      leaderboard: 'Tabla de clasificación',
+      logout: 'Cerrar sesión',
+      signInPrompt: '¡Inicia sesión para rastrear tus puntuaciones en la tabla de clasificación!',
+      loginSignUp: 'Iniciar sesión / Registrarse',
+      savedProgress: 'Progreso guardado',
+      currentLevel: 'Nivel actual',
+      highestLevelReached: 'Nivel más alto alcanzado',
+      resetProgress: 'Restablecer progreso',
+      trainingTime: 'Tiempo de entrenamiento',
+      todaysTraining: 'Entrenamiento de hoy',
+      totalTrainingTime: 'Tiempo total de entrenamiento',
+
+      // Interface Language section
+      interfaceLanguage: 'Idioma de la interfaz',
+      interfaceLanguageDesc: 'Selecciona el idioma de la interfaz de usuario. Esto cambia el idioma de los botones, etiquetas e instrucciones en toda la aplicación.',
+      active: 'Activo',
+      enabled: 'Habilitado',
+
+      // Verbal Numbers section
+      verbalNumbers: 'Números verbales',
+      verbalNumbersDesc: 'Habilita múltiples idiomas para números verbales (1-1000). Números como "twenty-one", "veinte-uno", "двадцать один" aparecerán en todos los modos de entrenamiento: Mismo formato, Mismo significado y tareas Par/Impar. Todos los idiomas habilitados se pueden mezclar juntos.',
+      toggleSettings: 'Alternar configuración',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: 'Numerales chinos',
+      koreanNumerals: 'Numerales coreanos',
+      enable: 'Habilitar',
+      disable: 'Deshabilitar',
+      viewReference: 'Ver referencia',
+      chineseNumeralsDesc: 'Incluye numerales chinos tradicionales (一, 二, 三...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
+      koreanNumeralsDesc: 'Incluye numerales sino-coreanos (일, 이, 삼...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
+
+      // Sound Settings
+      soundSettings: 'Configuración de sonido',
+      soundEffects: 'Efectos de sonido',
+      soundEffectsDesc: 'Reproducir sonidos de retroalimentación durante el juego',
+
+      // Auto Continue
+      autoContinue: 'Continuar automáticamente',
+      enableAutoContinue: 'Habilitar continuar automáticamente',
+      autoContinueDesc: 'Avanzar automáticamente al siguiente ensayo después del retraso',
+      delay: 'Retraso',
+      second: 'segundo',
+      seconds: 'segundos',
+      worksInBothModes: 'Funciona en modos Adaptativo y Manual',
+
+      // Training Goal
+      trainingGoal: 'Objetivo de entrenamiento',
+      dailyTrainingGoal: 'Objetivo de entrenamiento diario',
+      dailyGoalDesc: 'Establece tu objetivo de tiempo de entrenamiento diario (0-500 minutos)',
+      minutes: 'minutos',
+      congratulations: '¡Felicitaciones!',
+      reachedGoal: '¡Has alcanzado tu objetivo de entrenamiento diario de {goal} minutos!',
+      keepUpWork: '¡Sigue con el excelente trabajo!',
+
+      // Select Mode
+      selectMode: 'Seleccionar modo',
+      selectModeDesc: 'Elige tu modo de entrenamiento',
+      adaptiveMode: 'Modo adaptativo',
+      adaptiveModeDesc: 'La dificultad se ajusta automáticamente según el rendimiento',
+      manualMode: 'Modo manual',
+      manualModeDesc: 'Personaliza la dificultad y los tipos de tareas',
+
+      // Manual Mode Settings
+      manualModeSettings: 'Configuración del modo manual',
+      numberOfTasks: 'Número de tareas',
+      matchPercentage: 'Porcentaje de coincidencia',
+      matchPercentageDesc: 'Porcentaje de ensayos que deben ser pares coincidentes',
+      taskTypes: 'Tipos de tareas',
+      taskTypesDesc: 'Habilita o deshabilita tipos de relación específicos',
+      experimentalMode: 'Modo experimental',
+      experimentalModeDesc: 'Habilita tipos de tareas experimentales (antónimos, tiempo, etc.)',
+
+      // Game buttons
+      play: 'Jugar',
+      backToMenu: 'Volver al menú',
+      yes: 'Sí',
+      no: 'No',
+
+      // Game feedback
+      correct: 'Correcto',
+      wrong: 'Incorrecto',
+      level: 'Nivel',
+      task: 'Tarea',
+      score: 'Puntuación',
+      responseTime: 'Tiempo de respuesta',
+      avgResponseTime: 'Tiempo de respuesta promedio',
+
+      // Level transitions
+      levelUp: '¡Subida de nivel!',
+      levelDown: 'Bajada de nivel',
+      gameOver: 'Fin del juego',
+      finalScore: 'Puntuación final',
+      finalLevel: 'Nivel final',
+
+      // Auth
+      login: 'Iniciar sesión',
+      signup: 'Registrarse',
+      username: 'Nombre de usuario',
+      password: 'Contraseña',
+      showPassword: 'Mostrar contraseña',
+      hidePassword: 'Ocultar contraseña',
+      alreadyHaveAccount: '¿Ya tienes una cuenta?',
+      dontHaveAccount: '¿No tienes una cuenta?',
+      switchToLogin: 'Cambiar a iniciar sesión',
+      switchToSignup: 'Cambiar a registrarse',
+
+      // Leaderboard
+      leaderboardTitle: 'Tabla de clasificación - Mejores jugadores',
+      rank: 'Rango',
+      player: 'Jugador',
+      highestLevel: 'Nivel más alto',
+      close: 'Cerrar',
+
+      // About Us
+      aboutUs: 'Sobre nosotros',
+
+      // Common
+      cancel: 'Cancelar',
+      confirm: 'Confirmar',
+      save: 'Guardar',
+      loading: 'Cargando...',
+      error: 'Error',
+      success: 'Éxito',
+    },
+    swedish: {
+      // Main menu
+      title: 'Adaptiv Posner',
+      joinDiscord: 'Gå med i vår Discord-community',
+      contactUs: 'Kontakta oss',
+      loggedInAs: 'Inloggad som',
+      leaderboard: 'Topplistan',
+      logout: 'Logga ut',
+      signInPrompt: 'Logga in för att spåra dina poäng på topplistan!',
+      loginSignUp: 'Logga in / Registrera dig',
+      savedProgress: 'Sparat framsteg',
+      currentLevel: 'Nuvarande nivå',
+      highestLevelReached: 'Högsta nivån nådd',
+      resetProgress: 'Återställ framsteg',
+      trainingTime: 'Träningstid',
+      todaysTraining: 'Dagens träning',
+      totalTrainingTime: 'Total träningstid',
+
+      // Interface Language section
+      interfaceLanguage: 'Gränssnittsspråk',
+      interfaceLanguageDesc: 'Välj språk för användargränssnittet. Detta ändrar språket för knappar, etiketter och instruktioner i hela appen.',
+      active: 'Aktiv',
+      enabled: 'Aktiverad',
+
+      // Verbal Numbers section
+      verbalNumbers: 'Verbala siffror',
+      verbalNumbersDesc: 'Aktivera flera språk för verbala nummer (1-1000). Nummer som "twenty-one", "veinte-uno", "двадцать один" kommer att visas i alla träningslägen: Samma format, Samma betydelse och Jämn/Ojämn uppgifter. Alla aktiverade språk kan blandas ihop.',
+      toggleSettings: 'Växla inställningar',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: 'Kinesiska siffror',
+      koreanNumerals: 'Koreanska siffror',
+      enable: 'Aktivera',
+      disable: 'Inaktivera',
+      viewReference: 'Visa referens',
+      chineseNumeralsDesc: 'Inkludera traditionella kinesiska siffror (一, 二, 三...) i träning. En visuell referensguide finns tillgänglig nedan.',
+      koreanNumeralsDesc: 'Inkludera sino-koreanska siffror (일, 이, 삼...) i träning. En visuell referensguide finns tillgänglig nedan.',
+
+      // Sound Settings
+      soundSettings: 'Ljudinställningar',
+      soundEffects: 'Ljudeffekter',
+      soundEffectsDesc: 'Spela återkopplingsljud under spelet',
+
+      // Auto Continue
+      autoContinue: 'Auto fortsätt',
+      enableAutoContinue: 'Aktivera auto fortsätt',
+      autoContinueDesc: 'Fortsätt automatiskt till nästa försök efter fördröjning',
+      delay: 'Fördröjning',
+      second: 'sekund',
+      seconds: 'sekunder',
+      worksInBothModes: 'Fungerar i både adaptiva och manuella lägen',
+
+      // Training Goal
+      trainingGoal: 'Träningsmål',
+      dailyTrainingGoal: 'Dagligt träningsmål',
+      dailyGoalDesc: 'Ställ in ditt dagliga träningstidsmål (0-500 minuter)',
+      minutes: 'minuter',
+      congratulations: 'Grattis!',
+      reachedGoal: 'Du har nått ditt dagliga träningsmål på {goal} minuter!',
+      keepUpWork: 'Fortsätt det utmärkta arbetet!',
+
+      // Select Mode
+      selectMode: 'Välj läge',
+      selectModeDesc: 'Välj ditt träningsläge',
+      adaptiveMode: 'Adaptivt läge',
+      adaptiveModeDesc: 'Svårigheten justeras automatiskt baserat på prestanda',
+      manualMode: 'Manuellt läge',
+      manualModeDesc: 'Anpassa svårighet och uppgiftstyper',
+
+      // Manual Mode Settings
+      manualModeSettings: 'Inställningar för manuellt läge',
+      numberOfTasks: 'Antal uppgifter',
+      matchPercentage: 'Matchningsprocent',
+      matchPercentageDesc: 'Procent av försöken som ska vara matchande par',
+      taskTypes: 'Uppgiftstyper',
+      taskTypesDesc: 'Aktivera eller inaktivera specifika relationstyper',
+      experimentalMode: 'Experimentellt läge',
+      experimentalModeDesc: 'Aktivera experimentella uppgiftstyper (antonymer, tid, etc.)',
+
+      // Game buttons
+      play: 'Spela',
+      backToMenu: 'Tillbaka till menyn',
+      yes: 'Ja',
+      no: 'Nej',
+
+      // Game feedback
+      correct: 'Rätt',
+      wrong: 'Fel',
+      level: 'Nivå',
+      task: 'Uppgift',
+      score: 'Poäng',
+      responseTime: 'Svarstid',
+      avgResponseTime: 'Genomsnittlig svarstid',
+
+      // Level transitions
+      levelUp: 'Nivå upp!',
+      levelDown: 'Nivå ner',
+      gameOver: 'Spelet är slut',
+      finalScore: 'Slutpoäng',
+      finalLevel: 'Slutnivå',
+
+      // Auth
+      login: 'Logga in',
+      signup: 'Registrera dig',
+      username: 'Användarnamn',
+      password: 'Lösenord',
+      showPassword: 'Visa lösenord',
+      hidePassword: 'Dölj lösenord',
+      alreadyHaveAccount: 'Har du redan ett konto?',
+      dontHaveAccount: 'Har du inget konto?',
+      switchToLogin: 'Byt till inloggning',
+      switchToSignup: 'Byt till registrering',
+
+      // Leaderboard
+      leaderboardTitle: 'Topplistan - Topppresterare',
+      rank: 'Rank',
+      player: 'Spelare',
+      highestLevel: 'Högsta nivån',
+      close: 'Stäng',
+
+      // About Us
+      aboutUs: 'Om oss',
+
+      // Common
+      cancel: 'Avbryt',
+      confirm: 'Bekräfta',
+      save: 'Spara',
+      loading: 'Laddar...',
+      error: 'Fel',
+      success: 'Framgång',
+    },
+    finnish: {
+      // Main menu
+      title: 'Adaptiivinen Posner',
+      joinDiscord: 'Liity Discord-yhteisöömme',
+      contactUs: 'Ota yhteyttä',
+      loggedInAs: 'Kirjautunut sisään käyttäjänä',
+      leaderboard: 'Tulostaulukko',
+      logout: 'Kirjaudu ulos',
+      signInPrompt: 'Kirjaudu sisään seurataksesi pisteitäsi tulostaulukossa!',
+      loginSignUp: 'Kirjaudu sisään / Rekisteröidy',
+      savedProgress: 'Tallennettu edistyminen',
+      currentLevel: 'Nykyinen taso',
+      highestLevelReached: 'Korkein saavutettu taso',
+      resetProgress: 'Nollaa edistyminen',
+      trainingTime: 'Harjoitteluaika',
+      todaysTraining: 'Tämän päivän harjoittelu',
+      totalTrainingTime: 'Harjoitteluaika yhteensä',
+
+      // Interface Language section
+      interfaceLanguage: 'Käyttöliittymän kieli',
+      interfaceLanguageDesc: 'Valitse käyttöliittymän kieli. Tämä muuttaa painikkeiden, otsikoiden ja ohjeiden kielen koko sovelluksessa.',
+      active: 'Aktiivinen',
+      enabled: 'Käytössä',
+
+      // Verbal Numbers section
+      verbalNumbers: 'Sanalliset numerot',
+      verbalNumbersDesc: 'Ota käyttöön useita kieliä sanallisille numeroille (1-1000). Numerot kuten "twenty-one", "veinte-uno", "двадцать один" näkyvät kaikissa harjoittelutiloissa: Sama muoto, Sama merkitys ja Parillinen/Pariton tehtävät. Kaikki käytössä olevat kielet voidaan sekoittaa keskenään.',
+      toggleSettings: 'Vaihda asetuksia',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: 'Kiinalaiset numerot',
+      koreanNumerals: 'Korealaiset numerot',
+      enable: 'Ota käyttöön',
+      disable: 'Poista käytöstä',
+      viewReference: 'Näytä viite',
+      chineseNumeralsDesc: 'Sisällytä perinteiset kiinalaiset numerot (一, 二, 三...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
+      koreanNumeralsDesc: 'Sisällytä sino-korealaiset numerot (일, 이, 삼...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
+
+      // Sound Settings
+      soundSettings: 'Ääniasetukset',
+      soundEffects: 'Äänitehosteet',
+      soundEffectsDesc: 'Toista palauteääniä pelin aikana',
+
+      // Auto Continue
+      autoContinue: 'Automaattinen jatko',
+      enableAutoContinue: 'Ota käyttöön automaattinen jatko',
+      autoContinueDesc: 'Siirry automaattisesti seuraavaan kokeeseen viiveen jälkeen',
+      delay: 'Viive',
+      second: 'sekunti',
+      seconds: 'sekuntia',
+      worksInBothModes: 'Toimii sekä adaptiivisessa että manuaalisessa tilassa',
+
+      // Training Goal
+      trainingGoal: 'Harjoittelumaali',
+      dailyTrainingGoal: 'Päivittäinen harjoittelumaali',
+      dailyGoalDesc: 'Aseta päivittäinen harjoitteluaikatavoitteesi (0-500 minuuttia)',
+      minutes: 'minuuttia',
+      congratulations: 'Onnittelut!',
+      reachedGoal: 'Olet saavuttanut päivittäisen harjoittelumaalisi {goal} minuuttia!',
+      keepUpWork: 'Jatka erinomaista työtä!',
+
+      // Select Mode
+      selectMode: 'Valitse tila',
+      selectModeDesc: 'Valitse harjoittelutilasi',
+      adaptiveMode: 'Adaptiivinen tila',
+      adaptiveModeDesc: 'Vaikeusaste mukautuu automaattisesti suorituksen perusteella',
+      manualMode: 'Manuaalinen tila',
+      manualModeDesc: 'Mukauta vaikeusastetta ja tehtävätyyppejä',
+
+      // Manual Mode Settings
+      manualModeSettings: 'Manuaalisen tilan asetukset',
+      numberOfTasks: 'Tehtävien määrä',
+      matchPercentage: 'Osumien prosenttiosuus',
+      matchPercentageDesc: 'Kokeiden prosenttiosuus, jotka tulisi olla vastaavia pareja',
+      taskTypes: 'Tehtävätyypit',
+      taskTypesDesc: 'Ota käyttöön tai poista käytöstä tietyt suhdetyypit',
+      experimentalMode: 'Kokeellinen tila',
+      experimentalModeDesc: 'Ota käyttöön kokeelliset tehtävätyypit (antonyymit, aika, jne.)',
+
+      // Game buttons
+      play: 'Pelaa',
+      backToMenu: 'Takaisin valikkoon',
+      yes: 'Kyllä',
+      no: 'Ei',
+
+      // Game feedback
+      correct: 'Oikein',
+      wrong: 'Väärin',
+      level: 'Taso',
+      task: 'Tehtävä',
+      score: 'Pisteet',
+      responseTime: 'Vastausaika',
+      avgResponseTime: 'Keskimääräinen vastausaika',
+
+      // Level transitions
+      levelUp: 'Taso ylös!',
+      levelDown: 'Taso alas',
+      gameOver: 'Peli päättyi',
+      finalScore: 'Lopulliset pisteet',
+      finalLevel: 'Lopullinen taso',
+
+      // Auth
+      login: 'Kirjaudu sisään',
+      signup: 'Rekisteröidy',
+      username: 'Käyttäjänimi',
+      password: 'Salasana',
+      showPassword: 'Näytä salasana',
+      hidePassword: 'Piilota salasana',
+      alreadyHaveAccount: 'Onko sinulla jo tili?',
+      dontHaveAccount: 'Eikö sinulla ole tiliä?',
+      switchToLogin: 'Vaihda kirjautumiseen',
+      switchToSignup: 'Vaihda rekisteröitymiseen',
+
+      // Leaderboard
+      leaderboardTitle: 'Tulostaulukko - Parhaat suorittajat',
+      rank: 'Sijoitus',
+      player: 'Pelaaja',
+      highestLevel: 'Korkein taso',
+      close: 'Sulje',
+
+      // About Us
+      aboutUs: 'Tietoa meistä',
+
+      // Common
+      cancel: 'Peruuta',
+      confirm: 'Vahvista',
+      save: 'Tallenna',
+      loading: 'Ladataan...',
+      error: 'Virhe',
+      success: 'Onnistui',
+    },
+    russian: {
+      // Main menu
+      title: 'Адаптивный Познер',
+      joinDiscord: 'Присоединяйтесь к нашему Discord-сообществу',
+      contactUs: 'Свяжитесь с нами',
+      loggedInAs: 'Вошли как',
+      leaderboard: 'Таблица лидеров',
+      logout: 'Выйти',
+      signInPrompt: 'Войдите, чтобы отслеживать свои результаты в таблице лидеров!',
+      loginSignUp: 'Войти / Зарегистрироваться',
+      savedProgress: 'Сохранённый прогресс',
+      currentLevel: 'Текущий уровень',
+      highestLevelReached: 'Достигнут наивысший уровень',
+      resetProgress: 'Сбросить прогресс',
+      trainingTime: 'Время тренировки',
+      todaysTraining: 'Сегодняшняя тренировка',
+      totalTrainingTime: 'Общее время тренировки',
+
+      // Interface Language section
+      interfaceLanguage: 'Язык интерфейса',
+      interfaceLanguageDesc: 'Выберите язык интерфейса пользователя. Это изменит язык кнопок, меток и инструкций во всем приложении.',
+      active: 'Активный',
+      enabled: 'Включено',
+
+      // Verbal Numbers section
+      verbalNumbers: 'Словесные числа',
+      verbalNumbersDesc: 'Включите несколько языков для словесных чисел (1-1000). Числа, такие как "twenty-one", "veinte-uno", "двадцать один", будут появляться во всех режимах тренировки: Одинаковый формат, Одинаковое значение и задачи Чётный/Нечётный. Все включённые языки можно смешивать вместе.',
+      toggleSettings: 'Переключить настройки',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: 'Китайские цифры',
+      koreanNumerals: 'Корейские цифры',
+      enable: 'Включить',
+      disable: 'Отключить',
+      viewReference: 'Просмотреть справку',
+      chineseNumeralsDesc: 'Включите традиционные китайские цифры (一, 二, 三...) в тренировку. Визуальное справочное руководство доступно ниже.',
+      koreanNumeralsDesc: 'Включите сино-корейские цифры (일, 이, 삼...) в тренировку. Визуальное справочное руководство доступно ниже.',
+
+      // Sound Settings
+      soundSettings: 'Настройки звука',
+      soundEffects: 'Звуковые эффекты',
+      soundEffectsDesc: 'Воспроизводить звуки обратной связи во время игры',
+
+      // Auto Continue
+      autoContinue: 'Автопродолжение',
+      enableAutoContinue: 'Включить автопродолжение',
+      autoContinueDesc: 'Автоматически переходить к следующей попытке после задержки',
+      delay: 'Задержка',
+      second: 'секунда',
+      seconds: 'секунд',
+      worksInBothModes: 'Работает как в адаптивном, так и в ручном режимах',
+
+      // Training Goal
+      trainingGoal: 'Цель тренировки',
+      dailyTrainingGoal: 'Ежедневная цель тренировки',
+      dailyGoalDesc: 'Установите свою ежедневную цель времени тренировки (0-500 минут)',
+      minutes: 'минут',
+      congratulations: 'Поздравляем!',
+      reachedGoal: 'Вы достигли своей ежедневной цели тренировки в {goal} минут!',
+      keepUpWork: 'Продолжайте отличную работу!',
+
+      // Select Mode
+      selectMode: 'Выбрать режим',
+      selectModeDesc: 'Выберите свой режим тренировки',
+      adaptiveMode: 'Адаптивный режим',
+      adaptiveModeDesc: 'Сложность автоматически подстраивается под производительность',
+      manualMode: 'Ручной режим',
+      manualModeDesc: 'Настройте сложность и типы задач',
+
+      // Manual Mode Settings
+      manualModeSettings: 'Настройки ручного режима',
+      numberOfTasks: 'Количество задач',
+      matchPercentage: 'Процент совпадений',
+      matchPercentageDesc: 'Процент попыток, которые должны быть совпадающими парами',
+      taskTypes: 'Типы задач',
+      taskTypesDesc: 'Включить или отключить определённые типы отношений',
+      experimentalMode: 'Экспериментальный режим',
+      experimentalModeDesc: 'Включить экспериментальные типы задач (антонимы, время и т.д.)',
+
+      // Game buttons
+      play: 'Играть',
+      backToMenu: 'Вернуться в меню',
+      yes: 'Да',
+      no: 'Нет',
+
+      // Game feedback
+      correct: 'Правильно',
+      wrong: 'Неправильно',
+      level: 'Уровень',
+      task: 'Задача',
+      score: 'Счёт',
+      responseTime: 'Время ответа',
+      avgResponseTime: 'Среднее время ответа',
+
+      // Level transitions
+      levelUp: 'Повышение уровня!',
+      levelDown: 'Понижение уровня',
+      gameOver: 'Игра окончена',
+      finalScore: 'Итоговый счёт',
+      finalLevel: 'Итоговый уровень',
+
+      // Auth
+      login: 'Войти',
+      signup: 'Зарегистрироваться',
+      username: 'Имя пользователя',
+      password: 'Пароль',
+      showPassword: 'Показать пароль',
+      hidePassword: 'Скрыть пароль',
+      alreadyHaveAccount: 'Уже есть аккаунт?',
+      dontHaveAccount: 'Нет аккаунта?',
+      switchToLogin: 'Переключиться на вход',
+      switchToSignup: 'Переключиться на регистрацию',
+
+      // Leaderboard
+      leaderboardTitle: 'Таблица лидеров - Лучшие игроки',
+      rank: 'Ранг',
+      player: 'Игрок',
+      highestLevel: 'Наивысший уровень',
+      close: 'Закрыть',
+
+      // About Us
+      aboutUs: 'О нас',
+
+      // Common
+      cancel: 'Отмена',
+      confirm: 'Подтвердить',
+      save: 'Сохранить',
+      loading: 'Загрузка...',
+      error: 'Ошибка',
+      success: 'Успех',
+    },
+    arabic: {
+      // Main menu
+      title: 'بوسنر التكيفي',
+      joinDiscord: 'انضم إلى مجتمع Discord الخاص بنا',
+      contactUs: 'اتصل بنا',
+      loggedInAs: 'تم تسجيل الدخول كـ',
+      leaderboard: 'لوحة المتصدرين',
+      logout: 'تسجيل الخروج',
+      signInPrompt: 'قم بتسجيل الدخول لتتبع نتائجك على لوحة المتصدرين!',
+      loginSignUp: 'تسجيل الدخول / التسجيل',
+      savedProgress: 'التقدم المحفوظ',
+      currentLevel: 'المستوى الحالي',
+      highestLevelReached: 'أعلى مستوى تم الوصول إليه',
+      resetProgress: 'إعادة تعيين التقدم',
+      trainingTime: 'وقت التدريب',
+      todaysTraining: 'تدريب اليوم',
+      totalTrainingTime: 'إجمالي وقت التدريب',
+
+      // Interface Language section
+      interfaceLanguage: 'لغة الواجهة',
+      interfaceLanguageDesc: 'حدد لغة واجهة المستخدم. يؤدي ذلك إلى تغيير لغة الأزرار والتسميات والتعليمات في جميع أنحاء التطبيق.',
+      active: 'نشط',
+      enabled: 'مفعل',
+
+      // Verbal Numbers section
+      verbalNumbers: 'الأرقام اللفظية',
+      verbalNumbersDesc: 'قم بتمكين لغات متعددة للأرقام اللفظية (1-1000). ستظهر أرقام مثل "twenty-one" و "veinte-uno" و "двадцать один" في جميع أوضاع التدريب: نفس التنسيق، نفس المعنى، ومهام زوجي/فردي. يمكن مزج جميع اللغات الممكّنة معًا.',
+      toggleSettings: 'تبديل الإعدادات',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: 'الأرقام الصينية',
+      koreanNumerals: 'الأرقام الكورية',
+      enable: 'تمكين',
+      disable: 'تعطيل',
+      viewReference: 'عرض المرجع',
+      chineseNumeralsDesc: 'قم بتضمين الأرقام الصينية التقليدية (一، 二، 三...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
+      koreanNumeralsDesc: 'قم بتضمين الأرقام الصينية الكورية (일، 이، 삼...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
+
+      // Sound Settings
+      soundSettings: 'إعدادات الصوت',
+      soundEffects: 'المؤثرات الصوتية',
+      soundEffectsDesc: 'تشغيل أصوات التغذية الراجعة أثناء اللعب',
+
+      // Auto Continue
+      autoContinue: 'المتابعة التلقائية',
+      enableAutoContinue: 'تمكين المتابعة التلقائية',
+      autoContinueDesc: 'الانتقال تلقائيًا إلى التجربة التالية بعد التأخير',
+      delay: 'تأخير',
+      second: 'ثانية',
+      seconds: 'ثواني',
+      worksInBothModes: 'يعمل في كل من الأوضاع التكيفية واليدوية',
+
+      // Training Goal
+      trainingGoal: 'هدف التدريب',
+      dailyTrainingGoal: 'هدف التدريب اليومي',
+      dailyGoalDesc: 'حدد هدف وقت التدريب اليومي الخاص بك (0-500 دقيقة)',
+      minutes: 'دقائق',
+      congratulations: 'تهانينا!',
+      reachedGoal: 'لقد وصلت إلى هدف التدريب اليومي الخاص بك وهو {goal} دقيقة!',
+      keepUpWork: 'استمر في العمل الممتاز!',
+
+      // Select Mode
+      selectMode: 'حدد الوضع',
+      selectModeDesc: 'اختر وضع التدريب الخاص بك',
+      adaptiveMode: 'الوضع التكيفي',
+      adaptiveModeDesc: 'تتكيف الصعوبة تلقائيًا بناءً على الأداء',
+      manualMode: 'الوضع اليدوي',
+      manualModeDesc: 'تخصيص الصعوبة وأنواع المهام',
+
+      // Manual Mode Settings
+      manualModeSettings: 'إعدادات الوضع اليدوي',
+      numberOfTasks: 'عدد المهام',
+      matchPercentage: 'نسبة التطابق',
+      matchPercentageDesc: 'نسبة التجارب التي يجب أن تكون أزواج متطابقة',
+      taskTypes: 'أنواع المهام',
+      taskTypesDesc: 'تمكين أو تعطيل أنواع العلاقات المحددة',
+      experimentalMode: 'الوضع التجريبي',
+      experimentalModeDesc: 'تمكين أنواع المهام التجريبية (المتضادات، الوقت، إلخ)',
+
+      // Game buttons
+      play: 'العب',
+      backToMenu: 'العودة إلى القائمة',
+      yes: 'نعم',
+      no: 'لا',
+
+      // Game feedback
+      correct: 'صحيح',
+      wrong: 'خطأ',
+      level: 'مستوى',
+      task: 'مهمة',
+      score: 'النتيجة',
+      responseTime: 'وقت الاستجابة',
+      avgResponseTime: 'متوسط وقت الاستجابة',
+
+      // Level transitions
+      levelUp: 'ارتفاع المستوى!',
+      levelDown: 'انخفاض المستوى',
+      gameOver: 'انتهت اللعبة',
+      finalScore: 'النتيجة النهائية',
+      finalLevel: 'المستوى النهائي',
+
+      // Auth
+      login: 'تسجيل الدخول',
+      signup: 'التسجيل',
+      username: 'اسم المستخدم',
+      password: 'كلمة المرور',
+      showPassword: 'إظهار كلمة المرور',
+      hidePassword: 'إخفاء كلمة المرور',
+      alreadyHaveAccount: 'هل لديك حساب بالفعل؟',
+      dontHaveAccount: 'ليس لديك حساب؟',
+      switchToLogin: 'التبديل إلى تسجيل الدخول',
+      switchToSignup: 'التبديل إلى التسجيل',
+
+      // Leaderboard
+      leaderboardTitle: 'لوحة المتصدرين - أفضل اللاعبين',
+      rank: 'الترتيب',
+      player: 'لاعب',
+      highestLevel: 'أعلى مستوى',
+      close: 'إغلاق',
+
+      // About Us
+      aboutUs: 'معلومات عنا',
+
+      // Common
+      cancel: 'إلغاء',
+      confirm: 'تأكيد',
+      save: 'حفظ',
+      loading: 'جار التحميل...',
+      error: 'خطأ',
+      success: 'نجاح',
+    },
+    japanese: {
+      // Main menu
+      title: 'アダプティブ・ポスナー',
+      joinDiscord: 'Discordコミュニティに参加',
+      contactUs: 'お問い合わせ',
+      loggedInAs: 'ログイン中',
+      leaderboard: 'リーダーボード',
+      logout: 'ログアウト',
+      signInPrompt: 'サインインしてリーダーボードでスコアを追跡しましょう！',
+      loginSignUp: 'ログイン / サインアップ',
+      savedProgress: '保存された進行状況',
+      currentLevel: '現在のレベル',
+      highestLevelReached: '到達した最高レベル',
+      resetProgress: '進行状況をリセット',
+      trainingTime: 'トレーニング時間',
+      todaysTraining: '今日のトレーニング',
+      totalTrainingTime: '合計トレーニング時間',
+
+      // Interface Language section
+      interfaceLanguage: 'インターフェース言語',
+      interfaceLanguageDesc: 'ユーザーインターフェースの言語を選択します。これにより、アプリ全体のボタン、ラベル、指示の言語が変更されます。',
+      active: 'アクティブ',
+      enabled: '有効',
+
+      // Verbal Numbers section
+      verbalNumbers: '言語による数字',
+      verbalNumbersDesc: '言語による数字（1-1000）に複数の言語を有効にします。「twenty-one」、「veinte-uno」、「двадцать один」などの数字は、すべてのトレーニングモード（同じ形式、同じ意味、偶数/奇数タスク）に表示されます。有効にしたすべての言語を混在させることができます。',
+      toggleSettings: '設定を切り替え',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: '漢数字',
+      koreanNumerals: '韓国数字',
+      enable: '有効にする',
+      disable: '無効にする',
+      viewReference: 'リファレンスを表示',
+      chineseNumeralsDesc: '伝統的な漢数字（一、二、三...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
+      koreanNumeralsDesc: '漢字系韓国数字（일、이、삼...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
+
+      // Sound Settings
+      soundSettings: 'サウンド設定',
+      soundEffects: '効果音',
+      soundEffectsDesc: 'ゲームプレイ中にフィードバックサウンドを再生',
+
+      // Auto Continue
+      autoContinue: '自動継続',
+      enableAutoContinue: '自動継続を有効にする',
+      autoContinueDesc: '遅延後に次のトライアルに自動的に進む',
+      delay: '遅延',
+      second: '秒',
+      seconds: '秒',
+      worksInBothModes: 'アダプティブモードとマニュアルモードの両方で動作します',
+
+      // Training Goal
+      trainingGoal: 'トレーニング目標',
+      dailyTrainingGoal: '毎日のトレーニング目標',
+      dailyGoalDesc: '毎日のトレーニング時間の目標を設定します（0-500分）',
+      minutes: '分',
+      congratulations: 'おめでとうございます！',
+      reachedGoal: '毎日のトレーニング目標の{goal}分に到達しました！',
+      keepUpWork: '素晴らしい仕事を続けてください！',
+
+      // Select Mode
+      selectMode: 'モードを選択',
+      selectModeDesc: 'トレーニングモードを選択',
+      adaptiveMode: 'アダプティブモード',
+      adaptiveModeDesc: 'パフォーマンスに基づいて難易度が自動的に調整されます',
+      manualMode: 'マニュアルモード',
+      manualModeDesc: '難易度とタスクタイプをカスタマイズ',
+
+      // Manual Mode Settings
+      manualModeSettings: 'マニュアルモード設定',
+      numberOfTasks: 'タスク数',
+      matchPercentage: '一致率',
+      matchPercentageDesc: '一致するペアであるべきトライアルの割合',
+      taskTypes: 'タスクタイプ',
+      taskTypesDesc: '特定の関係タイプを有効または無効にする',
+      experimentalMode: '実験モード',
+      experimentalModeDesc: '実験的なタスクタイプを有効にする（反意語、時間など）',
+
+      // Game buttons
+      play: 'プレイ',
+      backToMenu: 'メニューに戻る',
+      yes: 'はい',
+      no: 'いいえ',
+
+      // Game feedback
+      correct: '正解',
+      wrong: '不正解',
+      level: 'レベル',
+      task: 'タスク',
+      score: 'スコア',
+      responseTime: '応答時間',
+      avgResponseTime: '平均応答時間',
+
+      // Level transitions
+      levelUp: 'レベルアップ！',
+      levelDown: 'レベルダウン',
+      gameOver: 'ゲームオーバー',
+      finalScore: '最終スコア',
+      finalLevel: '最終レベル',
+
+      // Auth
+      login: 'ログイン',
+      signup: 'サインアップ',
+      username: 'ユーザー名',
+      password: 'パスワード',
+      showPassword: 'パスワードを表示',
+      hidePassword: 'パスワードを非表示',
+      alreadyHaveAccount: 'すでにアカウントをお持ちですか？',
+      dontHaveAccount: 'アカウントをお持ちではありませんか？',
+      switchToLogin: 'ログインに切り替え',
+      switchToSignup: 'サインアップに切り替え',
+
+      // Leaderboard
+      leaderboardTitle: 'リーダーボード - トップパフォーマー',
+      rank: 'ランク',
+      player: 'プレイヤー',
+      highestLevel: '最高レベル',
+      close: '閉じる',
+
+      // About Us
+      aboutUs: '私たちについて',
+
+      // Common
+      cancel: 'キャンセル',
+      confirm: '確認',
+      save: '保存',
+      loading: '読み込み中...',
+      error: 'エラー',
+      success: '成功',
+    },
+    chinese: {
+      // Main menu
+      title: '自适应波斯纳',
+      joinDiscord: '加入我们的Discord社区',
+      contactUs: '联系我们',
+      loggedInAs: '登录为',
+      leaderboard: '排行榜',
+      logout: '登出',
+      signInPrompt: '登录以在排行榜上跟踪您的分数！',
+      loginSignUp: '登录 / 注册',
+      savedProgress: '已保存的进度',
+      currentLevel: '当前级别',
+      highestLevelReached: '达到的最高级别',
+      resetProgress: '重置进度',
+      trainingTime: '训练时间',
+      todaysTraining: '今天的训练',
+      totalTrainingTime: '总训练时间',
+
+      // Interface Language section
+      interfaceLanguage: '界面语言',
+      interfaceLanguageDesc: '选择用户界面的语言。这会更改整个应用中按钮、标签和说明的语言。',
+      active: '激活',
+      enabled: '已启用',
+
+      // Verbal Numbers section
+      verbalNumbers: '文字数字',
+      verbalNumbersDesc: '为文字数字（1-1000）启用多种语言。像"twenty-one"、"veinte-uno"、"двадцать один"这样的数字将出现在所有训练模式中：相同格式、相同含义和奇偶任务。所有启用的语言都可以混合在一起。',
+      toggleSettings: '切换设置',
+
+      // Chinese & Korean Numerals
+      chineseNumerals: '中文数字',
+      koreanNumerals: '韩文数字',
+      enable: '启用',
+      disable: '禁用',
+      viewReference: '查看参考',
+      chineseNumeralsDesc: '在训练中包含传统中文数字（一、二、三...）。下面提供了视觉参考指南。',
+      koreanNumeralsDesc: '在训练中包含汉字韩文数字（일、이、삼...）。下面提供了视觉参考指南。',
+
+      // Sound Settings
+      soundSettings: '声音设置',
+      soundEffects: '音效',
+      soundEffectsDesc: '在游戏过程中播放反馈声音',
+
+      // Auto Continue
+      autoContinue: '自动继续',
+      enableAutoContinue: '启用自动继续',
+      autoContinueDesc: '延迟后自动前进到下一个试验',
+      delay: '延迟',
+      second: '秒',
+      seconds: '秒',
+      worksInBothModes: '在自适应和手动模式下都有效',
+
+      // Training Goal
+      trainingGoal: '训练目标',
+      dailyTrainingGoal: '每日训练目标',
+      dailyGoalDesc: '设置您的每日训练时间目标（0-500分钟）',
+      minutes: '分钟',
+      congratulations: '恭喜！',
+      reachedGoal: '您已达到每日训练目标{goal}分钟！',
+      keepUpWork: '继续保持出色的工作！',
+
+      // Select Mode
+      selectMode: '选择模式',
+      selectModeDesc: '选择您的训练模式',
+      adaptiveMode: '自适应模式',
+      adaptiveModeDesc: '难度根据表现自动调整',
+      manualMode: '手动模式',
+      manualModeDesc: '自定义难度和任务类型',
+
+      // Manual Mode Settings
+      manualModeSettings: '手动模式设置',
+      numberOfTasks: '任务数量',
+      matchPercentage: '匹配百分比',
+      matchPercentageDesc: '应该是匹配对的试验百分比',
+      taskTypes: '任务类型',
+      taskTypesDesc: '启用或禁用特定的关系类型',
+      experimentalMode: '实验模式',
+      experimentalModeDesc: '启用实验性任务类型（反义词、时间等）',
+
+      // Game buttons
+      play: '开始',
+      backToMenu: '返回菜单',
+      yes: '是',
+      no: '否',
+
+      // Game feedback
+      correct: '正确',
+      wrong: '错误',
+      level: '级别',
+      task: '任务',
+      score: '分数',
+      responseTime: '响应时间',
+      avgResponseTime: '平均响应时间',
+
+      // Level transitions
+      levelUp: '升级！',
+      levelDown: '降级',
+      gameOver: '游戏结束',
+      finalScore: '最终分数',
+      finalLevel: '最终级别',
+
+      // Auth
+      login: '登录',
+      signup: '注册',
+      username: '用户名',
+      password: '密码',
+      showPassword: '显示密码',
+      hidePassword: '隐藏密码',
+      alreadyHaveAccount: '已有账户？',
+      dontHaveAccount: '没有账户？',
+      switchToLogin: '切换到登录',
+      switchToSignup: '切换到注册',
+
+      // Leaderboard
+      leaderboardTitle: '排行榜 - 顶级表现者',
+      rank: '排名',
+      player: '玩家',
+      highestLevel: '最高级别',
+      close: '关闭',
+
+      // About Us
+      aboutUs: '关于我们',
+
+      // Common
+      cancel: '取消',
+      confirm: '确认',
+      save: '保存',
+      loading: '加载中...',
+      error: '错误',
+      success: '成功',
+    }
+  };
+
+  // Translation function
+  const t = (key) => {
+    return translations[uiLanguage]?.[key] || translations.english[key] || key;
+  };
+
   const getTimeForLevel = (lvl) => {
     // Levels 1-5: 2000ms down to 1000ms (decreasing by 250ms per level)
     if (lvl <= 5) return 2000 - (lvl - 1) * 250;
@@ -5818,7 +6875,7 @@ const CognitiveTaskGame = () => {
 
       {gameState === 'menu' && (
         <div className="max-w-2xl w-full space-y-6">
-          <h1 className="text-4xl font-bold text-center mb-4">Adaptive Posner</h1>
+          <h1 className="text-4xl font-bold text-center mb-4">{t('title')}</h1>
           <p className="text-center text-gray-400 italic text-sm mb-2">
             In memoriam of those 44 unfortunate ones who were brutally exiled from Noetica...
           </p>
@@ -5832,7 +6889,7 @@ const CognitiveTaskGame = () => {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
               </svg>
-              Join our Discord community
+              {t('joinDiscord')}
             </a>
             <button
               onClick={() => setShowAboutUs(true)}
@@ -5841,7 +6898,7 @@ const CognitiveTaskGame = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              Contact Us
+              {t('contactUs')}
             </button>
           </div>
 
@@ -5851,7 +6908,7 @@ const CognitiveTaskGame = () => {
                 {user ? (
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <div>
-                      <p className="text-sm text-gray-400">Logged in as</p>
+                      <p className="text-sm text-gray-400">{t('loggedInAs')}</p>
                       <p className="font-bold text-green-400">{user.user_metadata?.username || user.email}</p>
                     </div>
                     <div className="flex gap-2 flex-col sm:flex-row">
@@ -5862,24 +6919,24 @@ const CognitiveTaskGame = () => {
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                       >
-                        Leaderboard
+                        {t('leaderboard')}
                       </button>
                       <button
                         onClick={handleLogout}
                         className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                       >
-                        Logout
+                        {t('logout')}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                    <p className="text-gray-300">Sign in to track your scores on the leaderboard!</p>
+                    <p className="text-gray-300">{t('signInPrompt')}</p>
                     <button
                       onClick={() => setShowAuth(true)}
                       className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                     >
-                      Login / Sign Up
+                      {t('loginSignUp')}
                     </button>
                   </div>
                 )}
@@ -5896,19 +6953,53 @@ const CognitiveTaskGame = () => {
             </>
           )}
 
+          {/* UI Language Selection - Prioritized Setting */}
+          <div className="bg-gradient-to-r from-purple-900 to-pink-900 p-6 rounded-lg space-y-4">
+            <h2 className="text-2xl font-semibold text-yellow-400 mb-4">🌐 {t('interfaceLanguage')}</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              {t('interfaceLanguageDesc')}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { lang: 'english', flag: '🇬🇧', name: 'English' },
+                { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
+                { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
+                { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
+                { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
+                { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
+                { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
+                { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+              ].map(({ lang, flag, name }) => (
+                <button
+                  key={lang}
+                  onClick={() => changeUILanguage(lang)}
+                  className={`px-4 py-3 rounded-lg font-bold transition-all ${
+                    uiLanguage === lang
+                      ? 'bg-pink-600 hover:bg-pink-700 text-white ring-2 ring-pink-400'
+                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{flag}</div>
+                  <div className="text-sm">{name}</div>
+                  {uiLanguage === lang && <div className="text-xs mt-1">✓ {t('active')}</div>}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {savedAdaptiveLevel > 1 && (
             <div className="bg-gradient-to-r from-blue-800 to-purple-800 p-4 sm:p-6 rounded-lg space-y-3">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-yellow-400">Saved Progress</h2>
-                  <p className="text-base sm:text-lg text-white mt-2">Current Level: <span className="font-bold text-green-400">{savedAdaptiveLevel}</span></p>
-                  <p className="text-sm text-gray-300">Highest Level Reached: <span className="font-bold">{highestLevel}</span></p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-yellow-400">{t('savedProgress')}</h2>
+                  <p className="text-base sm:text-lg text-white mt-2">{t('currentLevel')}: <span className="font-bold text-green-400">{savedAdaptiveLevel}</span></p>
+                  <p className="text-sm text-gray-300">{t('highestLevelReached')}: <span className="font-bold">{highestLevel}</span></p>
                 </div>
                 <button
                   onClick={resetProgress}
                   className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full sm:w-auto"
                 >
-                  Reset Progress
+                  {t('resetProgress')}
                 </button>
               </div>
             </div>
@@ -5916,16 +7007,16 @@ const CognitiveTaskGame = () => {
 
           {/* Playtime Statistics - Always visible */}
           <div className="bg-gradient-to-r from-cyan-900 to-blue-900 p-4 sm:p-6 rounded-lg space-y-3">
-            <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">⏱️ Training Time</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">⏱️ {t('trainingTime')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-blue-950/50 p-4 rounded-lg border border-cyan-700">
-                <p className="text-sm text-gray-400 mb-1">Today's Training</p>
+                <p className="text-sm text-gray-400 mb-1">{t('todaysTraining')}</p>
                 <p className="text-2xl font-bold text-green-400">
                   {formatTime(totalSessionMinutes, totalSessionSeconds)}
                 </p>
               </div>
               <div className="bg-blue-950/50 p-4 rounded-lg border border-blue-700">
-                <p className="text-sm text-gray-400 mb-1">Total Training Time</p>
+                <p className="text-sm text-gray-400 mb-1">{t('totalTrainingTime')}</p>
                 <p className="text-2xl font-bold text-blue-400">
                   {formatTime(totalTrainingMinutes + totalSessionMinutes, totalSessionSeconds)}
                 </p>
@@ -5956,9 +7047,9 @@ const CognitiveTaskGame = () => {
             <div className="bg-gradient-to-r from-green-900 to-emerald-900 p-6 rounded-lg space-y-4 border-2 border-green-500">
               <div className="text-center">
                 <div className="text-5xl mb-3">🎉</div>
-                <h2 className="text-2xl font-bold text-green-300 mb-2">Congratulations!</h2>
-                <p className="text-lg text-white">You've reached your daily training goal of {trainingGoalMinutes} minutes!</p>
-                <p className="text-sm text-green-200 mt-2">Keep up the excellent work! 💪</p>
+                <h2 className="text-2xl font-bold text-green-300 mb-2">{t('congratulations')}</h2>
+                <p className="text-lg text-white">{t('reachedGoal').replace('{goal}', trainingGoalMinutes)}</p>
+                <p className="text-sm text-green-200 mt-2">{t('keepUpWork')} 💪</p>
               </div>
             </div>
           )}
@@ -5968,7 +7059,7 @@ const CognitiveTaskGame = () => {
             {/* Chinese Numerals Section */}
             <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-yellow-400">🇨🇳 Chinese Numerals</h2>
+                <h2 className="text-xl font-semibold text-yellow-400">🇨🇳 {t('chineseNumerals')}</h2>
                 <button
                   onClick={toggleChineseNumerals}
                   className={`px-4 py-2 rounded-lg font-bold transition-colors ${
@@ -5977,7 +7068,7 @@ const CognitiveTaskGame = () => {
                       : 'bg-gray-600 hover:bg-gray-700 text-white'
                   }`}
                 >
-                  {chineseNumeralsEnabled ? 'Enabled ✓' : 'Enable'}
+                  {chineseNumeralsEnabled ? `${t('enabled')} ✓` : t('enable')}
                 </button>
               </div>
               <p className="text-sm text-gray-300">
@@ -6053,7 +7144,7 @@ const CognitiveTaskGame = () => {
             {/* Sino-Korean Numerals Section */}
             <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-yellow-400">🇰🇷 Sino-Korean Numerals</h2>
+                <h2 className="text-xl font-semibold text-yellow-400">🇰🇷 {t('koreanNumerals')}</h2>
                 <button
                   onClick={toggleKoreanNumerals}
                   className={`px-4 py-2 rounded-lg font-bold transition-colors ${
@@ -6062,7 +7153,7 @@ const CognitiveTaskGame = () => {
                       : 'bg-gray-600 hover:bg-gray-700 text-white'
                   }`}
                 >
-                  {koreanNumeralsEnabled ? 'Enabled ✓' : 'Enable'}
+                  {koreanNumeralsEnabled ? `${t('enabled')} ✓` : t('enable')}
                 </button>
               </div>
               <p className="text-sm text-gray-300">
@@ -6183,51 +7274,12 @@ const CognitiveTaskGame = () => {
             )}
           </div>
 
-          {/* UI Language Selection */}
-          <div className="bg-gradient-to-r from-purple-900 to-pink-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold text-yellow-400 mb-4">🌐 Interface Language</h2>
-            <p className="text-sm text-gray-300 mb-4">
-              Select the language for the user interface. This changes the language of buttons, labels, and instructions throughout the app.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { lang: 'english', flag: '🇬🇧', name: 'English' },
-                { lang: 'spanish', flag: '🇪🇸', name: 'Español' },
-                { lang: 'swedish', flag: '🇸🇪', name: 'Svenska' },
-                { lang: 'finnish', flag: '🇫🇮', name: 'Suomi' },
-                { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
-                { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
-                { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
-                { lang: 'chinese', flag: '🇨🇳', name: '中文' }
-              ].map(({ lang, flag, name }) => (
-                <button
-                  key={lang}
-                  onClick={() => changeUILanguage(lang)}
-                  className={`px-4 py-3 rounded-lg font-bold transition-all ${
-                    uiLanguage === lang
-                      ? 'bg-pink-600 hover:bg-pink-700 text-white ring-2 ring-pink-400'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{flag}</div>
-                  <div className="text-sm">{name}</div>
-                  {uiLanguage === lang && <div className="text-xs mt-1">✓ Active</div>}
-                </button>
-              ))}
-            </div>
-            <div className="mt-4 p-3 bg-black/30 rounded-lg">
-              <p className="text-xs text-gray-400">
-                <strong>Note:</strong> Currently this setting is saved but full UI translation is not yet implemented. This feature will be expanded in future updates.
-              </p>
-            </div>
-          </div>
-
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Sound Settings</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t('soundSettings')}</h2>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-lg font-medium">Sound Effects</p>
-                <p className="text-sm text-gray-400">Play feedback sounds during gameplay</p>
+                <p className="text-lg font-medium">{t('soundEffects')}</p>
+                <p className="text-sm text-gray-400">{t('soundEffectsDesc')}</p>
               </div>
               <button
                 onClick={toggleSound}
@@ -6245,12 +7297,12 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Auto Continue</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t('autoContinue')}</h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg font-medium">Enable Auto Continue</p>
-                  <p className="text-sm text-gray-400">Automatically advance to next trial after delay</p>
+                  <p className="text-lg font-medium">{t('enableAutoContinue')}</p>
+                  <p className="text-sm text-gray-400">{t('autoContinueDesc')}</p>
                 </div>
                 <button
                   onClick={toggleAutoContinue}
@@ -6269,7 +7321,7 @@ const CognitiveTaskGame = () => {
               {autoContinueEnabled && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">Delay: {autoContinueDelay} second{autoContinueDelay !== 1 ? 's' : ''}</label>
+                    <label className="text-sm font-medium">{t('delay')}: {autoContinueDelay} {autoContinueDelay !== 1 ? t('seconds') : t('second')}</label>
                   </div>
                   <input
                     type="range"
@@ -6284,14 +7336,14 @@ const CognitiveTaskGame = () => {
                     <span>10s</span>
                     <span>20s</span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">Works in both Adaptive and Manual modes</p>
+                  <p className="text-xs text-gray-400 mt-2">{t('worksInBothModes')}</p>
                 </div>
               )}
             </div>
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Training Goal</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t('trainingGoal')}</h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex-1">
