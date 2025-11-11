@@ -6566,7 +6566,7 @@ const CognitiveTaskGame = () => {
             <p className="text-center text-xs sm:text-sm text-gray-400 mb-1">Only Standard Adaptive Mode</p>
             {leaderboard.length > 0 && (
               <p className="text-center text-xs sm:text-sm text-green-400 mb-3 sm:mb-4">
-                Showing all {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''} • Scroll to see more
+                Showing all {leaderboard.length} trainer{leaderboard.length !== 1 ? 's' : ''} • Scroll to see more
               </p>
             )}
             {leaderboard.length === 0 && <div className="mb-3 sm:mb-4"></div>}
