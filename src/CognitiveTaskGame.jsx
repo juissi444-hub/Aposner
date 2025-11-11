@@ -5126,19 +5126,19 @@ const CognitiveTaskGame = () => {
       // EXPLICIT: 90% of 32 = 29 (rounded). Score >= 29 MUST advance to next level
       const requiredScore = 29; // Hardcoded to ensure 29/32 (90%+) always advances
       console.log(`📊 Level completion check: ${score}/${numTasks} = ${percentage.toFixed(1)}%`);
-      console.log(`📊 Level up threshold: EXACTLY 29 or more (90%+)`);
+      console.log(`📊 Level up threshold: EXACTLY ${requiredScore} or more (90%+)`);
       console.log(`📊 Required score: ${requiredScore}`);
       console.log(`📊 Actual score: ${score}`);
-      console.log(`📊 Will level up: ${score >= 29}`);
+      console.log(`📊 Will level up: ${score >= requiredScore}`);
 
-      if (score >= 29) {
-        console.log(`✅✅✅ SCORE IS ${score} >= 29 - LEVELING UP NOW!`);
+      if (score >= requiredScore) {
+        console.log(`✅✅✅ SCORE IS ${score} >= ${requiredScore} - LEVELING UP NOW!`);
       } else {
-        console.log(`❌❌❌ SCORE IS ${score} < 29 - NOT LEVELING UP`);
+        console.log(`❌❌❌ SCORE IS ${score} < ${requiredScore} - NOT LEVELING UP`);
       }
 
       // CRITICAL: Score of 29 or more (90%+) MUST progress to next level
-      if (score >= 29) {
+      if (score >= requiredScore) {
         console.log(`✅ LEVEL UP! Score ${score}/${numTasks} (${percentage.toFixed(1)}%) >= 90%`);
         // Check if perfect score (100%)
         if (score === numTasks) {
