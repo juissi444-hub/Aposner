@@ -110,6 +110,7 @@ const CognitiveTaskGame = () => {
   const [isActualRelation, setIsActualRelation] = useState(false);
   const [score, setScore] = useState(0);
   const [wrongCount, setWrongCount] = useState(0); // Track wrong answers in adaptive mode
+  const [consecutiveFailures, setConsecutiveFailures] = useState(0); // Track consecutive failures at current level
   const [feedback, setFeedback] = useState(null);
   const [userAnswered, setUserAnswered] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
@@ -5090,13 +5091,14 @@ const CognitiveTaskGame = () => {
       });
       setScore(0);
       setWrongCount(0);
+      setConsecutiveFailures(0); // Reset consecutive failures on level drop
       setCurrentTask(0);
       setTaskHistory([]);
       setUsedPairs(new Set()); // Clear used pairs for new level
       // Regenerate task match sequence for new level (always 50/50 in adaptive mode)
       const sequence = generateTaskMatchSequence(32, 50);
       setTaskMatchSequence(sequence);
-      console.log('🔄 Level decreased - used pairs and task sequence regenerated');
+      console.log('🔄 Level decreased - consecutive failures reset, used pairs and task sequence regenerated');
       prepareNextTask();
       levelTransitionTimerRef.current = null;
     }, 2000);
@@ -5114,40 +5116,29 @@ const CognitiveTaskGame = () => {
       console.log('🏁 Score:', score, '/', numTasks);
       console.log('🏁 Wrong answers:', wrongCount);
       console.log('🏁 Current level:', level);
-
-      // Check if 6 or more mistakes were made
-      if (wrongCount >= 6) {
-        console.log('⬇️ TOO MANY MISTAKES - Level decrease (6+ wrong)');
-        handleLevelDecrease();
-        return;
-      }
+      console.log('🏁 Consecutive failures at this level:', consecutiveFailures);
 
       const percentage = (score / numTasks) * 100;
-      // EXPLICIT: 90% of 32 = 29 (rounded). Score >= 29 MUST advance to next level
-      const requiredScore = 29; // Hardcoded to ensure 29/32 (90%+) always advances
+      const maxWrongAllowed = 3; // Max 3 wrong answers allowed (4 or more = failure)
+
       console.log(`📊 Level completion check: ${score}/${numTasks} = ${percentage.toFixed(1)}%`);
-      console.log(`📊 Level up threshold: EXACTLY ${requiredScore} or more (90%+)`);
-      console.log(`📊 Required score: ${requiredScore}`);
-      console.log(`📊 Actual score: ${score}`);
-      console.log(`📊 Will level up: ${score >= requiredScore}`);
+      console.log(`📊 Wrong answers: ${wrongCount} (max allowed: ${maxWrongAllowed})`);
+      console.log(`📊 Will advance: ${wrongCount <= maxWrongAllowed}`);
 
-      if (score >= requiredScore) {
-        console.log(`✅✅✅ SCORE IS ${score} >= ${requiredScore} - LEVELING UP NOW!`);
-      } else {
-        console.log(`❌❌❌ SCORE IS ${score} < ${requiredScore} - NOT LEVELING UP`);
-      }
+      // NEW LOGIC: <=3 wrong = advance, >=4 wrong = failure
+      if (wrongCount <= maxWrongAllowed) {
+        // SUCCESS: Progress to next level and reset consecutive failures
+        console.log(`✅ SUCCESS! ${wrongCount} wrong answers (≤${maxWrongAllowed}) - ADVANCING TO NEXT LEVEL`);
 
-      // CRITICAL: Score of 29 or more (90%+) MUST progress to next level
-      if (score >= requiredScore) {
-        console.log(`✅ LEVEL UP! Score ${score}/${numTasks} (${percentage.toFixed(1)}%) >= 90%`);
         // Check if perfect score (100%)
         if (score === numTasks) {
           console.log(`🎉 Perfect score! ${score}/${numTasks} = 100%`);
           setGameState('perfectScore');
         } else {
-          console.log(`⬆️ Level up! Score ${score}/${numTasks} >= ${requiredScore}/${numTasks}`);
+          console.log(`⬆️ Level up! ${wrongCount} wrong answers ≤ ${maxWrongAllowed}`);
           setGameState('levelUp');
         }
+
         // Progress to next level
         levelTransitionTimerRef.current = setTimeout(() => {
           stopAllSounds();
@@ -5155,29 +5146,54 @@ const CognitiveTaskGame = () => {
           setLevel(prev => {
             const newLevel = prev + 1;
             console.log(`✅ Level ${prev} completed with score ${currentScore}/${numTasks}, advancing to level ${newLevel}`);
-            // IMPORTANT: Save the completed level (prev) with its score, not the new level
-            // This ensures leaderboard shows "Level X - Y% completed" where Y is the actual completion % of level X
             saveProgress(prev, currentScore);
             console.log(`💾 Saved progress: Level ${prev} (completed) with score ${currentScore}`);
             return newLevel;
           });
           setScore(0);
           setWrongCount(0);
+          setConsecutiveFailures(0); // Reset consecutive failures on success
           setCurrentTask(0);
           setTaskHistory([]);
-          setUsedPairs(new Set()); // Clear used pairs for new level
-          // Regenerate task match sequence for new level (always 50/50 in adaptive mode)
+          setUsedPairs(new Set());
           const sequence = generateTaskMatchSequence(32, 50);
           setTaskMatchSequence(sequence);
-          console.log('🔄 New level - used pairs and task sequence regenerated');
+          console.log('🔄 New level - consecutive failures reset, used pairs and task sequence regenerated');
           prepareNextTask();
           levelTransitionTimerRef.current = null;
         }, 3000);
       } else {
-        // Failed to progress - save current level with current score
-        console.log(`⚠️ Level ${level} not completed: ${score}/${numTasks} (${percentage.toFixed(1)}%)`);
-        saveProgress(level, score);
-        setGameState('results');
+        // FAILURE: 4 or more wrong answers
+        const newConsecutiveFailures = consecutiveFailures + 1;
+        console.log(`❌ FAILURE! ${wrongCount} wrong answers (>${maxWrongAllowed})`);
+        console.log(`📊 Consecutive failures: ${consecutiveFailures} → ${newConsecutiveFailures}`);
+
+        if (newConsecutiveFailures >= 3) {
+          // 3 consecutive failures: Drop to previous level
+          console.log(`⬇️ 3 CONSECUTIVE FAILURES - DROPPING TO PREVIOUS LEVEL`);
+          setConsecutiveFailures(0); // Reset counter after level drop
+          handleLevelDecrease();
+        } else {
+          // Stay at same level for retraining
+          console.log(`🔄 RETRAINING: Stay at level ${level} (failure ${newConsecutiveFailures}/3)`);
+          setConsecutiveFailures(newConsecutiveFailures);
+          setGameState('retrain'); // New state for retraining
+
+          levelTransitionTimerRef.current = setTimeout(() => {
+            stopAllSounds();
+            // Stay at same level, reset task state
+            setScore(0);
+            setWrongCount(0);
+            setCurrentTask(0);
+            setTaskHistory([]);
+            setUsedPairs(new Set());
+            const sequence = generateTaskMatchSequence(32, 50);
+            setTaskMatchSequence(sequence);
+            console.log(`🔄 Retraining at level ${level} - task sequence regenerated`);
+            prepareNextTask();
+            levelTransitionTimerRef.current = null;
+          }, 3000);
+        }
       }
     } else {
       // Manual mode - just show results
@@ -5193,7 +5209,7 @@ const CognitiveTaskGame = () => {
         levelTransitionTimerRef.current = null;
       }, 5000);
     }
-  }, [mode, score, numTasks, saveProgress, wrongCount, handleLevelDecrease, stopAllSounds, level, generateTaskMatchSequence]);
+  }, [mode, score, numTasks, saveProgress, wrongCount, consecutiveFailures, handleLevelDecrease, stopAllSounds, level, generateTaskMatchSequence]);
 
   const handleSpacePress = useCallback(() => {
     if (gameState === 'showRelation') {
@@ -5395,7 +5411,7 @@ const CognitiveTaskGame = () => {
           console.log('⏱️ Timeout timer cleared on ESC menu return');
         }
         // Save current progress before returning to menu
-        if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore') {
+        if (mode === 'adaptive' && gameState !== 'results' && gameState !== 'levelUp' && gameState !== 'levelDown' && gameState !== 'perfectScore' && gameState !== 'retrain') {
           console.log(`🔴 ESC PRESSED - Current state:`);
           console.log(`🔴 Mode: ${mode}`);
           console.log(`🔴 Level: ${level}`);
@@ -6346,15 +6362,34 @@ const CognitiveTaskGame = () => {
       {gameState === 'levelDown' && (
         <div className="text-center space-y-8">
           <div className="text-8xl font-bold text-red-400">⚠️</div>
-          <h2 className="text-5xl font-bold text-red-400">Too Many Errors!</h2>
+          <h2 className="text-5xl font-bold text-red-400">Level Decreased</h2>
           <div className="text-3xl text-white">
-            You made {wrongCount}/6 mistakes
+            3 consecutive failures at this level
           </div>
           <div className="text-2xl text-gray-400">
-            (6 is the threshold)
+            ({wrongCount} wrong answers)
+          </div>
+          <div className="text-2xl text-yellow-400">
+            Decreasing to Level {Math.max(1, level - 1)}...
+          </div>
+        </div>
+      )}
+
+      {gameState === 'retrain' && (
+        <div className="text-center space-y-8">
+          <div className="text-8xl font-bold text-orange-400">🔄</div>
+          <h2 className="text-5xl font-bold text-orange-400">Retraining</h2>
+          <div className="text-3xl text-white">
+            Level {level} - Try Again
           </div>
           <div className="text-2xl text-gray-400">
-            Decreasing level to {Math.max(1, level - 1)}...
+            {wrongCount} wrong answers ({score}/{numTasks} correct)
+          </div>
+          <div className="text-xl text-yellow-400">
+            Consecutive failures: {consecutiveFailures}/3
+          </div>
+          <div className="text-lg text-gray-300">
+            You need ≤3 wrong answers to advance
           </div>
         </div>
       )}
@@ -6371,7 +6406,7 @@ const CognitiveTaskGame = () => {
                 {score} / {numTasks} correct
               </div>
               <div className="text-xl text-gray-300">
-                You need 90% (29/{numTasks}) to advance to the next level
+                You need ≤3 wrong answers to advance to the next level
               </div>
               <button
                 onClick={() => {
