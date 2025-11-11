@@ -6001,31 +6001,6 @@ const CognitiveTaskGame = () => {
                     </button>
                   ))}
                 </div>
-
-                {/* Preview section for all enabled languages */}
-                {Object.keys(verbalLanguagesEnabled).some(lang => verbalLanguagesEnabled[lang]) && (
-                  <div className="mt-4 p-4 bg-black/30 rounded-lg space-y-3">
-                    <p className="text-xs text-gray-400">
-                      <strong>Preview:</strong> Numbers 1-10 in enabled languages:
-                    </p>
-                    {Object.keys(verbalLanguagesEnabled)
-                      .filter(lang => verbalLanguagesEnabled[lang])
-                      .map(lang => (
-                        <div key={lang} className="border-t border-gray-700 pt-2 first:border-t-0 first:pt-0">
-                          <p className="text-xs text-yellow-400 mb-1 font-semibold">
-                            {lang.charAt(0).toUpperCase() + lang.slice(1)}:
-                          </p>
-                          <div className="text-sm text-blue-300 flex flex-wrap gap-2">
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                              <span key={num} className="bg-black/40 px-2 py-1 rounded">
-                                {num}: {getVerbalNumber(num, lang)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
               </div>
             )}
           </div>
