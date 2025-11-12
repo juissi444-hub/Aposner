@@ -198,7 +198,7 @@ const CognitiveTaskGame = () => {
       enabled: 'Enabled',
 
       // Verbal Numbers section
-      verbalNumbers: 'Verbal Numbers',
+      verbalNumbers: 'Languages of numerals',
       verbalNumbersDesc: 'Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in all training modes: Same Format, Same Meaning, and Odd/Even tasks. All enabled languages can be mixed together.',
       toggleSettings: 'Toggle Settings',
 
@@ -337,7 +337,7 @@ const CognitiveTaskGame = () => {
       enabled: 'Habilitado',
 
       // Verbal Numbers section
-      verbalNumbers: 'Números verbales',
+      verbalNumbers: 'Idiomas de numerales',
       verbalNumbersDesc: 'Habilita múltiples idiomas para números verbales (1-1000). Números como "twenty-one", "veinte-uno", "двадцать один" aparecerán en todos los modos de entrenamiento: Mismo formato, Mismo significado y tareas Par/Impar. Todos los idiomas habilitados se pueden mezclar juntos.',
       toggleSettings: 'Alternar configuración',
 
@@ -476,7 +476,7 @@ const CognitiveTaskGame = () => {
       enabled: 'Aktiverad',
 
       // Verbal Numbers section
-      verbalNumbers: 'Verbala siffror',
+      verbalNumbers: 'Språk för siffror',
       verbalNumbersDesc: 'Aktivera flera språk för verbala nummer (1-1000). Nummer som "twenty-one", "veinte-uno", "двадцать один" kommer att visas i alla träningslägen: Samma format, Samma betydelse och Jämn/Ojämn uppgifter. Alla aktiverade språk kan blandas ihop.',
       toggleSettings: 'Växla inställningar',
 
@@ -615,7 +615,7 @@ const CognitiveTaskGame = () => {
       enabled: 'Käytössä',
 
       // Verbal Numbers section
-      verbalNumbers: 'Sanalliset numerot',
+      verbalNumbers: 'Numeroiden kielet',
       verbalNumbersDesc: 'Ota käyttöön useita kieliä sanallisille numeroille (1-1000). Numerot kuten "twenty-one", "veinte-uno", "двадцать один" näkyvät kaikissa harjoittelutiloissa: Sama muoto, Sama merkitys ja Parillinen/Pariton tehtävät. Kaikki käytössä olevat kielet voidaan sekoittaa keskenään.',
       toggleSettings: 'Vaihda asetuksia',
 
@@ -754,7 +754,7 @@ const CognitiveTaskGame = () => {
       enabled: 'Включено',
 
       // Verbal Numbers section
-      verbalNumbers: 'Словесные числа',
+      verbalNumbers: 'Языки числительных',
       verbalNumbersDesc: 'Включите несколько языков для словесных чисел (1-1000). Числа, такие как "twenty-one", "veinte-uno", "двадцать один", будут появляться во всех режимах тренировки: Одинаковый формат, Одинаковое значение и задачи Чётный/Нечётный. Все включённые языки можно смешивать вместе.',
       toggleSettings: 'Переключить настройки',
 
@@ -893,7 +893,7 @@ const CognitiveTaskGame = () => {
       enabled: 'مفعل',
 
       // Verbal Numbers section
-      verbalNumbers: 'الأرقام اللفظية',
+      verbalNumbers: 'لغات الأرقام',
       verbalNumbersDesc: 'قم بتمكين لغات متعددة للأرقام اللفظية (1-1000). ستظهر أرقام مثل "twenty-one" و "veinte-uno" و "двадцать один" في جميع أوضاع التدريب: نفس التنسيق، نفس المعنى، ومهام زوجي/فردي. يمكن مزج جميع اللغات الممكّنة معًا.',
       toggleSettings: 'تبديل الإعدادات',
 
@@ -1032,7 +1032,7 @@ const CognitiveTaskGame = () => {
       enabled: '有効',
 
       // Verbal Numbers section
-      verbalNumbers: '言語による数字',
+      verbalNumbers: '数字の言語',
       verbalNumbersDesc: '言語による数字（1-1000）に複数の言語を有効にします。「twenty-one」、「veinte-uno」、「двадцать один」などの数字は、すべてのトレーニングモード（同じ形式、同じ意味、偶数/奇数タスク）に表示されます。有効にしたすべての言語を混在させることができます。',
       toggleSettings: '設定を切り替え',
 
@@ -1171,7 +1171,7 @@ const CognitiveTaskGame = () => {
       enabled: '已启用',
 
       // Verbal Numbers section
-      verbalNumbers: '文字数字',
+      verbalNumbers: '数字的语言',
       verbalNumbersDesc: '为文字数字（1-1000）启用多种语言。像"twenty-one"、"veinte-uno"、"двадцать один"这样的数字将出现在所有训练模式中：相同格式、相同含义和奇偶任务。所有启用的语言都可以混合在一起。',
       toggleSettings: '切换设置',
 
@@ -6872,7 +6872,15 @@ const CognitiveTaskGame = () => {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
+      // Prevent ESC during level transitions to avoid canceling earned progression
       if (e.key === 'Escape' && gameState !== 'menu') {
+        // Block ESC during level transition states - user earned this progression!
+        if (gameState === 'levelUp' || gameState === 'levelDown' || gameState === 'perfectScore' || gameState === 'retrain') {
+          console.log(`⚠️ ESC blocked during ${gameState} - level transition in progress`);
+          e.preventDefault();
+          return; // Don't process ESC during level transitions
+        }
+
         e.preventDefault();
         stopAllSounds();
         // Clear auto-continue timer
@@ -6881,7 +6889,7 @@ const CognitiveTaskGame = () => {
           autoContinueTimerRef.current = null;
           console.log('⏱️ Auto-continue timer cleared on ESC menu return');
         }
-        // Clear level transition timer
+        // Clear level transition timer (only if not in transition state)
         if (levelTransitionTimerRef.current) {
           clearTimeout(levelTransitionTimerRef.current);
           levelTransitionTimerRef.current = null;
