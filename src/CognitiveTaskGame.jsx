@@ -152,9 +152,11 @@ const CognitiveTaskGame = () => {
   const [chineseNumeralsEnabled, setChineseNumeralsEnabled] = useState(false);
   const [koreanNumeralsEnabled, setKoreanNumeralsEnabled] = useState(false);
   const [romanNumeralsEnabled, setRomanNumeralsEnabled] = useState(true); // Default to true for backward compatibility
+  const [italianNumeralsEnabled, setItalianNumeralsEnabled] = useState(false);
   const [showChineseReference, setShowChineseReference] = useState(false);
   const [showKoreanReference, setShowKoreanReference] = useState(false);
   const [showRomanReference, setShowRomanReference] = useState(false);
+  const [showItalianReference, setShowItalianReference] = useState(false);
 
   // Verbal number language selection - multiple languages can be enabled
   const [verbalLanguagesEnabled, setVerbalLanguagesEnabled] = useState({
@@ -165,7 +167,9 @@ const CognitiveTaskGame = () => {
     russian: false,
     arabic: false,
     japanese: false,
-    chinese: false
+    chinese: false,
+    italian: false,
+    korean: false
   });
   const [showVerbalSettings, setShowVerbalSettings] = useState(false);
 
@@ -204,10 +208,11 @@ const CognitiveTaskGame = () => {
       verbalNumbersDesc: 'Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in all training modes: Same Format, Same Meaning, and Odd/Even tasks. All enabled languages can be mixed together.',
       toggleSettings: 'Toggle Settings',
 
-      // Chinese & Korean & Roman Numerals
+      // Chinese & Korean & Roman & Italian Numerals
       chineseNumerals: 'Chinese Numerals',
       koreanNumerals: 'Korean Numerals',
       romanNumerals: 'Roman Numerals',
+      italianNumerals: 'Italian Numerals',
       enable: 'Enable',
       disable: 'Disable',
       enabled: 'Enabled',
@@ -215,6 +220,7 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Include traditional Chinese numerals (一, 二, 三...) in training. A visual reference guide is available below.',
       koreanNumeralsDesc: 'Include Sino-Korean numerals (일, 이, 삼...) in training. A visual reference guide is available below.',
       romanNumeralsDesc: 'Include Roman numerals (I, II, III...) in training. A visual reference guide is available below.',
+      italianNumeralsDesc: 'Include Italian numerals (uno, due, tre...) in training. A visual reference guide is available below.',
 
       // Sound Settings
       soundSettings: 'Sound Settings',
@@ -381,6 +387,7 @@ const CognitiveTaskGame = () => {
       chineseNumerals: 'Numerales chinos',
       koreanNumerals: 'Numerales coreanos',
       romanNumerals: 'Numerales romanos',
+      italianNumerals: 'Numerales italianos',
       enable: 'Habilitar',
       disable: 'Deshabilitar',
       enabled: 'Habilitado',
@@ -388,6 +395,7 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Incluye numerales chinos tradicionales (一, 二, 三...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
       koreanNumeralsDesc: 'Incluye numerales sino-coreanos (일, 이, 삼...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
       romanNumeralsDesc: 'Incluye numerales romanos (I, II, III...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
+      italianNumeralsDesc: 'Incluye numerales italianos (uno, due, tre...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
 
       // Sound Settings
       soundSettings: 'Configuración de sonido',
@@ -561,6 +569,8 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Inkludera traditionella kinesiska siffror (一, 二, 三...) i träning. En visuell referensguide finns tillgänglig nedan.',
       koreanNumeralsDesc: 'Inkludera sino-koreanska siffror (일, 이, 삼...) i träning. En visuell referensguide finns tillgänglig nedan.',
       romanNumeralsDesc: 'Inkludera romerska siffror (I, II, III...) i träning. En visuell referensguide finns tillgänglig nedan.',
+      italianNumerals: 'Italienska siffror',
+      italianNumeralsDesc: 'Inkludera italienska siffror (uno, due, tre...) i träning. En visuell referensguide finns tillgänglig nedan.',
 
       // Sound Settings
       soundSettings: 'Ljudinställningar',
@@ -734,6 +744,8 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Sisällytä perinteiset kiinalaiset numerot (一, 二, 三...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
       koreanNumeralsDesc: 'Sisällytä sino-korealaiset numerot (일, 이, 삼...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
       romanNumeralsDesc: 'Sisällytä roomalaiset numerot (I, II, III...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
+      italianNumerals: 'Italialaiset numerot',
+      italianNumeralsDesc: 'Sisällytä italialaiset numerot (uno, due, tre...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
 
       // Sound Settings
       soundSettings: 'Ääniasetukset',
@@ -907,6 +919,8 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Включите традиционные китайские цифры (一, 二, 三...) в тренировку. Визуальное справочное руководство доступно ниже.',
       koreanNumeralsDesc: 'Включите сино-корейские цифры (일, 이, 삼...) в тренировку. Визуальное справочное руководство доступно ниже.',
       romanNumeralsDesc: 'Включите римские цифры (I, II, III...) в тренировку. Визуальное справочное руководство доступно ниже.',
+      italianNumerals: 'Итальянские цифры',
+      italianNumeralsDesc: 'Включите итальянские цифры (uno, due, tre...) в тренировку. Визуальное справочное руководство доступно ниже.',
 
       // Sound Settings
       soundSettings: 'Настройки звука',
@@ -1080,6 +1094,8 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'قم بتضمين الأرقام الصينية التقليدية (一، 二، 三...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
       koreanNumeralsDesc: 'قم بتضمين الأرقام الصينية الكورية (일، 이، 삼...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
       romanNumeralsDesc: 'قم بتضمين الأرقام الرومانية (I، II، III...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
+      italianNumerals: 'الأرقام الإيطالية',
+      italianNumeralsDesc: 'قم بتضمين الأرقام الإيطالية (uno، due، tre...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
 
       // Sound Settings
       soundSettings: 'إعدادات الصوت',
@@ -1253,6 +1269,8 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: '伝統的な漢数字（一、二、三...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
       koreanNumeralsDesc: '漢字系韓国数字（일、이、삼...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
       romanNumeralsDesc: 'ローマ数字（I、II、III...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
+      italianNumerals: 'イタリア数字',
+      italianNumeralsDesc: 'イタリア数字（uno、due、tre...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
 
       // Sound Settings
       soundSettings: 'サウンド設定',
@@ -1426,6 +1444,8 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: '在训练中包含传统中文数字（一、二、三...）。下面提供了视觉参考指南。',
       koreanNumeralsDesc: '在训练中包含汉字韩文数字（일、이、삼...）。下面提供了视觉参考指南。',
       romanNumeralsDesc: '在训练中包含罗马数字（I、II、III...）。下面提供了视觉参考指南。',
+      italianNumerals: '意大利数字',
+      italianNumeralsDesc: '在训练中包含意大利数字（uno、due、tre...）。下面提供了视觉参考指南。',
 
       // Sound Settings
       soundSettings: '声音设置',
@@ -1558,6 +1578,352 @@ const CognitiveTaskGame = () => {
       loading: '加载中...',
       error: '错误',
       success: '成功',
+    },
+    italian: {
+      // Main menu
+      title: 'Posner Adattivo',
+      joinDiscord: 'Unisciti alla nostra comunità Discord',
+      contactUs: 'Contattaci',
+      loggedInAs: 'Connesso come',
+      leaderboard: 'Classifica',
+      logout: 'Disconnetti',
+      signInPrompt: 'Accedi per monitorare i tuoi punteggi nella classifica!',
+      loginSignUp: 'Accedi / Registrati',
+      savedProgress: 'Progresso Salvato',
+      currentLevel: 'Livello Attuale',
+      highestLevelReached: 'Livello Massimo Raggiunto',
+      resetProgress: 'Reimposta Progresso',
+      trainingTime: 'Tempo di Allenamento',
+      todaysTraining: "Allenamento di Oggi",
+      totalTrainingTime: 'Tempo Totale di Allenamento',
+
+      // Interface Language section
+      interfaceLanguage: 'Lingua dell\'Interfaccia',
+      interfaceLanguageDesc: 'Seleziona la lingua per l\'interfaccia utente. Questo cambia la lingua dei pulsanti, delle etichette e delle istruzioni nell\'app.',
+      active: 'Attivo',
+      enabled: 'Abilitato',
+
+      // Verbal Numbers section
+      verbalNumbers: 'Lingue dei numeri',
+      verbalNumbersDesc: 'Abilita più lingue per i numeri verbali (1-1000). Numeri come "twenty-one", "veinte-uno", "ventuno" appariranno in tutte le modalità di allenamento: Stesso Formato, Stesso Significato e compiti Pari/Dispari. Tutte le lingue abilitate possono essere mescolate insieme.',
+      toggleSettings: 'Attiva/Disattiva Impostazioni',
+
+      // Chinese & Korean & Roman Numerals
+      chineseNumerals: 'Numeri Cinesi',
+      koreanNumerals: 'Numeri Coreani',
+      romanNumerals: 'Numeri Romani',
+      enable: 'Abilita',
+      disable: 'Disabilita',
+      enabled: 'Abilitato',
+      viewReference: 'Visualizza Riferimento',
+      chineseNumeralsDesc: 'Includi numeri cinesi tradizionali (一, 二, 三...) nell\'allenamento. Una guida di riferimento visiva è disponibile di seguito.',
+      koreanNumeralsDesc: 'Includi numeri sino-coreani (일, 이, 삼...) nell\'allenamento. Una guida di riferimento visiva è disponibile di seguito.',
+      romanNumeralsDesc: 'Includi numeri romani (I, II, III...) nell\'allenamento. Una guida di riferimento visiva è disponibile di seguito.',
+
+      // Sound Settings
+      soundSettings: 'Impostazioni Audio',
+      soundEffects: 'Effetti Sonori',
+      soundEffectsDesc: 'Riproduci suoni di feedback durante il gioco',
+
+      // Auto Continue
+      autoContinue: 'Continua Automatico',
+      enableAutoContinue: 'Abilita Continua Automatico',
+      autoContinueDesc: 'Avanza automaticamente alla prova successiva dopo il ritardo',
+      delay: 'Ritardo',
+      second: 'secondo',
+      seconds: 'secondi',
+      worksInBothModes: 'Funziona sia in modalità Adattiva che Manuale',
+
+      // Training Goal
+      trainingGoal: 'Obiettivo di Allenamento',
+      dailyTrainingGoal: 'Obiettivo di Allenamento Giornaliero',
+      dailyGoalDesc: 'Imposta il tuo obiettivo di tempo di allenamento giornaliero (0-500 minuti)',
+      minutes: 'minuti',
+      congratulations: 'Congratulazioni!',
+      reachedGoal: "Hai raggiunto il tuo obiettivo di allenamento giornaliero di {goal} minuti!",
+      keepUpWork: 'Continua così!',
+
+      // Select Mode
+      selectMode: 'Seleziona Modalità',
+      selectModeDesc: 'Scegli la tua modalità di allenamento',
+      adaptiveMode: 'Modalità Adattiva',
+      adaptiveModeDesc: 'La difficoltà si regola automaticamente in base alle prestazioni',
+      manualMode: 'Modalità Manuale',
+      manualModeDesc: 'Personalizza difficoltà e tipi di compiti',
+
+      // Manual Mode Settings
+      manualModeSettings: 'Impostazioni Modalità Manuale',
+      numberOfTasks: 'Numero di Compiti',
+      matchPercentage: 'Percentuale di Corrispondenza',
+      matchPercentageDesc: 'Percentuale di prove che dovrebbero essere coppie corrispondenti',
+      taskTypes: 'Tipi di Compiti',
+      taskTypesDesc: 'Abilita o disabilita tipi di relazione specifici',
+      experimentalMode: 'Modalità Sperimentale',
+      experimentalModeDesc: 'Abilita tipi di compiti sperimentali (antonimi, tempo, ecc.)',
+
+      // Game buttons
+      play: 'Gioca',
+      backToMenu: 'Torna al Menu',
+      yes: 'Sì',
+      no: 'No',
+      continue: 'Continua',
+      match: 'Corrispondenza',
+      noMatch: 'Nessuna Corrispondenza',
+      answerNow: 'Rispondi ORA!',
+      pressSpace: 'Premi Spazio',
+      pressEsc: 'Premi Esc',
+      pressF: 'Premi F',
+      pressJ: 'Premi J',
+
+      // Game feedback
+      correct: 'Corretto',
+      wrong: 'Sbagliato',
+      level: 'Livello',
+      task: 'Compito',
+      score: 'Punteggio',
+      responseTime: 'Tempo di Risposta',
+      avgResponseTime: 'Tempo Medio di Risposta',
+
+      // Level transitions
+      levelUp: 'Livello Aumentato!',
+      levelDown: 'Livello Diminuito',
+      gameOver: 'Game Over',
+      finalScore: 'Punteggio Finale',
+      finalLevel: 'Livello Finale',
+      levelComplete: 'Livello Completato',
+      advancingToLevel: 'Avanzamento al Livello',
+      perfectScore: 'Punteggio Perfetto!',
+      youGotAllCorrect: 'Hai risposto correttamente a tutto!',
+      excellentJob: 'Lavoro eccellente!',
+      progressingToLevel: 'Progresso al Livello',
+      levelDecreased: 'Livello Diminuito',
+      consecutiveFailuresAtLevel: '3 fallimenti consecutivi a questo livello',
+      wrongAnswers: 'risposte sbagliate',
+      decreasingToLevel: 'Diminuzione al Livello',
+      retraining: 'Riallenamento',
+      tryAgain: 'Riprova',
+      consecutiveFailures: 'Fallimenti consecutivi',
+      needLessWrongToAdvance: 'Hai bisogno di ≤3 risposte sbagliate per avanzare',
+      failedToProgress: 'Impossibile Progredire',
+      needLessWrongToAdvanceNextLevel: 'Hai bisogno di ≤3 risposte sbagliate per avanzare al prossimo livello',
+      trialComplete: 'Prova Completata!',
+      correctAnswers: 'corrette',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'Obiettivo di Allenamento Giornaliero',
+      dailyTrainingGoalMinutes: 'minuti',
+      setDailyTarget: 'Imposta il tuo obiettivo di tempo di allenamento giornaliero (0-500 minuti)',
+      studyReference: 'Per riferimento: Nello studio, Aposner è stato allenato per 12 giorni consecutivi per 25 minuti al giorno ed è stato un grande successo.',
+      totalTrainingTimeLabel: 'Tempo Totale di Allenamento',
+      todayLabel: 'Oggi',
+      experimentalModeLabel: 'Modalità Sperimentale',
+      experimentalModeActive: 'Modalità Sperimentale Attiva: Tutti i tipi di relazione disponibili a tutti i livelli',
+      standardMode: 'Modalità Standard',
+      manualModeDesc: 'Modalità Manuale: Scegli il tuo livello (1-18) e il numero di compiti (10-60)',
+      adaptiveModeDesc2: 'Modalità Adattiva: Inizia dal livello 1, ottieni il 90% corretto (29/32) per avanzare. Ottieni 6 sbagliati e il livello diminuisce! Il progresso viene salvato automaticamente.',
+
+      // Auth
+      login: 'Accedi',
+      signup: 'Registrati',
+      username: 'Nome Utente',
+      password: 'Password',
+      showPassword: 'Mostra password',
+      hidePassword: 'Nascondi password',
+      alreadyHaveAccount: 'Hai già un account?',
+      dontHaveAccount: "Non hai un account?",
+      switchToLogin: 'Passa ad Accedi',
+      switchToSignup: 'Passa a Registrati',
+
+      // Leaderboard
+      leaderboardTitle: 'Classifica - Top Performer',
+      rank: 'Posizione',
+      player: 'Giocatore',
+      highestLevel: 'Livello Massimo',
+      close: 'Chiudi',
+
+      // About Us
+      aboutUs: 'Chi Siamo',
+
+      // Common
+      cancel: 'Annulla',
+      confirm: 'Conferma',
+      save: 'Salva',
+      loading: 'Caricamento...',
+      error: 'Errore',
+      success: 'Successo',
+    },
+    korean: {
+      // Main menu
+      title: '적응형 포스너',
+      joinDiscord: 'Discord 커뮤니티에 참여하세요',
+      contactUs: '문의하기',
+      loggedInAs: '로그인 사용자',
+      leaderboard: '리더보드',
+      logout: '로그아웃',
+      signInPrompt: '리더보드에서 점수를 추적하려면 로그인하세요!',
+      loginSignUp: '로그인 / 회원가입',
+      savedProgress: '저장된 진행 상황',
+      currentLevel: '현재 레벨',
+      highestLevelReached: '달성한 최고 레벨',
+      resetProgress: '진행 상황 초기화',
+      trainingTime: '훈련 시간',
+      todaysTraining: "오늘의 훈련",
+      totalTrainingTime: '총 훈련 시간',
+
+      // Interface Language section
+      interfaceLanguage: '인터페이스 언어',
+      interfaceLanguageDesc: '사용자 인터페이스의 언어를 선택합니다. 앱 전체의 버튼, 레이블 및 지침의 언어가 변경됩니다.',
+      active: '활성',
+      enabled: '활성화됨',
+
+      // Verbal Numbers section
+      verbalNumbers: '숫자의 언어',
+      verbalNumbersDesc: '언어로 표현된 숫자(1-1000)에 대해 여러 언어를 활성화합니다. "twenty-one", "veinte-uno", "이십일"과 같은 숫자가 모든 훈련 모드에 나타납니다: 같은 형식, 같은 의미 및 홀수/짝수 작업. 활성화된 모든 언어를 함께 혼합할 수 있습니다.',
+      toggleSettings: '설정 토글',
+
+      // Chinese & Korean & Roman Numerals
+      chineseNumerals: '중국 숫자',
+      koreanNumerals: '한국 숫자',
+      romanNumerals: '로마 숫자',
+      enable: '활성화',
+      disable: '비활성화',
+      enabled: '활성화됨',
+      viewReference: '참조 보기',
+      chineseNumeralsDesc: '훈련에 전통 중국 숫자(一, 二, 三...)를 포함합니다. 아래에 시각적 참조 가이드가 제공됩니다.',
+      koreanNumeralsDesc: '훈련에 한자 기반 한국 숫자(일, 이, 삼...)를 포함합니다. 아래에 시각적 참조 가이드가 제공됩니다.',
+      romanNumeralsDesc: '훈련에 로마 숫자(I, II, III...)를 포함합니다. 아래에 시각적 참조 가이드가 제공됩니다.',
+
+      // Sound Settings
+      soundSettings: '사운드 설정',
+      soundEffects: '음향 효과',
+      soundEffectsDesc: '게임 중 피드백 사운드 재생',
+
+      // Auto Continue
+      autoContinue: '자동 계속',
+      enableAutoContinue: '자동 계속 활성화',
+      autoContinueDesc: '지연 후 다음 시도로 자동 진행',
+      delay: '지연',
+      second: '초',
+      seconds: '초',
+      worksInBothModes: '적응형 및 수동 모드 모두에서 작동',
+
+      // Training Goal
+      trainingGoal: '훈련 목표',
+      dailyTrainingGoal: '일일 훈련 목표',
+      dailyGoalDesc: '일일 훈련 시간 목표를 설정하세요 (0-500분)',
+      minutes: '분',
+      congratulations: '축하합니다!',
+      reachedGoal: "{goal}분의 일일 훈련 목표를 달성했습니다!",
+      keepUpWork: '계속 훌륭하게 해내세요!',
+
+      // Select Mode
+      selectMode: '모드 선택',
+      selectModeDesc: '훈련 모드를 선택하세요',
+      adaptiveMode: '적응형 모드',
+      adaptiveModeDesc: '성능에 따라 난이도가 자동으로 조정됩니다',
+      manualMode: '수동 모드',
+      manualModeDesc: '난이도 및 작업 유형 사용자 지정',
+
+      // Manual Mode Settings
+      manualModeSettings: '수동 모드 설정',
+      numberOfTasks: '작업 수',
+      matchPercentage: '일치 비율',
+      matchPercentageDesc: '일치하는 쌍이어야 하는 시도의 비율',
+      taskTypes: '작업 유형',
+      taskTypesDesc: '특정 관계 유형 활성화 또는 비활성화',
+      experimentalMode: '실험 모드',
+      experimentalModeDesc: '실험적 작업 유형 활성화 (반의어, 시간 등)',
+
+      // Game buttons
+      play: '시작',
+      backToMenu: '메뉴로 돌아가기',
+      yes: '예',
+      no: '아니오',
+      continue: '계속',
+      match: '일치',
+      noMatch: '불일치',
+      answerNow: '지금 답하세요!',
+      pressSpace: '스페이스바 누르기',
+      pressEsc: 'Esc 누르기',
+      pressF: 'F 누르기',
+      pressJ: 'J 누르기',
+
+      // Game feedback
+      correct: '정답',
+      wrong: '오답',
+      level: '레벨',
+      task: '작업',
+      score: '점수',
+      responseTime: '응답 시간',
+      avgResponseTime: '평균 응답 시간',
+
+      // Level transitions
+      levelUp: '레벨 업!',
+      levelDown: '레벨 다운',
+      gameOver: '게임 오버',
+      finalScore: '최종 점수',
+      finalLevel: '최종 레벨',
+      levelComplete: '레벨 완료',
+      advancingToLevel: '레벨로 진행',
+      perfectScore: '완벽한 점수!',
+      youGotAllCorrect: '모두 정답입니다!',
+      excellentJob: '훌륭합니다!',
+      progressingToLevel: '레벨로 진행 중',
+      levelDecreased: '레벨 감소',
+      consecutiveFailuresAtLevel: '이 레벨에서 3번 연속 실패',
+      wrongAnswers: '오답',
+      decreasingToLevel: '레벨로 감소',
+      retraining: '재훈련',
+      tryAgain: '다시 시도',
+      consecutiveFailures: '연속 실패',
+      needLessWrongToAdvance: '진행하려면 ≤3개의 오답이 필요합니다',
+      failedToProgress: '진행 실패',
+      needLessWrongToAdvanceNextLevel: '다음 레벨로 진행하려면 ≤3개의 오답이 필요합니다',
+      trialComplete: '시도 완료!',
+      correctAnswers: '정답',
+
+      // Settings strings
+      dailyTrainingGoalLabel: '일일 훈련 목표',
+      dailyTrainingGoalMinutes: '분',
+      setDailyTarget: '일일 훈련 시간 목표를 설정하세요 (0-500분)',
+      studyReference: '참고: 연구에서 Aposner는 12일 연속 하루 25분씩 훈련을 받았고 큰 성공을 거두었습니다.',
+      totalTrainingTimeLabel: '총 훈련 시간',
+      todayLabel: '오늘',
+      experimentalModeLabel: '실험 모드',
+      experimentalModeActive: '실험 모드 활성: 모든 레벨에서 모든 관계 유형 사용 가능',
+      standardMode: '표준 모드',
+      manualModeDesc: '수동 모드: 자신의 레벨(1-18) 및 작업 수(10-60) 선택',
+      adaptiveModeDesc2: '적응형 모드: 레벨 1에서 시작하여 90% 정답(29/32)을 얻어 진행합니다. 6개를 틀리면 레벨이 감소합니다! 진행 상황은 자동으로 저장됩니다.',
+
+      // Auth
+      login: '로그인',
+      signup: '회원가입',
+      username: '사용자 이름',
+      password: '비밀번호',
+      showPassword: '비밀번호 표시',
+      hidePassword: '비밀번호 숨기기',
+      alreadyHaveAccount: '이미 계정이 있으신가요?',
+      dontHaveAccount: "계정이 없으신가요?",
+      switchToLogin: '로그인으로 전환',
+      switchToSignup: '회원가입으로 전환',
+
+      // Leaderboard
+      leaderboardTitle: '리더보드 - 최고 성과자',
+      rank: '순위',
+      player: '플레이어',
+      highestLevel: '최고 레벨',
+      close: '닫기',
+
+      // About Us
+      aboutUs: '회사 소개',
+
+      // Common
+      cancel: '취소',
+      confirm: '확인',
+      save: '저장',
+      loading: '로딩 중...',
+      error: '오류',
+      success: '성공',
     }
   };
 
@@ -2117,6 +2483,26 @@ const CognitiveTaskGame = () => {
     }
   };
 
+  const toggleItalianNumerals = async () => {
+    const newState = !italianNumeralsEnabled;
+    setItalianNumeralsEnabled(newState);
+    localStorage.setItem('italianNumeralsEnabled', String(newState));
+    console.log('🇮🇹 Italian numerals', newState ? 'enabled' : 'disabled');
+
+    // Save to server
+    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
+      try {
+        await supabase
+          .from('leaderboard')
+          .update({ italian_numerals_enabled: newState })
+          .eq('user_id', user.id);
+        console.log('✅ Italian numerals setting saved to server:', newState);
+      } catch (err) {
+        console.warn('⚠️ Failed to save Italian numerals setting to server:', err.message);
+      }
+    }
+  };
+
   // Toggle verbal number language on/off
   const toggleVerbalLanguage = async (language) => {
     const newState = {
@@ -2180,6 +2566,7 @@ const CognitiveTaskGame = () => {
             chinese_numerals_enabled: localStorage.getItem('chineseNumeralsEnabled') === 'true',
             korean_numerals_enabled: localStorage.getItem('koreanNumeralsEnabled') === 'true',
             roman_numerals_enabled: localStorage.getItem('romanNumeralsEnabled') === null ? true : localStorage.getItem('romanNumeralsEnabled') === 'true',
+            italian_numerals_enabled: localStorage.getItem('italianNumeralsEnabled') === 'true',
             training_goal_minutes: parseInt(localStorage.getItem('trainingGoalMinutes')) || 0
           };
 
@@ -3034,10 +3421,12 @@ const CognitiveTaskGame = () => {
     const koreanEnabled = localStorage.getItem('koreanNumeralsEnabled') === 'true';
     const romanEnabledStr = localStorage.getItem('romanNumeralsEnabled');
     const romanEnabled = romanEnabledStr === null ? true : romanEnabledStr === 'true'; // Default to true if not set
+    const italianEnabled = localStorage.getItem('italianNumeralsEnabled') === 'true';
     setChineseNumeralsEnabled(chineseEnabled);
     setKoreanNumeralsEnabled(koreanEnabled);
     setRomanNumeralsEnabled(romanEnabled);
-    console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled, 'Roman:', romanEnabled);
+    setItalianNumeralsEnabled(italianEnabled);
+    console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled, 'Roman:', romanEnabled, 'Italian:', italianEnabled);
 
     // Load verbal languages settings
     const savedVerbalLangs = localStorage.getItem('verbalLanguagesEnabled');
@@ -3343,6 +3732,62 @@ const CognitiveTaskGame = () => {
       }
       if (num === 1000) return 'mil';
       return num.toString();
+    },
+
+    italian: (num) => {
+      if (num === 0) return 'zero';
+      const ones = ['', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
+      const teens = ['dieci', 'undici', 'dodici', 'tredici', 'quattordici', 'quindici', 'sedici', 'diciassette', 'diciotto', 'diciannove'];
+      const tens = ['', '', 'venti', 'trenta', 'quaranta', 'cinquanta', 'sessanta', 'settanta', 'ottanta', 'novanta'];
+      const hundreds = ['', 'cento', 'duecento', 'trecento', 'quattrocento', 'cinquecento',
+                        'seicento', 'settecento', 'ottocento', 'novecento'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) {
+        const t = Math.floor(num / 10);
+        const o = num % 10;
+        // Special rule: venti + uno = ventuno, venti + otto = ventotto (drop last vowel)
+        if (o === 1 || o === 8) {
+          return tens[t].slice(0, -1) + ones[o];
+        }
+        return tens[t] + ones[o];
+      }
+      if (num === 100) return 'cento';
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        return hundreds[h] + (remainder ? numberToWords.italian(remainder) : '');
+      }
+      if (num === 1000) return 'mille';
+      return num.toString();
+    },
+
+    korean: (num) => {
+      if (num === 0) return '영';
+      // Native Korean numbers (하나, 둘, 셋...)
+      const ones = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉'];
+      const teens = ['열', '열하나', '열둘', '열셋', '열넷', '열다섯', '열여섯', '열일곱', '열여덟', '열아홉'];
+      const tens = ['', '', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔'];
+
+      // For numbers 100-1000, use Sino-Korean
+      const sinoOnes = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+
+      if (num < 10) return ones[num];
+      if (num < 20) return teens[num - 10];
+      if (num < 100) {
+        const t = Math.floor(num / 10);
+        const o = num % 10;
+        return tens[t] + (o ? ' ' + ones[o] : '');
+      }
+      if (num === 100) return '백';
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        const remainder = num % 100;
+        return (h === 1 ? '백' : sinoOnes[h] + '백') + (remainder ? ' ' + numberToWords.korean(remainder) : '');
+      }
+      if (num === 1000) return '천';
+      return num.toString();
     }
   };
 
@@ -3484,6 +3929,12 @@ const CognitiveTaskGame = () => {
     const toKorean = (num) => {
       const koreanMap = { 1: '일', 2: '이', 3: '삼', 4: '사', 5: '오', 6: '육', 7: '칠', 8: '팔', 9: '구' };
       return koreanMap[num] || num.toString();
+    };
+
+    // Helper to convert to Italian numerals (1-9)
+    const toItalian = (num) => {
+      const italianMap = { 1: 'uno', 2: 'due', 3: 'tre', 4: 'quattro', 5: 'cinque', 6: 'sei', 7: 'sette', 8: 'otto', 9: 'nove' };
+      return italianMap[num] || num.toString();
     };
 
     enabledLangs.forEach(language => {
@@ -6509,6 +6960,11 @@ const CognitiveTaskGame = () => {
         return korean[n] || String(n);
       };
 
+      const numberToItalian = (n) => {
+        const italian = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
+        return italian[n] || String(n);
+      };
+
       const numberToRoman = (n) => {
         if (n === 0) return '0';
         const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -6529,7 +6985,7 @@ const CognitiveTaskGame = () => {
       const evenNum = evenNums[Math.floor(Math.random() * evenNums.length)];
       const oddNum = oddNums[Math.floor(Math.random() * oddNums.length)];
 
-      // Choose one format (Arabic, Chinese, Korean, or Roman) - only include enabled formats
+      // Choose one format (Arabic, Chinese, Korean, Italian, or Roman) - only include enabled formats
       const formats = [
         (n) => String(n) // Arabic
       ];
@@ -6539,7 +6995,12 @@ const CognitiveTaskGame = () => {
       if (koreanNumeralsEnabled) {
         formats.push((n) => numberToKorean(n)); // Korean
       }
-      formats.push((n) => numberToRoman(n)); // Roman
+      if (italianNumeralsEnabled) {
+        formats.push((n) => numberToItalian(n)); // Italian
+      }
+      if (romanNumeralsEnabled) {
+        formats.push((n) => numberToRoman(n)); // Roman
+      }
 
       const format = formats[Math.floor(Math.random() * formats.length)];
 
@@ -6555,6 +7016,11 @@ const CognitiveTaskGame = () => {
       const numberToKorean = (n) => {
         const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         return korean[n] || String(n);
+      };
+
+      const numberToItalian = (n) => {
+        const italian = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
+        return italian[n] || String(n);
       };
 
       const numberToRoman = (n) => {
@@ -6587,7 +7053,12 @@ const CognitiveTaskGame = () => {
       if (koreanNumeralsEnabled) {
         formats.push((n) => numberToKorean(n)); // Korean
       }
-      formats.push((n) => numberToRoman(n)); // Roman
+      if (italianNumeralsEnabled) {
+        formats.push((n) => numberToItalian(n)); // Italian
+      }
+      if (romanNumeralsEnabled) {
+        formats.push((n) => numberToRoman(n)); // Roman
+      }
 
       let format1 = formats[Math.floor(Math.random() * formats.length)];
       let format2 = formats[Math.floor(Math.random() * formats.length)];
@@ -6608,6 +7079,11 @@ const CognitiveTaskGame = () => {
       const numberToKorean = (n) => {
         const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         return korean[n] || String(n);
+      };
+
+      const numberToItalian = (n) => {
+        const italian = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
+        return italian[n] || String(n);
       };
 
       const numberToRoman = (n) => {
@@ -6641,7 +7117,12 @@ const CognitiveTaskGame = () => {
       if (koreanNumeralsEnabled) {
         formats.push((n) => numberToKorean(n)); // Korean
       }
-      formats.push((n) => numberToRoman(n)); // Roman
+      if (italianNumeralsEnabled) {
+        formats.push((n) => numberToItalian(n)); // Italian
+      }
+      if (romanNumeralsEnabled) {
+        formats.push((n) => numberToRoman(n)); // Roman
+      }
 
       let format1 = formats[Math.floor(Math.random() * formats.length)];
       let format2 = formats[Math.floor(Math.random() * formats.length)];
@@ -7396,7 +7877,9 @@ const CognitiveTaskGame = () => {
                     { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
                     { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
                     { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
-                    { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+                    { lang: 'chinese', flag: '🇨🇳', name: '中文' },
+                    { lang: 'italian', flag: '🇮🇹', name: 'Italiano' },
+                    { lang: 'korean', flag: '🇰🇷', name: '한국어' }
                   ].map(({ lang, flag, name }) => (
                     <button
                       key={lang}
@@ -7752,6 +8235,91 @@ const CognitiveTaskGame = () => {
                 </div>
               )}
             </div>
+
+            {/* Italian Numerals Section */}
+            <div className="bg-gradient-to-r from-green-900 to-teal-900 p-6 rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-yellow-400">🇮🇹 {t('italianNumerals')}</h2>
+                <button
+                  onClick={toggleItalianNumerals}
+                  className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                    italianNumeralsEnabled
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-gray-600 hover:bg-gray-700 text-white'
+                  }`}
+                >
+                  {italianNumeralsEnabled ? `${t('enabled')} ✓` : t('enable')}
+                </button>
+              </div>
+              <p className="text-sm text-gray-300">
+                {t('italianNumeralsDesc')}
+              </p>
+              <button
+                onClick={() => setShowItalianReference(!showItalianReference)}
+                className="text-blue-400 hover:text-blue-300 text-sm underline"
+              >
+                {showItalianReference ? `▼ ${t('viewReference')}` : `▶ ${t('viewReference')}`}
+              </button>
+
+              {showItalianReference && (
+                <div className="mt-4 p-4 bg-black/30 rounded-lg space-y-3">
+                  <p className="text-sm text-gray-300 mb-3">Italian numerals (1-9) are used in training. Here's the reference:</p>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-400 mb-1">uno</div>
+                      <div className="text-sm text-gray-400">1</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-400 mb-1">due</div>
+                      <div className="text-sm text-gray-400">2</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-400 mb-1">tre</div>
+                      <div className="text-sm text-gray-400">3</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-green-400 mb-1">quattro</div>
+                      <div className="text-sm text-gray-400">4</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-green-400 mb-1">cinque</div>
+                      <div className="text-sm text-gray-400">5</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-green-400 mb-1">sei</div>
+                      <div className="text-sm text-gray-400">6</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-400 mb-1">sette</div>
+                      <div className="text-sm text-gray-400">7</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-400 mb-1">otto</div>
+                      <div className="text-sm text-gray-400">8</div>
+                    </div>
+                    <div className="bg-black/30 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-400 mb-1">nove</div>
+                      <div className="text-sm text-gray-400">9</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
+                    <p className="text-xs text-blue-200">
+                      <strong>Tip:</strong> Odd numbers: uno-tre-cinque-sette-nove | Even numbers: due-quattro-sei-otto
+                    </p>
+                  </div>
+                  <button
+                    onClick={toggleItalianNumerals}
+                    className={`w-full px-4 py-2 rounded-lg font-bold transition-colors ${
+                      italianNumeralsEnabled
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
+                    {italianNumeralsEnabled ? 'Enabled ✓' : 'Enable Italian Numerals'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Verbal Number Language Selection */}
@@ -7780,7 +8348,9 @@ const CognitiveTaskGame = () => {
                     { lang: 'russian', flag: '🇷🇺', name: 'Русский' },
                     { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
                     { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
-                    { lang: 'chinese', flag: '🇨🇳', name: '中文' }
+                    { lang: 'chinese', flag: '🇨🇳', name: '中文' },
+                    { lang: 'italian', flag: '🇮🇹', name: 'Italiano' },
+                    { lang: 'korean', flag: '🇰🇷', name: '한국어' }
                   ].map(({ lang, flag, name }) => (
                     <button
                       key={lang}
