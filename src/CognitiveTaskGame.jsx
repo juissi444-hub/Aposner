@@ -8088,7 +8088,7 @@ const CognitiveTaskGame = () => {
             {mode === 'adaptive' && <div className="text-lg font-bold text-yellow-400 mb-2">{t('level')} {level}{experimentalMode && <span className="text-orange-300"> ({t('experimentalMode')})</span>}</div>}
             {t('task')} {currentTask + 1} / {numTasks}
           </div>
-          <div className="text-6xl font-bold space-x-8" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
+          <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 px-2 break-words" style={{fontFamily: 'Microsoft YaHei, 微软雅黑, PingFang SC, Hiragino Sans GB, STHeiti, WenQuanYi Micro Hei, Noto Sans SC, sans-serif'}}>
             <span className={getNumberColor(currentWords[0])} style={{fontFamily: 'inherit'}}>{currentWords[0]}</span>
             <span className="text-gray-500">-</span>
             <span className={getNumberColor(currentWords[1])} style={{fontFamily: 'inherit'}}>{currentWords[1]}</span>
@@ -8228,7 +8228,7 @@ const CognitiveTaskGame = () => {
           {mode === 'adaptive' ? (
             <>
               <h2 className="text-4xl font-bold">{t('level')} {level} - {t('failedToProgress')}</h2>
-              <div className="text-6xl font-bold text-red-400">
+              <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-red-400">
                 {Math.round((score / numTasks) * 100)}%
               </div>
               <div className="text-2xl text-gray-400">
@@ -8267,7 +8267,7 @@ const CognitiveTaskGame = () => {
           ) : (
             <>
               <h2 className="text-4xl font-bold">{t('trialComplete')}</h2>
-              <div className="text-6xl font-bold text-green-400">
+              <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-green-400">
                 {Math.round((score / numTasks) * 100)}%
               </div>
               <div className="text-2xl text-gray-400">
