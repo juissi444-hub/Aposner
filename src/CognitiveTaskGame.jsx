@@ -6872,7 +6872,15 @@ const CognitiveTaskGame = () => {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
+      // Prevent ESC during level transitions to avoid canceling earned progression
       if (e.key === 'Escape' && gameState !== 'menu') {
+        // Block ESC during level transition states - user earned this progression!
+        if (gameState === 'levelUp' || gameState === 'levelDown' || gameState === 'perfectScore' || gameState === 'retrain') {
+          console.log(`⚠️ ESC blocked during ${gameState} - level transition in progress`);
+          e.preventDefault();
+          return; // Don't process ESC during level transitions
+        }
+
         e.preventDefault();
         stopAllSounds();
         // Clear auto-continue timer
@@ -6881,7 +6889,7 @@ const CognitiveTaskGame = () => {
           autoContinueTimerRef.current = null;
           console.log('⏱️ Auto-continue timer cleared on ESC menu return');
         }
-        // Clear level transition timer
+        // Clear level transition timer (only if not in transition state)
         if (levelTransitionTimerRef.current) {
           clearTimeout(levelTransitionTimerRef.current);
           levelTransitionTimerRef.current = null;
