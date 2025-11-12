@@ -281,6 +281,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'Game Over',
       finalScore: 'Final Score',
       finalLevel: 'Final Level',
+      levelComplete: 'Level Complete',
+      advancingToLevel: 'Advancing to Level',
+      perfectScore: 'Perfect Score!',
+      youGotAllCorrect: 'You got all correct!',
+      excellentJob: 'Excellent job!',
+      progressingToLevel: 'Progressing to Level',
+      levelDecreased: 'Level Decreased',
+      consecutiveFailuresAtLevel: '3 consecutive failures at this level',
+      wrongAnswers: 'wrong answers',
+      decreasingToLevel: 'Decreasing to Level',
+      retraining: 'Retraining',
+      tryAgain: 'Try Again',
+      consecutiveFailures: 'Consecutive failures',
+      needLessWrongToAdvance: 'You need ≤3 wrong answers to advance',
+      failedToProgress: 'Failed to Progress',
+      needLessWrongToAdvanceNextLevel: 'You need ≤3 wrong answers to advance to the next level',
+      trialComplete: 'Trial Complete!',
+      correctAnswers: 'correct',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'Daily Training Goal',
+      dailyTrainingGoalMinutes: 'minutes',
+      setDailyTarget: 'Set your daily training time target (0-500 minutes)',
+      studyReference: 'For reference: In the study, Aposner was trained for 12 consecutive days for 25 mins per day and it was a great success.',
+      totalTrainingTimeLabel: 'Total Training Time',
+      todayLabel: 'Today',
+      experimentalModeLabel: 'Experimental Mode',
+      experimentalModeActive: 'Experimental Mode Active: All relation types available at all levels',
+      standardMode: 'Standard Mode',
+      manualModeDesc: 'Manual Mode: Choose your own level (1-18) and number of tasks (10-60)',
+      adaptiveModeDesc2: 'Adaptive Mode: Start at level 1, get 90% correct (29/32) to advance. Get 6 wrong and level decreases! Progress is saved automatically.',
 
       // Auth
       login: 'Login',
@@ -420,6 +451,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'Fin del juego',
       finalScore: 'Puntuación final',
       finalLevel: 'Nivel final',
+      levelComplete: 'Nivel Completado',
+      advancingToLevel: 'Avanzando al Nivel',
+      perfectScore: '¡Puntuación Perfecta!',
+      youGotAllCorrect: '¡Acertaste todas!',
+      excellentJob: '¡Excelente trabajo!',
+      progressingToLevel: 'Progresando al Nivel',
+      levelDecreased: 'Nivel Descendido',
+      consecutiveFailuresAtLevel: '3 fallos consecutivos en este nivel',
+      wrongAnswers: 'respuestas incorrectas',
+      decreasingToLevel: 'Descendiendo al Nivel',
+      retraining: 'Reentrenamiento',
+      tryAgain: 'Inténtalo de Nuevo',
+      consecutiveFailures: 'Fallos consecutivos',
+      needLessWrongToAdvance: 'Necesitas ≤3 respuestas incorrectas para avanzar',
+      failedToProgress: 'No se pudo Progresar',
+      needLessWrongToAdvanceNextLevel: 'Necesitas ≤3 respuestas incorrectas para avanzar al siguiente nivel',
+      trialComplete: '¡Prueba Completada!',
+      correctAnswers: 'correctas',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'Objetivo de Entrenamiento Diario',
+      dailyTrainingGoalMinutes: 'minutos',
+      setDailyTarget: 'Establece tu objetivo de tiempo de entrenamiento diario (0-500 minutos)',
+      studyReference: 'Para referencia: En el estudio, Aposner fue entrenado durante 12 días consecutivos por 25 mins por día y fue un gran éxito.',
+      totalTrainingTimeLabel: 'Tiempo Total de Entrenamiento',
+      todayLabel: 'Hoy',
+      experimentalModeLabel: 'Modo Experimental',
+      experimentalModeActive: 'Modo Experimental Activo: Todos los tipos de relación disponibles en todos los niveles',
+      standardMode: 'Modo Estándar',
+      manualModeDesc: 'Modo Manual: Elige tu propio nivel (1-18) y número de tareas (10-60)',
+      adaptiveModeDesc2: 'Modo Adaptativo: Comienza en nivel 1, obtén 90% correcto (29/32) para avanzar. ¡6 errores y el nivel disminuye! El progreso se guarda automáticamente.',
 
       // Auth
       login: 'Iniciar sesión',
@@ -559,6 +621,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'Spelet är slut',
       finalScore: 'Slutpoäng',
       finalLevel: 'Slutnivå',
+      levelComplete: 'Nivå Klar',
+      advancingToLevel: 'Avancerar till Nivå',
+      perfectScore: 'Perfekt Poäng!',
+      youGotAllCorrect: 'Du fick alla rätt!',
+      excellentJob: 'Utmärkt jobb!',
+      progressingToLevel: 'Framsteg till Nivå',
+      levelDecreased: 'Nivå Minskad',
+      consecutiveFailuresAtLevel: '3 på varandra följande misslyckanden på denna nivå',
+      wrongAnswers: 'felaktiga svar',
+      decreasingToLevel: 'Minskar till Nivå',
+      retraining: 'Omskolning',
+      tryAgain: 'Försök Igen',
+      consecutiveFailures: 'På varandra följande misslyckanden',
+      needLessWrongToAdvance: 'Du behöver ≤3 felaktiga svar för att avancera',
+      failedToProgress: 'Misslyckades att Avancera',
+      needLessWrongToAdvanceNextLevel: 'Du behöver ≤3 felaktiga svar för att avancera till nästa nivå',
+      trialComplete: 'Försök Klart!',
+      correctAnswers: 'rätt',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'Dagligt Träningsmål',
+      dailyTrainingGoalMinutes: 'minuter',
+      setDailyTarget: 'Ställ in ditt dagliga träningstidsmål (0-500 minuter)',
+      studyReference: 'För referens: I studien tränades Aposner i 12 dagar i rad i 25 minuter per dag och det var en stor framgång.',
+      totalTrainingTimeLabel: 'Total Träningstid',
+      todayLabel: 'Idag',
+      experimentalModeLabel: 'Experimentellt Läge',
+      experimentalModeActive: 'Experimentellt Läge Aktivt: Alla relationstyper tillgängliga på alla nivåer',
+      standardMode: 'Standardläge',
+      manualModeDesc: 'Manuellt Läge: Välj din egen nivå (1-18) och antal uppgifter (10-60)',
+      adaptiveModeDesc2: 'Adaptivt Läge: Börja på nivå 1, få 90% rätt (29/32) för att avancera. 6 fel och nivån minskar! Framsteg sparas automatiskt.',
 
       // Auth
       login: 'Logga in',
@@ -698,6 +791,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'Peli päättyi',
       finalScore: 'Lopulliset pisteet',
       finalLevel: 'Lopullinen taso',
+      levelComplete: 'Taso Valmis',
+      advancingToLevel: 'Edetään Tasolle',
+      perfectScore: 'Täydellinen Tulos!',
+      youGotAllCorrect: 'Sait kaikki oikein!',
+      excellentJob: 'Loistavaa työtä!',
+      progressingToLevel: 'Edistytään Tasolle',
+      levelDecreased: 'Taso Laskee',
+      consecutiveFailuresAtLevel: '3 peräkkäistä epäonnistumista tällä tasolla',
+      wrongAnswers: 'vääriä vastauksia',
+      decreasingToLevel: 'Laskemassa Tasolle',
+      retraining: 'Uudelleenkoulutus',
+      tryAgain: 'Yritä Uudelleen',
+      consecutiveFailures: 'Peräkkäiset epäonnistumiset',
+      needLessWrongToAdvance: 'Tarvitset ≤3 vääriä vastauksia edetäksesi',
+      failedToProgress: 'Edistyminen Epäonnistui',
+      needLessWrongToAdvanceNextLevel: 'Tarvitset ≤3 vääriä vastauksia edetäksesi seuraavalle tasolle',
+      trialComplete: 'Yritys Valmis!',
+      correctAnswers: 'oikein',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'Päivittäinen Harjoitustavoite',
+      dailyTrainingGoalMinutes: 'minuuttia',
+      setDailyTarget: 'Aseta päivittäinen harjoitusaikatavoitteesi (0-500 minuuttia)',
+      studyReference: 'Vertailuun: Tutkimuksessa Aposneria harjoitettiin 12 peräkkäisenä päivänä 25 minuuttia päivässä ja se oli suuri menestys.',
+      totalTrainingTimeLabel: 'Kokonaisharjoitusaika',
+      todayLabel: 'Tänään',
+      experimentalModeLabel: 'Kokeellinen Tila',
+      experimentalModeActive: 'Kokeellinen Tila Aktiivinen: Kaikki suhtautumistyypit saatavilla kaikilla tasoilla',
+      standardMode: 'Vakiotila',
+      manualModeDesc: 'Manuaalinen Tila: Valitse oma tasosi (1-18) ja tehtävien määrä (10-60)',
+      adaptiveModeDesc2: 'Adaptiivinen Tila: Aloita tasolta 1, saa 90% oikein (29/32) edetäksesi. 6 väärin ja taso laskee! Edistyminen tallennetaan automaattisesti.',
 
       // Auth
       login: 'Kirjaudu sisään',
@@ -837,6 +961,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'Игра окончена',
       finalScore: 'Итоговый счёт',
       finalLevel: 'Итоговый уровень',
+      levelComplete: 'Уровень Пройден',
+      advancingToLevel: 'Переход на Уровень',
+      perfectScore: 'Идеальный Результат!',
+      youGotAllCorrect: 'Все ответы правильные!',
+      excellentJob: 'Отличная работа!',
+      progressingToLevel: 'Продвижение на Уровень',
+      levelDecreased: 'Уровень Понижен',
+      consecutiveFailuresAtLevel: '3 последовательные неудачи на этом уровне',
+      wrongAnswers: 'неправильных ответов',
+      decreasingToLevel: 'Понижение до Уровня',
+      retraining: 'Переподготовка',
+      tryAgain: 'Попробуйте Снова',
+      consecutiveFailures: 'Последовательные неудачи',
+      needLessWrongToAdvance: 'Вам нужно ≤3 неправильных ответов для продвижения',
+      failedToProgress: 'Не Удалось Продвинуться',
+      needLessWrongToAdvanceNextLevel: 'Вам нужно ≤3 неправильных ответов для перехода на следующий уровень',
+      trialComplete: 'Испытание Завершено!',
+      correctAnswers: 'правильных',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'Ежедневная Цель Тренировки',
+      dailyTrainingGoalMinutes: 'минут',
+      setDailyTarget: 'Установите ежедневную цель времени тренировки (0-500 минут)',
+      studyReference: 'Для справки: В исследовании Aposner тренировался в течение 12 дней подряд по 25 минут в день, и это было большим успехом.',
+      totalTrainingTimeLabel: 'Общее Время Тренировки',
+      todayLabel: 'Сегодня',
+      experimentalModeLabel: 'Экспериментальный Режим',
+      experimentalModeActive: 'Экспериментальный Режим Активен: Все типы отношений доступны на всех уровнях',
+      standardMode: 'Стандартный Режим',
+      manualModeDesc: 'Ручной Режим: Выберите свой уровень (1-18) и количество задач (10-60)',
+      adaptiveModeDesc2: 'Адаптивный Режим: Начните с уровня 1, получите 90% правильных (29/32) для продвижения. 6 неправильных и уровень понижается! Прогресс сохраняется автоматически.',
 
       // Auth
       login: 'Войти',
@@ -976,6 +1131,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'انتهت اللعبة',
       finalScore: 'النتيجة النهائية',
       finalLevel: 'المستوى النهائي',
+      levelComplete: 'اكتمل المستوى',
+      advancingToLevel: 'التقدم إلى المستوى',
+      perfectScore: 'نتيجة مثالية!',
+      youGotAllCorrect: 'حصلت على كل الإجابات الصحيحة!',
+      excellentJob: 'عمل ممتاز!',
+      progressingToLevel: 'التقدم إلى المستوى',
+      levelDecreased: 'انخفض المستوى',
+      consecutiveFailuresAtLevel: '3 إخفاقات متتالية في هذا المستوى',
+      wrongAnswers: 'إجابات خاطئة',
+      decreasingToLevel: 'الانخفاض إلى المستوى',
+      retraining: 'إعادة التدريب',
+      tryAgain: 'حاول مرة أخرى',
+      consecutiveFailures: 'الإخفاقات المتتالية',
+      needLessWrongToAdvance: 'تحتاج إلى ≤3 إجابات خاطئة للتقدم',
+      failedToProgress: 'فشل التقدم',
+      needLessWrongToAdvanceNextLevel: 'تحتاج إلى ≤3 إجابات خاطئة للانتقال إلى المستوى التالي',
+      trialComplete: 'اكتملت المحاولة!',
+      correctAnswers: 'صحيحة',
+
+      // Settings strings
+      dailyTrainingGoalLabel: 'هدف التدريب اليومي',
+      dailyTrainingGoalMinutes: 'دقائق',
+      setDailyTarget: 'حدد هدف وقت التدريب اليومي (0-500 دقيقة)',
+      studyReference: 'للإشارة: في الدراسة، تم تدريب Aposner لمدة 12 يومًا متتاليًا لمدة 25 دقيقة في اليوم وكان نجاحًا كبيرًا.',
+      totalTrainingTimeLabel: 'إجمالي وقت التدريب',
+      todayLabel: 'اليوم',
+      experimentalModeLabel: 'الوضع التجريبي',
+      experimentalModeActive: 'الوضع التجريبي نشط: جميع أنواع العلاقات متاحة في جميع المستويات',
+      standardMode: 'الوضع القياسي',
+      manualModeDesc: 'الوضع اليدوي: اختر مستواك الخاص (1-18) وعدد المهام (10-60)',
+      adaptiveModeDesc2: 'الوضع التكيفي: ابدأ من المستوى 1، احصل على 90٪ صحيح (29/32) للتقدم. 6 أخطاء وينخفض المستوى! يتم حفظ التقدم تلقائيًا.',
 
       // Auth
       login: 'تسجيل الدخول',
@@ -1115,6 +1301,37 @@ const CognitiveTaskGame = () => {
       gameOver: 'ゲームオーバー',
       finalScore: '最終スコア',
       finalLevel: '最終レベル',
+      levelComplete: 'レベル完了',
+      advancingToLevel: 'レベルへ進む',
+      perfectScore: 'パーフェクトスコア！',
+      youGotAllCorrect: 'すべて正解しました！',
+      excellentJob: '素晴らしい！',
+      progressingToLevel: 'レベルへ進行中',
+      levelDecreased: 'レベル低下',
+      consecutiveFailuresAtLevel: 'このレベルで3回連続失敗',
+      wrongAnswers: '不正解',
+      decreasingToLevel: 'レベルへ低下',
+      retraining: '再トレーニング',
+      tryAgain: 'もう一度やり直す',
+      consecutiveFailures: '連続失敗',
+      needLessWrongToAdvance: '進むには≤3つの不正解が必要です',
+      failedToProgress: '進行失敗',
+      needLessWrongToAdvanceNextLevel: '次のレベルに進むには≤3つの不正解が必要です',
+      trialComplete: 'トライアル完了！',
+      correctAnswers: '正解',
+
+      // Settings strings
+      dailyTrainingGoalLabel: '毎日のトレーニング目標',
+      dailyTrainingGoalMinutes: '分',
+      setDailyTarget: '毎日のトレーニング時間の目標を設定します（0-500分）',
+      studyReference: '参考：研究では、Aposnerは12日間連続で1日あたり25分間トレーニングされ、大成功を収めました。',
+      totalTrainingTimeLabel: '総トレーニング時間',
+      todayLabel: '今日',
+      experimentalModeLabel: '実験モード',
+      experimentalModeActive: '実験モードアクティブ：すべてのレベルですべての関係タイプが利用可能',
+      standardMode: '標準モード',
+      manualModeDesc: 'マニュアルモード：自分のレベル（1-18）とタスク数（10-60）を選択',
+      adaptiveModeDesc2: 'アダプティブモード：レベル1から始め、90%正解（29/32）で進みます。6つ間違えるとレベルが下がります！進捗は自動的に保存されます。',
 
       // Auth
       login: 'ログイン',
@@ -1254,6 +1471,37 @@ const CognitiveTaskGame = () => {
       gameOver: '游戏结束',
       finalScore: '最终分数',
       finalLevel: '最终级别',
+      levelComplete: '级别完成',
+      advancingToLevel: '前进到级别',
+      perfectScore: '完美得分！',
+      youGotAllCorrect: '全部答对了！',
+      excellentJob: '出色的工作！',
+      progressingToLevel: '进展到级别',
+      levelDecreased: '级别降低',
+      consecutiveFailuresAtLevel: '在此级别连续3次失败',
+      wrongAnswers: '错误答案',
+      decreasingToLevel: '降低到级别',
+      retraining: '重新训练',
+      tryAgain: '再试一次',
+      consecutiveFailures: '连续失败',
+      needLessWrongToAdvance: '您需要≤3个错误答案才能前进',
+      failedToProgress: '未能前进',
+      needLessWrongToAdvanceNextLevel: '您需要≤3个错误答案才能前进到下一级别',
+      trialComplete: '试验完成！',
+      correctAnswers: '正确',
+
+      // Settings strings
+      dailyTrainingGoalLabel: '每日训练目标',
+      dailyTrainingGoalMinutes: '分钟',
+      setDailyTarget: '设置您的每日训练时间目标（0-500分钟）',
+      studyReference: '参考：在研究中，Aposner连续12天每天训练25分钟，取得了巨大成功。',
+      totalTrainingTimeLabel: '总训练时间',
+      todayLabel: '今天',
+      experimentalModeLabel: '实验模式',
+      experimentalModeActive: '实验模式激活：所有级别都可使用所有关系类型',
+      standardMode: '标准模式',
+      manualModeDesc: '手动模式：选择自己的级别（1-18）和任务数量（10-60）',
+      adaptiveModeDesc2: '自适应模式：从级别1开始，获得90%正确（29/32）以前进。6个错误，级别下降！进度自动保存。',
 
       // Auth
       login: '登录',
@@ -7474,10 +7722,10 @@ const CognitiveTaskGame = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex-1">
-                  <p className="text-lg font-medium">Daily Training Goal: {trainingGoalMinutes} minutes</p>
-                  <p className="text-sm text-gray-400">Set your daily training time target (0-500 minutes)</p>
+                  <p className="text-lg font-medium">{t('dailyTrainingGoalLabel')}: {trainingGoalMinutes} {t('dailyTrainingGoalMinutes')}</p>
+                  <p className="text-sm text-gray-400">{t('setDailyTarget')}</p>
                   <p className="text-xs text-blue-300 mt-2 italic">
-                    For reference: In the study, Aposner was trained for 12 consecutive days for 25 mins per day and it was a great success.
+                    {t('studyReference')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -7516,7 +7764,7 @@ const CognitiveTaskGame = () => {
               {totalTrainingMinutes > 0 && (
                 <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
                   <p className="text-sm text-blue-300">
-                    <strong>Total Training Time:</strong> {formatTime(totalTrainingMinutes + totalSessionMinutes + currentSessionMinutes, totalSessionSeconds + currentSessionSeconds)}
+                    <strong>{t('totalTrainingTimeLabel')}:</strong> {formatTime(totalTrainingMinutes + totalSessionMinutes + currentSessionMinutes, totalSessionSeconds + currentSessionSeconds)}
                   </p>
                   {trainingGoalMinutes > 0 && (
                     <div className="mt-2">
@@ -7527,7 +7775,7 @@ const CognitiveTaskGame = () => {
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
-                        Today: {formatTime(totalSessionMinutes + currentSessionMinutes, totalSessionSeconds + currentSessionSeconds)} / {trainingGoalMinutes} minutes ({Math.round(((totalSessionMinutes + currentSessionMinutes) / trainingGoalMinutes) * 100)}%)
+                        {t('todayLabel')}: {formatTime(totalSessionMinutes + currentSessionMinutes, totalSessionSeconds + currentSessionSeconds)} / {trainingGoalMinutes} {t('minutes')} ({Math.round(((totalSessionMinutes + currentSessionMinutes) / trainingGoalMinutes) * 100)}%)
                       </p>
                     </div>
                   )}
@@ -7537,7 +7785,7 @@ const CognitiveTaskGame = () => {
           </div>
 
           <div className="bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Experimental Mode</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t('experimentalModeLabel')}</h2>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-lg font-medium">Enable Experimental Features</p>
@@ -7579,7 +7827,7 @@ const CognitiveTaskGame = () => {
             {experimentalMode && (
               <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-700 rounded-lg">
                 <p className="text-sm text-yellow-300">
-                  <strong>Experimental Mode Active:</strong> All relation types available at all levels
+                  <strong>{t('experimentalModeActive')}</strong>
                 </p>
               </div>
             )}
@@ -7635,8 +7883,8 @@ const CognitiveTaskGame = () => {
               </button>
             </div>
             <div className="text-sm text-gray-400 space-y-2 mt-4">
-              <p><strong>Manual Mode:</strong> Choose your own level (1-18) and number of tasks (10-60)</p>
-              <p><strong>Adaptive Mode:</strong> Start at level 1, get 90% correct (29/32) to advance. Get 6 wrong and level decreases! Progress is saved automatically.</p>
+              <p>{t('manualModeDesc')}</p>
+              <p>{t('adaptiveModeDesc2')}</p>
             </div>
             <div className="mt-4 p-3 bg-green-900/40 border border-green-700 rounded-lg">
               <p className="text-sm text-green-200">
@@ -7774,7 +8022,7 @@ const CognitiveTaskGame = () => {
           </div>
           {mode === 'adaptive' && (
             <div className="text-sm text-gray-400 mb-8">
-              (Level {level} - {experimentalMode ? 'Experimental Mode' : 'Standard Mode'})
+              ({t('level')} {level} - {experimentalMode ? t('experimentalModeLabel') : t('standardMode')})
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -7908,15 +8156,15 @@ const CognitiveTaskGame = () => {
       {gameState === 'levelUp' && (
         <div className="text-center space-y-8">
           <div className="text-8xl font-bold text-green-400">🎉</div>
-          <h2 className="text-5xl font-bold text-green-400">Level Up!</h2>
+          <h2 className="text-5xl font-bold text-green-400">{t('levelUp')}</h2>
           <div className="text-3xl text-white">
-            Level {level} Complete
+            {t('level')} {level} {t('levelComplete')}
           </div>
           <div className="text-2xl text-gray-400">
-            {score} / {numTasks} correct ({Math.round((score / numTasks) * 100)}%)
+            {score} / {numTasks} {t('correctAnswers')} ({Math.round((score / numTasks) * 100)}%)
           </div>
           <div className="text-xl text-yellow-400">
-            Advancing to Level {level + 1}...
+            {t('advancingToLevel')} {level + 1}...
           </div>
         </div>
       )}
@@ -7924,18 +8172,18 @@ const CognitiveTaskGame = () => {
       {gameState === 'perfectScore' && (
         <div className="text-center space-y-8">
           <div className="text-8xl font-bold text-yellow-400">⭐</div>
-          <h2 className="text-5xl font-bold text-yellow-400">Perfect Score!</h2>
+          <h2 className="text-5xl font-bold text-yellow-400">{t('perfectScore')}</h2>
           <div className="text-3xl text-white">
-            You got all correct!
+            {t('youGotAllCorrect')}
           </div>
           <div className="text-2xl text-green-400 font-bold">
-            Excellent job!
+            {t('excellentJob')}
           </div>
           <div className="text-2xl text-gray-400">
-            {score} / {numTasks} correct (100%)
+            {score} / {numTasks} {t('correctAnswers')} (100%)
           </div>
           <div className="text-xl text-yellow-400">
-            Progressing to Level {level + 1}...
+            {t('progressingToLevel')} {level + 1}...
           </div>
         </div>
       )}
@@ -7943,15 +8191,15 @@ const CognitiveTaskGame = () => {
       {gameState === 'levelDown' && (
         <div className="text-center space-y-8">
           <div className="text-8xl font-bold text-red-400">⚠️</div>
-          <h2 className="text-5xl font-bold text-red-400">Level Decreased</h2>
+          <h2 className="text-5xl font-bold text-red-400">{t('levelDecreased')}</h2>
           <div className="text-3xl text-white">
-            3 consecutive failures at this level
+            {t('consecutiveFailuresAtLevel')}
           </div>
           <div className="text-2xl text-gray-400">
-            ({wrongCount} wrong answers)
+            ({wrongCount} {t('wrongAnswers')})
           </div>
           <div className="text-2xl text-yellow-400">
-            Decreasing to Level {Math.max(1, level - 1)}...
+            {t('decreasingToLevel')} {Math.max(1, level - 1)}...
           </div>
         </div>
       )}
@@ -7959,18 +8207,18 @@ const CognitiveTaskGame = () => {
       {gameState === 'retrain' && (
         <div className="text-center space-y-8">
           <div className="text-8xl font-bold text-orange-400">🔄</div>
-          <h2 className="text-5xl font-bold text-orange-400">Retraining</h2>
+          <h2 className="text-5xl font-bold text-orange-400">{t('retraining')}</h2>
           <div className="text-3xl text-white">
-            Level {level} - Try Again
+            {t('level')} {level} - {t('tryAgain')}
           </div>
           <div className="text-2xl text-gray-400">
-            {wrongCount} wrong answers ({score}/{numTasks} correct)
+            {wrongCount} {t('wrongAnswers')} ({score}/{numTasks} {t('correctAnswers')})
           </div>
           <div className="text-xl text-yellow-400">
-            Consecutive failures: {consecutiveFailures}/3
+            {t('consecutiveFailures')}: {consecutiveFailures}/3
           </div>
           <div className="text-lg text-gray-300">
-            You need ≤3 wrong answers to advance
+            {t('needLessWrongToAdvance')}
           </div>
         </div>
       )}
@@ -7979,15 +8227,15 @@ const CognitiveTaskGame = () => {
         <div className="text-center space-y-8">
           {mode === 'adaptive' ? (
             <>
-              <h2 className="text-4xl font-bold">Level {level} - Failed to Progress</h2>
+              <h2 className="text-4xl font-bold">{t('level')} {level} - {t('failedToProgress')}</h2>
               <div className="text-6xl font-bold text-red-400">
                 {Math.round((score / numTasks) * 100)}%
               </div>
               <div className="text-2xl text-gray-400">
-                {score} / {numTasks} correct
+                {score} / {numTasks} {t('correctAnswers')}
               </div>
               <div className="text-xl text-gray-300">
-                You need ≤3 wrong answers to advance to the next level
+                {t('needLessWrongToAdvanceNextLevel')}
               </div>
               <button
                 onClick={() => {
@@ -8018,12 +8266,12 @@ const CognitiveTaskGame = () => {
             </>
           ) : (
             <>
-              <h2 className="text-4xl font-bold">Trial Complete!</h2>
+              <h2 className="text-4xl font-bold">{t('trialComplete')}</h2>
               <div className="text-6xl font-bold text-green-400">
                 {Math.round((score / numTasks) * 100)}%
               </div>
               <div className="text-2xl text-gray-400">
-                {score} / {numTasks} correct
+                {score} / {numTasks} {t('correctAnswers')}
               </div>
               <div className="text-gray-500">
                 Returning to menu in 5 seconds...
@@ -8347,7 +8595,7 @@ const CognitiveTaskGame = () => {
                             if (minutes === 0 && seconds === 0) return null;
                             return (
                               <div className={`${index === 0 ? 'text-sm' : 'text-xs'} text-green-400`}>
-                                Today: {formatTime(minutes, seconds)}
+                                {t('todayLabel')}: {formatTime(minutes, seconds)}
                               </div>
                             );
                           })()}
