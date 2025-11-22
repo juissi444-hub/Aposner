@@ -152,11 +152,9 @@ const CognitiveTaskGame = () => {
   const [chineseNumeralsEnabled, setChineseNumeralsEnabled] = useState(false);
   const [koreanNumeralsEnabled, setKoreanNumeralsEnabled] = useState(false);
   const [romanNumeralsEnabled, setRomanNumeralsEnabled] = useState(true); // Default to true for backward compatibility
-  const [italianNumeralsEnabled, setItalianNumeralsEnabled] = useState(false);
   const [showChineseReference, setShowChineseReference] = useState(false);
   const [showKoreanReference, setShowKoreanReference] = useState(false);
   const [showRomanReference, setShowRomanReference] = useState(false);
-  const [showItalianReference, setShowItalianReference] = useState(false);
 
   // Verbal number language selection - multiple languages can be enabled
   const [verbalLanguagesEnabled, setVerbalLanguagesEnabled] = useState({
@@ -168,7 +166,6 @@ const CognitiveTaskGame = () => {
     arabic: false,
     japanese: false,
     chinese: false,
-    italian: false,
     korean: false
   });
   const [showVerbalSettings, setShowVerbalSettings] = useState(false);
@@ -208,11 +205,10 @@ const CognitiveTaskGame = () => {
       verbalNumbersDesc: 'Enable multiple languages for verbal numbers (1-1000). Numbers like "twenty-one", "veinte-uno", "двадцать один" will appear in all training modes: Same Format, Same Meaning, and Odd/Even tasks. All enabled languages can be mixed together.',
       toggleSettings: 'Toggle Settings',
 
-      // Chinese & Korean & Roman & Italian Numerals
+      // Chinese & Korean & Roman Numerals
       chineseNumerals: 'Chinese Numerals',
       koreanNumerals: 'Korean Numerals',
       romanNumerals: 'Roman Numerals',
-      italianNumerals: 'Italian Numerals',
       enable: 'Enable',
       disable: 'Disable',
       enabled: 'Enabled',
@@ -220,7 +216,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Include traditional Chinese numerals (一, 二, 三...) in training. A visual reference guide is available below.',
       koreanNumeralsDesc: 'Include Sino-Korean numerals (일, 이, 삼...) in training. A visual reference guide is available below.',
       romanNumeralsDesc: 'Include Roman numerals (I, II, III...) in training. A visual reference guide is available below.',
-      italianNumeralsDesc: 'Include Italian numerals (uno, due, tre...) in training. A visual reference guide is available below.',
 
       // Sound Settings
       soundSettings: 'Sound Settings',
@@ -387,7 +382,6 @@ const CognitiveTaskGame = () => {
       chineseNumerals: 'Numerales chinos',
       koreanNumerals: 'Numerales coreanos',
       romanNumerals: 'Numerales romanos',
-      italianNumerals: 'Numerales italianos',
       enable: 'Habilitar',
       disable: 'Deshabilitar',
       enabled: 'Habilitado',
@@ -395,7 +389,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Incluye numerales chinos tradicionales (一, 二, 三...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
       koreanNumeralsDesc: 'Incluye numerales sino-coreanos (일, 이, 삼...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
       romanNumeralsDesc: 'Incluye numerales romanos (I, II, III...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
-      italianNumeralsDesc: 'Incluye numerales italianos (uno, due, tre...) en el entrenamiento. Hay una guía de referencia visual disponible a continuación.',
 
       // Sound Settings
       soundSettings: 'Configuración de sonido',
@@ -569,8 +562,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Inkludera traditionella kinesiska siffror (一, 二, 三...) i träning. En visuell referensguide finns tillgänglig nedan.',
       koreanNumeralsDesc: 'Inkludera sino-koreanska siffror (일, 이, 삼...) i träning. En visuell referensguide finns tillgänglig nedan.',
       romanNumeralsDesc: 'Inkludera romerska siffror (I, II, III...) i träning. En visuell referensguide finns tillgänglig nedan.',
-      italianNumerals: 'Italienska siffror',
-      italianNumeralsDesc: 'Inkludera italienska siffror (uno, due, tre...) i träning. En visuell referensguide finns tillgänglig nedan.',
 
       // Sound Settings
       soundSettings: 'Ljudinställningar',
@@ -744,8 +735,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Sisällytä perinteiset kiinalaiset numerot (一, 二, 三...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
       koreanNumeralsDesc: 'Sisällytä sino-korealaiset numerot (일, 이, 삼...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
       romanNumeralsDesc: 'Sisällytä roomalaiset numerot (I, II, III...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
-      italianNumerals: 'Italialaiset numerot',
-      italianNumeralsDesc: 'Sisällytä italialaiset numerot (uno, due, tre...) harjoitteluun. Visuaalinen viiteopas on saatavilla alla.',
 
       // Sound Settings
       soundSettings: 'Ääniasetukset',
@@ -919,8 +908,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'Включите традиционные китайские цифры (一, 二, 三...) в тренировку. Визуальное справочное руководство доступно ниже.',
       koreanNumeralsDesc: 'Включите сино-корейские цифры (일, 이, 삼...) в тренировку. Визуальное справочное руководство доступно ниже.',
       romanNumeralsDesc: 'Включите римские цифры (I, II, III...) в тренировку. Визуальное справочное руководство доступно ниже.',
-      italianNumerals: 'Итальянские цифры',
-      italianNumeralsDesc: 'Включите итальянские цифры (uno, due, tre...) в тренировку. Визуальное справочное руководство доступно ниже.',
 
       // Sound Settings
       soundSettings: 'Настройки звука',
@@ -1094,8 +1081,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: 'قم بتضمين الأرقام الصينية التقليدية (一، 二، 三...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
       koreanNumeralsDesc: 'قم بتضمين الأرقام الصينية الكورية (일، 이، 삼...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
       romanNumeralsDesc: 'قم بتضمين الأرقام الرومانية (I، II، III...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
-      italianNumerals: 'الأرقام الإيطالية',
-      italianNumeralsDesc: 'قم بتضمين الأرقام الإيطالية (uno، due، tre...) في التدريب. يتوفر دليل مرجعي مرئي أدناه.',
 
       // Sound Settings
       soundSettings: 'إعدادات الصوت',
@@ -1269,8 +1254,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: '伝統的な漢数字（一、二、三...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
       koreanNumeralsDesc: '漢字系韓国数字（일、이、삼...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
       romanNumeralsDesc: 'ローマ数字（I、II、III...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
-      italianNumerals: 'イタリア数字',
-      italianNumeralsDesc: 'イタリア数字（uno、due、tre...）をトレーニングに含めます。視覚的なリファレンスガイドは以下で利用できます。',
 
       // Sound Settings
       soundSettings: 'サウンド設定',
@@ -1444,8 +1427,6 @@ const CognitiveTaskGame = () => {
       chineseNumeralsDesc: '在训练中包含传统中文数字（一、二、三...）。下面提供了视觉参考指南。',
       koreanNumeralsDesc: '在训练中包含汉字韩文数字（일、이、삼...）。下面提供了视觉参考指南。',
       romanNumeralsDesc: '在训练中包含罗马数字（I、II、III...）。下面提供了视觉参考指南。',
-      italianNumerals: '意大利数字',
-      italianNumeralsDesc: '在训练中包含意大利数字（uno、due、tre...）。下面提供了视觉参考指南。',
 
       // Sound Settings
       soundSettings: '声音设置',
@@ -2483,26 +2464,6 @@ const CognitiveTaskGame = () => {
     }
   };
 
-  const toggleItalianNumerals = async () => {
-    const newState = !italianNumeralsEnabled;
-    setItalianNumeralsEnabled(newState);
-    localStorage.setItem('italianNumeralsEnabled', String(newState));
-    console.log('🇮🇹 Italian numerals', newState ? 'enabled' : 'disabled');
-
-    // Save to server
-    if (isSupabaseConfigured() && user && !user.id.startsWith('anon_')) {
-      try {
-        await supabase
-          .from('leaderboard')
-          .update({ italian_numerals_enabled: newState })
-          .eq('user_id', user.id);
-        console.log('✅ Italian numerals setting saved to server:', newState);
-      } catch (err) {
-        console.warn('⚠️ Failed to save Italian numerals setting to server:', err.message);
-      }
-    }
-  };
-
   // Toggle verbal number language on/off
   const toggleVerbalLanguage = async (language) => {
     const newState = {
@@ -2566,7 +2527,6 @@ const CognitiveTaskGame = () => {
             chinese_numerals_enabled: localStorage.getItem('chineseNumeralsEnabled') === 'true',
             korean_numerals_enabled: localStorage.getItem('koreanNumeralsEnabled') === 'true',
             roman_numerals_enabled: localStorage.getItem('romanNumeralsEnabled') === null ? true : localStorage.getItem('romanNumeralsEnabled') === 'true',
-            italian_numerals_enabled: localStorage.getItem('italianNumeralsEnabled') === 'true',
             training_goal_minutes: parseInt(localStorage.getItem('trainingGoalMinutes')) || 0
           };
 
@@ -3421,12 +3381,10 @@ const CognitiveTaskGame = () => {
     const koreanEnabled = localStorage.getItem('koreanNumeralsEnabled') === 'true';
     const romanEnabledStr = localStorage.getItem('romanNumeralsEnabled');
     const romanEnabled = romanEnabledStr === null ? true : romanEnabledStr === 'true'; // Default to true if not set
-    const italianEnabled = localStorage.getItem('italianNumeralsEnabled') === 'true';
     setChineseNumeralsEnabled(chineseEnabled);
     setKoreanNumeralsEnabled(koreanEnabled);
     setRomanNumeralsEnabled(romanEnabled);
-    setItalianNumeralsEnabled(italianEnabled);
-    console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled, 'Roman:', romanEnabled, 'Italian:', italianEnabled);
+    console.log('📥 Loaded numeral settings - Chinese:', chineseEnabled, 'Korean:', koreanEnabled, 'Roman:', romanEnabled);
 
     // Load verbal languages settings
     const savedVerbalLangs = localStorage.getItem('verbalLanguagesEnabled');
@@ -3734,35 +3692,6 @@ const CognitiveTaskGame = () => {
       return num.toString();
     },
 
-    italian: (num) => {
-      if (num === 0) return 'zero';
-      const ones = ['', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
-      const teens = ['dieci', 'undici', 'dodici', 'tredici', 'quattordici', 'quindici', 'sedici', 'diciassette', 'diciotto', 'diciannove'];
-      const tens = ['', '', 'venti', 'trenta', 'quaranta', 'cinquanta', 'sessanta', 'settanta', 'ottanta', 'novanta'];
-      const hundreds = ['', 'cento', 'duecento', 'trecento', 'quattrocento', 'cinquecento',
-                        'seicento', 'settecento', 'ottocento', 'novecento'];
-
-      if (num < 10) return ones[num];
-      if (num < 20) return teens[num - 10];
-      if (num < 100) {
-        const t = Math.floor(num / 10);
-        const o = num % 10;
-        // Special rule: venti + uno = ventuno, venti + otto = ventotto (drop last vowel)
-        if (o === 1 || o === 8) {
-          return tens[t].slice(0, -1) + ones[o];
-        }
-        return tens[t] + ones[o];
-      }
-      if (num === 100) return 'cento';
-      if (num < 1000) {
-        const h = Math.floor(num / 100);
-        const remainder = num % 100;
-        return hundreds[h] + (remainder ? numberToWords.italian(remainder) : '');
-      }
-      if (num === 1000) return 'mille';
-      return num.toString();
-    },
-
     korean: (num) => {
       if (num === 0) return '영';
       // Native Korean numbers (하나, 둘, 셋...)
@@ -3929,12 +3858,6 @@ const CognitiveTaskGame = () => {
     const toKorean = (num) => {
       const koreanMap = { 1: '일', 2: '이', 3: '삼', 4: '사', 5: '오', 6: '육', 7: '칠', 8: '팔', 9: '구' };
       return koreanMap[num] || num.toString();
-    };
-
-    // Helper to convert to Italian numerals (1-9)
-    const toItalian = (num) => {
-      const italianMap = { 1: 'uno', 2: 'due', 3: 'tre', 4: 'quattro', 5: 'cinque', 6: 'sei', 7: 'sette', 8: 'otto', 9: 'nove' };
-      return italianMap[num] || num.toString();
     };
 
     enabledLangs.forEach(language => {
@@ -6960,11 +6883,6 @@ const CognitiveTaskGame = () => {
         return korean[n] || String(n);
       };
 
-      const numberToItalian = (n) => {
-        const italian = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
-        return italian[n] || String(n);
-      };
-
       const numberToRoman = (n) => {
         if (n === 0) return '0';
         const vals = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -6985,7 +6903,7 @@ const CognitiveTaskGame = () => {
       const evenNum = evenNums[Math.floor(Math.random() * evenNums.length)];
       const oddNum = oddNums[Math.floor(Math.random() * oddNums.length)];
 
-      // Choose one format (Arabic, Chinese, Korean, Italian, or Roman) - only include enabled formats
+      // Choose one format (Arabic, Chinese, Korean, or Roman) - only include enabled formats
       const formats = [
         (n) => String(n) // Arabic
       ];
@@ -6994,9 +6912,6 @@ const CognitiveTaskGame = () => {
       }
       if (koreanNumeralsEnabled) {
         formats.push((n) => numberToKorean(n)); // Korean
-      }
-      if (italianNumeralsEnabled) {
-        formats.push((n) => numberToItalian(n)); // Italian
       }
       if (romanNumeralsEnabled) {
         formats.push((n) => numberToRoman(n)); // Roman
@@ -7016,11 +6931,6 @@ const CognitiveTaskGame = () => {
       const numberToKorean = (n) => {
         const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         return korean[n] || String(n);
-      };
-
-      const numberToItalian = (n) => {
-        const italian = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
-        return italian[n] || String(n);
       };
 
       const numberToRoman = (n) => {
@@ -7053,9 +6963,6 @@ const CognitiveTaskGame = () => {
       if (koreanNumeralsEnabled) {
         formats.push((n) => numberToKorean(n)); // Korean
       }
-      if (italianNumeralsEnabled) {
-        formats.push((n) => numberToItalian(n)); // Italian
-      }
       if (romanNumeralsEnabled) {
         formats.push((n) => numberToRoman(n)); // Roman
       }
@@ -7079,11 +6986,6 @@ const CognitiveTaskGame = () => {
       const numberToKorean = (n) => {
         const korean = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         return korean[n] || String(n);
-      };
-
-      const numberToItalian = (n) => {
-        const italian = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
-        return italian[n] || String(n);
       };
 
       const numberToRoman = (n) => {
@@ -7116,9 +7018,6 @@ const CognitiveTaskGame = () => {
       }
       if (koreanNumeralsEnabled) {
         formats.push((n) => numberToKorean(n)); // Korean
-      }
-      if (italianNumeralsEnabled) {
-        formats.push((n) => numberToItalian(n)); // Italian
       }
       if (romanNumeralsEnabled) {
         formats.push((n) => numberToRoman(n)); // Roman
@@ -8236,90 +8135,6 @@ const CognitiveTaskGame = () => {
               )}
             </div>
 
-            {/* Italian Numerals Section */}
-            <div className="bg-gradient-to-r from-green-900 to-teal-900 p-6 rounded-lg space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-yellow-400">🇮🇹 {t('italianNumerals')}</h2>
-                <button
-                  onClick={toggleItalianNumerals}
-                  className={`px-4 py-2 rounded-lg font-bold transition-colors ${
-                    italianNumeralsEnabled
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : 'bg-gray-600 hover:bg-gray-700 text-white'
-                  }`}
-                >
-                  {italianNumeralsEnabled ? `${t('enabled')} ✓` : t('enable')}
-                </button>
-              </div>
-              <p className="text-sm text-gray-300">
-                {t('italianNumeralsDesc')}
-              </p>
-              <button
-                onClick={() => setShowItalianReference(!showItalianReference)}
-                className="text-blue-400 hover:text-blue-300 text-sm underline"
-              >
-                {showItalianReference ? `▼ ${t('viewReference')}` : `▶ ${t('viewReference')}`}
-              </button>
-
-              {showItalianReference && (
-                <div className="mt-4 p-4 bg-black/30 rounded-lg space-y-3">
-                  <p className="text-sm text-gray-300 mb-3">Italian numerals (1-9) are used in training. Here's the reference:</p>
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-400 mb-1">uno</div>
-                      <div className="text-sm text-gray-400">1</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-400 mb-1">due</div>
-                      <div className="text-sm text-gray-400">2</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-400 mb-1">tre</div>
-                      <div className="text-sm text-gray-400">3</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-green-400 mb-1">quattro</div>
-                      <div className="text-sm text-gray-400">4</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-green-400 mb-1">cinque</div>
-                      <div className="text-sm text-gray-400">5</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-green-400 mb-1">sei</div>
-                      <div className="text-sm text-gray-400">6</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-400 mb-1">sette</div>
-                      <div className="text-sm text-gray-400">7</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-400 mb-1">otto</div>
-                      <div className="text-sm text-gray-400">8</div>
-                    </div>
-                    <div className="bg-black/30 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-400 mb-1">nove</div>
-                      <div className="text-sm text-gray-400">9</div>
-                    </div>
-                  </div>
-                  <div className="mt-4 p-3 bg-blue-900/40 border border-blue-700 rounded-lg">
-                    <p className="text-xs text-blue-200">
-                      <strong>Tip:</strong> Odd numbers: uno-tre-cinque-sette-nove | Even numbers: due-quattro-sei-otto
-                    </p>
-                  </div>
-                  <button
-                    onClick={toggleItalianNumerals}
-                    className={`w-full px-4 py-2 rounded-lg font-bold transition-colors ${
-                      italianNumeralsEnabled
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    }`}
-                  >
-                    {italianNumeralsEnabled ? 'Enabled ✓' : 'Enable Italian Numerals'}
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Verbal Number Language Selection */}
@@ -8349,7 +8164,6 @@ const CognitiveTaskGame = () => {
                     { lang: 'arabic', flag: '🇸🇦', name: 'العربية' },
                     { lang: 'japanese', flag: '🇯🇵', name: '日本語' },
                     { lang: 'chinese', flag: '🇨🇳', name: '中文' },
-                    { lang: 'italian', flag: '🇮🇹', name: 'Italiano' },
                     { lang: 'korean', flag: '🇰🇷', name: '한국어' }
                   ].map(({ lang, flag, name }) => (
                     <button
