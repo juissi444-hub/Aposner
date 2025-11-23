@@ -6593,9 +6593,12 @@ const CognitiveTaskGame = () => {
 
       const formats = [
         (n) => String(n),
-        (n) => numberToWord(n),
-        (n) => n > 100 ? String(n) : numberToRoman(n) // Use digits for >100
+        (n) => numberToWord(n)
       ];
+      // Only add Roman numeral format if enabled
+      if (romanNumeralsEnabled) {
+        formats.push((n) => n > 100 ? String(n) : numberToRoman(n)); // Use digits for >100
+      }
 
       const num = Math.floor(Math.random() * 98) + 1; // 1-98
       const offset = Math.floor(Math.random() * 2) + 1; // Skip by 1 or 2
@@ -6645,9 +6648,12 @@ const CognitiveTaskGame = () => {
 
       const formats = [
         (n) => String(n),
-        (n) => numberToWord(n),
-        (n) => n > 30 ? String(n) : numberToRoman(n) // Use digits for >30 to avoid Roman numeral cap bug
+        (n) => numberToWord(n)
       ];
+      // Only add Roman numeral format if enabled
+      if (romanNumeralsEnabled) {
+        formats.push((n) => n > 30 ? String(n) : numberToRoman(n)); // Use digits for >30 to avoid Roman numeral cap bug
+      }
 
       // Generate two different numbers
       // Choose formats first to determine appropriate number range
@@ -6656,8 +6662,9 @@ const CognitiveTaskGame = () => {
       const format1 = formats[format1Index];
       const format2 = formats[format2Index];
 
-      // If either format is Roman (index 2), restrict range to 1-30
-      const useRomanFormat = format1Index === 2 || format2Index === 2;
+      // If either format is Roman (index 2 when enabled), restrict range to 1-30
+      const romanFormatIndex = romanNumeralsEnabled ? 2 : -1;
+      const useRomanFormat = format1Index === romanFormatIndex || format2Index === romanFormatIndex;
       const maxNumber = useRomanFormat ? 30 : 100;
 
       let num1 = Math.floor(Math.random() * maxNumber) + 1;
@@ -6728,9 +6735,12 @@ const CognitiveTaskGame = () => {
 
       const formats = [
         (n) => String(n),
-        (n) => numberToWord(n),
-        (n) => n === 0 ? '0' : numberToRoman(n)
+        (n) => numberToWord(n)
       ];
+      // Only add Roman numeral format if enabled
+      if (romanNumeralsEnabled) {
+        formats.push((n) => n === 0 ? '0' : numberToRoman(n));
+      }
 
       // Pick one even and one odd number
       const evenNum = Math.floor(Math.random() * 50) * 2; // 0, 2, 4, ..., 98
@@ -6770,9 +6780,12 @@ const CognitiveTaskGame = () => {
 
       const formats = [
         (n) => String(n),
-        (n) => numberToWord(n),
-        (n) => n === 0 ? '0' : numberToRoman(n)
+        (n) => numberToWord(n)
       ];
+      // Only add Roman numeral format if enabled
+      if (romanNumeralsEnabled) {
+        formats.push((n) => n === 0 ? '0' : numberToRoman(n));
+      }
 
       // Pick one even and one odd number
       const evenNum = Math.floor(Math.random() * 50) * 2; // 0, 2, 4, ..., 98
@@ -6812,9 +6825,12 @@ const CognitiveTaskGame = () => {
 
       const formats = [
         (n) => String(n),
-        (n) => numberToWord(n),
-        (n) => n === 0 ? '0' : numberToRoman(n)
+        (n) => numberToWord(n)
       ];
+      // Only add Roman numeral format if enabled
+      if (romanNumeralsEnabled) {
+        formats.push((n) => n === 0 ? '0' : numberToRoman(n));
+      }
 
       let num1 = Math.floor(Math.random() * 50); // 0-49
       let num2 = Math.floor(Math.random() * 100); // 0-99
@@ -6856,9 +6872,12 @@ const CognitiveTaskGame = () => {
 
       const formats = [
         (n) => String(n),
-        (n) => numberToWord(n),
-        (n) => n === 0 ? '0' : numberToRoman(n)
+        (n) => numberToWord(n)
       ];
+      // Only add Roman numeral format if enabled
+      if (romanNumeralsEnabled) {
+        formats.push((n) => n === 0 ? '0' : numberToRoman(n));
+      }
 
       let num1 = Math.floor(Math.random() * 33); // 0-32
       let num2 = Math.floor(Math.random() * 100); // 0-99
@@ -7095,13 +7114,17 @@ const CognitiveTaskGame = () => {
     // Original logic for other relation types
     let pairs = wordPairs[relationType];
 
-    // Filter pairs based on Chinese and Korean numeral settings
+    // Filter pairs based on Chinese, Korean, and Roman numeral settings
     const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
     const koreanNumerals = ['일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+    const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+                           'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
+                           'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'];
 
     pairs = pairs.filter(pair => {
       const hasChineseNumeral = pair.some(word => chineseNumerals.includes(word));
       const hasKoreanNumeral = pair.some(word => koreanNumerals.includes(word));
+      const hasRomanNumeral = pair.some(word => romanNumerals.includes(word));
 
       // If pair contains Chinese numeral and Chinese is disabled, exclude it
       if (hasChineseNumeral && !chineseNumeralsEnabled) {
@@ -7110,6 +7133,11 @@ const CognitiveTaskGame = () => {
 
       // If pair contains Korean numeral and Korean is disabled, exclude it
       if (hasKoreanNumeral && !koreanNumeralsEnabled) {
+        return false;
+      }
+
+      // If pair contains Roman numeral and Roman is disabled, exclude it
+      if (hasRomanNumeral && !romanNumeralsEnabled) {
         return false;
       }
 
