@@ -7535,6 +7535,7 @@ const CognitiveTaskGame = () => {
         return;
       }
       setFeedback(null);
+      setUserAnswered(false); // Reset for next task
       if (currentTask + 1 < numTasks) {
         setCurrentTask(prev => prev + 1);
         prepareNextTask();
