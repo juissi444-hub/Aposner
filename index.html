@@ -29,5 +29,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/index.jsx"></script>
+    
+    <!-- Cache Buster Script for PWA/Service Workers -->
+    <script>
+      // This forces all old app caches to clear for every user visiting the site
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    </script>
   </body>
 </html>
