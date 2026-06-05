@@ -1,7 +1,7 @@
 # Adaptive Posner
 
 A cognitive task game built with React to test your mental agility through various relationship recognition challenges.
-Website to use the app: aposner.vercel.app
+Website to use the app: https://aposner.vercel.app
 
 ## Features
 
