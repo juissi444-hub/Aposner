@@ -1,3 +1,17 @@
+
+import Login from './Login'
+
+export default function App() {
+  return (
+    <div>
+    
+      <Login /> 
+    </div>
+  )
+}
+
+
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Eye, EyeOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
@@ -9788,3 +9802,4 @@ const CognitiveTaskGame = () => {
 };
 
 export default CognitiveTaskGame;
+
